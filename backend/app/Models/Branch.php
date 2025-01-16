@@ -16,6 +16,7 @@ class Branch extends Model
         "is_active" => "boolean",
         "created_at" => "datetime",
         "updated_at" => "datetime",
+        "deleted_at" => "datetime",
     ];
 
     public $timestamps = true;
