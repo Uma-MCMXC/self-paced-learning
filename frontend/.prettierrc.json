@@ -1,0 +1,24 @@
+{
+    "printWidth": 80,
+    "tabWidth": 4,
+    "sortTailwindcssClasses": true,
+    "plugins": [
+        "@prettier/plugin-php",
+        "prettier-plugin-tailwindcss",
+        "@shufo/prettier-plugin-blade"
+    ],
+    "overrides": [
+        {
+            "files": ["*.php"],
+            "options": {
+                "parser": "php"
+            }
+        },
+        {
+            "files": ["*.blade.php"],
+            "options": {
+                "parser": "blade"
+            }
+        }
+    ]
+}

@@ -1,0 +1,23 @@
+# Ignore artifacts:
+build
+coverage
+
+# Ignore all HTML files:
+*.html
+
+**/.vscode
+
+**/.htaccess
+**/.git
+**/.svn
+**/.hg
+**/*.lock
+**/*.md
+**/bootstrap/cache
+**/node_modules
+**/public
+**/resources/lang
+**/storage
+**/vendor
+**/laradock/
+**/laradock-data/
