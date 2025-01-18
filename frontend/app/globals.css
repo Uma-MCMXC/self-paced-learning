@@ -1,8 +1,12 @@
+/* Import Flowbite styles */
+@import "flowbite";
+
+/* Tailwind CSS rules */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import "flowbite";
 
+/* Define color variables for Light and Dark mode */
 :root {
     --background: #ffffff;
     --foreground: #171717;
