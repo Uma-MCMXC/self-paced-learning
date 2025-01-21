@@ -60,7 +60,7 @@ const RegisterPage: React.FC = () => {
     return (
         <>
             <Navbar />
-            <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4 pt-24 dark:bg-gray-900 sm:px-8 lg:px-16">
+            <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100 px-4 pt-24 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 sm:px-8 lg:px-16">
                 <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
                     <h2 className="mb-6 text-center text-2xl font-bold text-gray-800 dark:text-white">
                         Register
