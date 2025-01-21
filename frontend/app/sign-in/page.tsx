@@ -1,6 +1,8 @@
 "use client";
 import React from "react";
 import Navbar from "../components/Navbar";
+import Input from "../components/froms/Input";
+import Button from "../components/froms/Button";
 import { useRouter } from "next/navigation";
 
 const LoginPage: React.FC = () => {
@@ -26,44 +28,29 @@ const LoginPage: React.FC = () => {
                         <div className="space-y-4">
                             {/* Email Field */}
                             <div>
-                                <label
-                                    htmlFor="email"
-                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    Email Address
-                                </label>
-                                <input
+                                <Input
                                     id="email"
                                     type="email"
-                                    required
-                                    className="mt-1 w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder-gray-400"
+                                    label="Email"
                                     placeholder="Enter your email"
+                                    required
                                 />
                             </div>
 
                             {/* Password Field */}
                             <div>
-                                <label
-                                    htmlFor="password"
-                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    Password
-                                </label>
-                                <input
+                                <Input
                                     id="password"
                                     type="password"
-                                    required
-                                    className="mt-1 w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder-gray-400"
+                                    label="Password"
                                     placeholder="Enter your password"
+                                    required
                                 />
                             </div>
                         </div>
 
                         {/* Login Button */}
-                        <button
-                            type="submit"
-                            className="flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-lg transition-all hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400"
-                        >
+                        <Button type="submit">
                             <svg
                                 className="mr-2 h-5 w-5"
                                 fill="none"
@@ -79,7 +66,7 @@ const LoginPage: React.FC = () => {
                                 ></path>
                             </svg>
                             Sign In
-                        </button>
+                        </Button>
                     </form>
 
                     {/* Register Section */}
