@@ -10,7 +10,6 @@ class TitleController extends Controller
 {
     public function index()
     {
-        // ดึงข้อมูลทั้งหมดจาก titles
         return response()->json(Title::all());
     }
 }

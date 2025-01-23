@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\TitleController;
+use App\Http\Controllers\Api\{TitleController, BranchController};
 
-// กำหนด API Routes ที่นี่
 Route::get("/titles", [TitleController::class, "index"]);
+Route::get("/branches", [BranchController::class, "index"]);
