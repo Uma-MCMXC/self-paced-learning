@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import { useRouter } from "next/navigation";
 import { fetchTitles } from "../services/titleService";
 import { fetchBranch } from "../services/branchService";
+import { validatePassword } from "../validators/passwordValidator";
 import Select from "../components/froms/Select";
 import Input from "../components/froms/Input";
 import Button from "../components/froms/Button";
@@ -25,20 +26,25 @@ const RegisterPage: React.FC = () => {
     const [selectedYear, setSelectedYear] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [passwordError, setPasswordError] = useState<string | null>(null);
+    const [confirmPasswordError, setConfirmPasswordError] = useState<
+        string | null
+    >(null);
 
-    // Fetch titles จาก API
+    // Fetch data จาก API
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
             try {
                 const titlesData = await fetchTitles();
-                const branchData = await fetchBranch();
-
                 setTitles(titlesData);
+
+                const branchData = await fetchBranch();
                 setBranches(branchData);
+
                 setError(null);
             } catch (err) {
-                setError("Failed to load titles. Please try again later.");
+                setError("Failed to load data. Please try again later.");
             } finally {
                 setIsLoading(false);
             }
@@ -47,12 +53,40 @@ const RegisterPage: React.FC = () => {
         fetchData();
     }, []);
 
+    // Handle password validation
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setPassword(value);
+
+        const error = validatePassword(value);
+        setPasswordError(error);
+    };
+
+    const handleConfirmPasswordChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+        const value = e.target.value;
+        setConfirmPassword(value);
+
+        if (value !== password) {
+            setConfirmPasswordError("Passwords do not match!");
+        } else {
+            setConfirmPasswordError(null);
+        }
+    };
+
     // Handle form submission
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
+        const passwordValidationError = validatePassword(password);
+        if (passwordValidationError) {
+            setPasswordError(passwordValidationError);
+            return;
+        }
+
         if (password !== confirmPassword) {
-            alert("Passwords do not match!");
+            setConfirmPasswordError("Passwords do not match!");
             return;
         }
 
@@ -163,33 +197,38 @@ const RegisterPage: React.FC = () => {
                                 required
                             />
 
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) =>
-                                        setPassword(e.target.value)
-                                    }
-                                    label="Password"
-                                    placeholder="Enter your password"
-                                    required
-                                />
+                            {/* <div className="grid gap-4 md:grid-cols-2"> */}
+                            <Input
+                                id="password"
+                                type="password"
+                                value={password}
+                                onChange={handlePasswordChange}
+                                label="Password"
+                                placeholder="Enter your password"
+                                required
+                                error={passwordError ?? ""}
+                            />
 
-                                <Input
-                                    id="confirmPassword"
-                                    type="password"
-                                    value={confirmPassword}
-                                    onChange={(e) =>
-                                        setConfirmPassword(e.target.value)
-                                    }
-                                    label="Confirm Password"
-                                    placeholder="Enter your confirm password"
-                                    required
-                                />
-                            </div>
+                            <Input
+                                id="confirmPassword"
+                                type="password"
+                                value={confirmPassword}
+                                onChange={handleConfirmPasswordChange}
+                                label="Confirm Password"
+                                placeholder="Enter your confirm password"
+                                required
+                                error={confirmPasswordError ?? ""}
+                            />
+                            {/* </div> */}
 
-                            <Button type="submit">Register</Button>
+                            <Button
+                                type="submit"
+                                disabled={
+                                    !!passwordError || !!confirmPasswordError
+                                }
+                            >
+                                Register
+                            </Button>
                         </form>
                     )}
                     <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-300">
