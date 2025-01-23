@@ -3,40 +3,48 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { useRouter } from "next/navigation";
+import { fetchTitles } from "../services/titleService";
+import { fetchBranch } from "../services/branchService";
+import Select from "../components/froms/Select";
+import Input from "../components/froms/Input";
+import Button from "../components/froms/Button";
 
 const RegisterPage: React.FC = () => {
     const router = useRouter();
 
     // State สำหรับจัดการข้อมูล
     const [titles, setTitles] = useState<{ id: number; name: string }[]>([]);
+    const [branches, setBranches] = useState<{ id: number; name: string }[]>(
+        [],
+    );
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const [selectedTitle, setSelectedTitle] = useState("");
+    const [selectedBranch, setSelectedBranch] = useState("");
+    const [selectedYear, setSelectedYear] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
     // Fetch titles จาก API
     useEffect(() => {
-        const fetchTitles = async () => {
+        const fetchData = async () => {
             setIsLoading(true);
             try {
-                const response = await fetch("http://localhost/api/titles");
-                if (!response.ok) {
-                    throw new Error("Failed to fetch titles");
-                }
-                const data = await response.json();
-                setTitles(data); // ตั้งค่า titles
-                setError(null); // ล้าง error หากไม่มีปัญหา
+                const titlesData = await fetchTitles();
+                const branchData = await fetchBranch();
+
+                setTitles(titlesData);
+                setBranches(branchData);
+                setError(null);
             } catch (err) {
                 setError("Failed to load titles. Please try again later.");
-                setTitles([]);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchTitles();
+        fetchData();
     }, []);
 
     // Handle form submission
@@ -50,6 +58,8 @@ const RegisterPage: React.FC = () => {
 
         console.log({
             title: selectedTitle,
+            branch: selectedBranch,
+            year: selectedYear,
             password,
             confirmPassword,
         });
@@ -61,7 +71,7 @@ const RegisterPage: React.FC = () => {
         <>
             <Navbar />
             <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100 px-4 pt-24 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 sm:px-8 lg:px-16">
-                <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+                <div className="w-full max-w-xl rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
                     <h2 className="mb-6 text-center text-2xl font-bold text-gray-800 dark:text-white">
                         Register
                     </h2>
@@ -75,157 +85,111 @@ const RegisterPage: React.FC = () => {
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit}>
-                            {/* Title Section */}
-                            <div className="mb-4">
-                                <label
-                                    htmlFor="title_id"
-                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    Title
-                                </label>
-                                <select
-                                    id="title_id"
-                                    value={selectedTitle}
-                                    onChange={(e) =>
-                                        setSelectedTitle(e.target.value)
-                                    }
-                                    className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                            <Select
+                                id="branchID"
+                                value={selectedBranch}
+                                onChange={(e) =>
+                                    setSelectedBranch(e.target.value)
+                                }
+                                options={branches.map((branch) => ({
+                                    value: branch.id,
+                                    label: branch.name,
+                                }))}
+                                label="Branch"
+                                placeholder="Select your branch"
+                                required
+                            />
+                            <Select
+                                id="classYear"
+                                value={selectedYear}
+                                onChange={(e) =>
+                                    setSelectedYear(e.target.value)
+                                }
+                                options={[
+                                    { value: 1, label: "Year 1" },
+                                    { value: 2, label: "Year 2" },
+                                    { value: 3, label: "Year 3" },
+                                    { value: 4, label: "Year 4" },
+                                ]}
+                                label="Class Year"
+                                placeholder="Select your class year"
+                                required
+                            />
+                            <Select
+                                id="titleId"
+                                value={selectedTitle}
+                                onChange={(e) =>
+                                    setSelectedTitle(e.target.value)
+                                }
+                                options={titles.map((title) => ({
+                                    value: title.id,
+                                    label: title.name,
+                                }))}
+                                label="Title"
+                                placeholder="Select your title"
+                                required
+                            />
+
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <Input
+                                    id="firstName"
+                                    type="text"
+                                    label="First Name"
+                                    placeholder="Enter your first name"
                                     required
-                                >
-                                    <option value="" disabled>
-                                        Select your title
-                                    </option>
-                                    {titles.map((title) => (
-                                        <option key={title.id} value={title.id}>
-                                            {title.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Full Name Section */}
-                            <div className="mb-4 grid grid-cols-2 gap-4">
-                                <div>
-                                    <label
-                                        htmlFor="first_name"
-                                        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    >
-                                        First Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="first_name"
-                                        className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                        placeholder="Enter your first name"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label
-                                        htmlFor="last_name"
-                                        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                    >
-                                        Last Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="last_name"
-                                        className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                        placeholder="Enter your last name"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Class Year Section */}
-                            <div className="mb-4">
-                                <label
-                                    htmlFor="class_year"
-                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    Class Year
-                                </label>
-                                <select
-                                    id="class_year"
-                                    className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                    required
-                                >
-                                    <option value="" disabled>
-                                        Select your class year
-                                    </option>
-                                    <option value="1">Year 1</option>
-                                    <option value="2">Year 2</option>
-                                    <option value="3">Year 3</option>
-                                    <option value="4">Year 4</option>
-                                </select>
-                            </div>
-
-                            {/* Email Section */}
-                            <div className="mb-4">
-                                <label
-                                    htmlFor="email"
-                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    Email
-                                </label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                    placeholder="Enter your email"
+                                />
+                                <Input
+                                    id="lastName"
+                                    type="text"
+                                    label="Last Name"
+                                    placeholder="Enter your last name"
                                     required
                                 />
                             </div>
 
-                            {/* Password Section */}
-                            <div className="mb-4">
-                                <label
-                                    htmlFor="password"
-                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    Password
-                                </label>
-                                <input
-                                    type="password"
+                            <Input
+                                id="studentId"
+                                type="text"
+                                label="Student ID"
+                                placeholder="Enter your Student ID"
+                                required
+                            />
+
+                            <Input
+                                id="email"
+                                type="email"
+                                label="Email"
+                                placeholder="Enter your email"
+                                required
+                            />
+
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <Input
                                     id="password"
+                                    type="password"
                                     value={password}
                                     onChange={(e) =>
                                         setPassword(e.target.value)
                                     }
-                                    className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                    placeholder="Create a password"
+                                    label="Password"
+                                    placeholder="Enter your password"
                                     required
                                 />
-                            </div>
 
-                            {/* Confirm Password Section */}
-                            <div className="mb-6">
-                                <label
-                                    htmlFor="confirm_password"
-                                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                                >
-                                    Confirm Password
-                                </label>
-                                <input
+                                <Input
+                                    id="confirmPassword"
                                     type="password"
-                                    id="confirm_password"
                                     value={confirmPassword}
                                     onChange={(e) =>
                                         setConfirmPassword(e.target.value)
                                     }
-                                    className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                    placeholder="Confirm your password"
+                                    label="Confirm Password"
+                                    placeholder="Enter your confirm password"
                                     required
                                 />
                             </div>
 
-                            {/* Register Button */}
-                            <button
-                                type="submit"
-                                className="w-full rounded-lg bg-blue-600 px-4 py-2 text-white shadow transition hover:bg-blue-700"
-                            >
-                                Register
-                            </button>
+                            <Button type="submit">Register</Button>
                         </form>
                     )}
                     <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-300">
