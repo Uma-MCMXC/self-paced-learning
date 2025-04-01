@@ -72,7 +72,7 @@ export default function LoginPage() {
               Forgot Password?
             </div>
 
-            <Button label="Sign in" variant="primary" size="md" className="w-full" />
+            <Button label="Sign in" variant="info" size="md" className="w-full" />
           </form>
 
           <p className="mt-6 text-sm text-center text-gray-600">Don’t have an account?</p>

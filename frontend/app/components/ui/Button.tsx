@@ -17,6 +17,7 @@ type ButtonProps = {
     | 'success'
     | 'warning'
     | 'error'
+    | 'outline'
   size?: 'xs' | 'sm' | 'md' | 'lg'
   type?: 'button' | 'submit' | 'reset'
   fullWidth?: boolean
@@ -46,6 +47,7 @@ const Button: React.FC<ButtonProps> = ({
       'btn-success': variant === 'success',
       'btn-warning': variant === 'warning',
       'btn-error': variant === 'error',
+      'btn-outline': variant === 'outline',
     },
     {
       'btn-xs': size === 'xs',

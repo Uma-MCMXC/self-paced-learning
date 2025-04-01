@@ -6,28 +6,33 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 from-white to-base-200 text-gray-800">
       {/* Main Content */}
-      <main className="flex flex-col flex-1 items-center justify-center px-4 text-center">
-        <h1 className="text-5xl md:text-6xl font-extrabold mb-4">Self-Paced Learning</h1>
+      <main className="flex flex-col items-center justify-center min-h-screen px-4 text-center bg-gray-50">
+        <h1 className="text-5xl md:text-6xl font-extrabold mb-4 text-gray-900">
+          Self-Paced Learning
+        </h1>
         <p className="text-lg md:text-xl text-gray-600 mb-8">
           แพลตฟอร์มสนับสนุนการเรียนรู้แบบอิสระ
         </p>
 
-        {/* Login Button */}
-        <Button label="Sign in" variant="primary" size="lg" href="/auth/login" />
+        {/* Sign In */}
+        <Button label="Sign in" variant="info" size="lg" href="/auth/login" />
 
-        {/* ปุ่มเพิ่มเติม */}
-        <div className="mt-8 flex flex-wrap gap-4 justify-center">
+        {/* Divider */}
+        <div className="mt-10 mb-2 text-gray-400">or</div>
+
+        {/* Register Options */}
+        <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
           <Button
             label="Register as Student"
-            variant="info"
+            variant="outline"
             size="md"
-            href="auth/register/student"
+            href="/auth/register/student"
           />
           <Button
             label="Register as Lecturer"
-            variant="info"
+            variant="outline"
             size="md"
-            href="auth/register/lecturer"
+            href="/auth/register/lecturer"
           />
         </div>
       </main>

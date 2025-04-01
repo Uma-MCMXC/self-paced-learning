@@ -175,7 +175,7 @@ export default function StudentRegisterPage() {
 
           {/* ✅ Submit */}
           <div className="col-span-full mt-8 text-center">
-            <Button label="Register" variant="primary" size="lg" />
+            <Button label="Register" variant="info" size="lg" />
           </div>
         </form>
       </div>
