@@ -1,0 +1,241 @@
+'use client'
+
+import React, { useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import {
+  FiHome,
+  FiUsers,
+  FiClipboard,
+  FiSettings,
+  FiFileText,
+  FiMessageSquare,
+  FiRotateCw,
+  FiChevronDown,
+  FiChevronRight,
+  FiCalendar,
+  FiAward,
+  FiSend,
+  FiEdit3,
+} from 'react-icons/fi'
+
+type SidebarItem = {
+  label: string
+  icon: React.ReactElement
+  href?: string
+  targetBlank?: boolean
+  children?: { label: string; href: string; targetBlank?: boolean }[]
+}
+
+type UserRole = 'admin' | 'student' | 'lecturer' | 'visitor'
+
+export default function Sidebar({ userRole }: { userRole: UserRole }) {
+  const pathname = usePathname()
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({})
+
+  const toggleMenu = (label: string) => {
+    setOpenMenus((prev) => {
+      const newState: Record<string, boolean> = {}
+
+      // วนทุกเมนูที่มี children
+      menuItems[userRole].forEach((item) => {
+        if (item.children) {
+          newState[item.label] = item.label === label ? !prev[item.label] : false
+        }
+      })
+
+      return newState
+    })
+  }
+
+  const menuItems: Record<UserRole, SidebarItem[]> = {
+    admin: [
+      { label: 'Dashboard', href: '/admin', icon: <FiHome /> },
+      { label: 'Manage Users', href: '/admin/users', icon: <FiUsers /> },
+      { label: 'Deadline', href: '/admin/deadline', icon: <FiCalendar /> },
+      { label: 'Scores', href: '/admin/scores', icon: <FiAward /> },
+      {
+        label: 'Group',
+        icon: <FiUsers />,
+        children: [
+          {
+            label: 'Students',
+            href: '/admin/group/student',
+          },
+          {
+            label: 'Instructors',
+            href: '/admin/group/instructor',
+          },
+        ],
+      },
+      {
+        label: 'Submissions',
+        icon: <FiSend />,
+        children: [
+          {
+            label: 'Reports Sent',
+            href: '/admin/submissions/reports-sent',
+          },
+          {
+            label: 'Reviewed',
+            href: '/admin/submissions/reviewed',
+          },
+        ],
+      },
+      {
+        label: 'Keywords',
+        icon: <FiEdit3 />,
+        children: [
+          {
+            label: 'Diagnosis',
+            href: '/admin/keywords/diagnosis',
+          },
+          {
+            label: 'Treatment',
+            href: '/admin/keywords/treatment',
+          },
+        ],
+      },
+    ],
+    student: [
+      { label: 'Dashboard', href: '/student', icon: <FiHome /> },
+      {
+        label: 'Send Report',
+        href: '/student/send-report',
+        icon: <FiFileText />,
+      },
+      {
+        label: 'Report History',
+        href: '/student/report-history',
+        icon: <FiRotateCw />,
+      },
+      {
+        label: 'Manual Report',
+        icon: <FiFileText />,
+        children: [
+          {
+            label: 'User Manual',
+            href: 'https://www.google.com',
+            targetBlank: true,
+          },
+          {
+            label: 'Report Examples',
+            href: 'https://drive.google.com/file/d/1AnSOGFbRJAdCJBdmV8UDBWpM8t3dKFwj/view',
+            targetBlank: true,
+          },
+        ],
+      },
+    ],
+    lecturer: [
+      {
+        label: 'Review Cases',
+        href: '/lecturer/review',
+        icon: <FiClipboard />,
+      },
+      {
+        label: 'Manage Criteria',
+        href: '/lecturer/criteria',
+        icon: <FiSettings />,
+      },
+    ],
+    visitor: [
+      {
+        label: 'Public Reports',
+        href: '/visitor/reports',
+        icon: <FiFileText />,
+      },
+      {
+        label: 'Contact Us',
+        href: '/visitor/contact',
+        icon: <FiMessageSquare />,
+      },
+    ],
+  }
+
+  const closeDrawer = () => {
+    const drawerCheckbox = document.getElementById('sidebar-drawer') as HTMLInputElement
+    if (drawerCheckbox?.checked) drawerCheckbox.checked = false
+  }
+
+  return (
+    <div className="w-64 h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col p-4">
+      <h2 className="text-2xl font-bold mb-10 text-center text-gray-800 dark:text-white">
+        e-Clinical Case Report
+      </h2>
+      <ul className="menu space-y-2">
+        {menuItems[userRole].map((item) => {
+          const isActive = item.href && pathname === item.href
+          const isExpandable = !!item.children
+          const isOpen =
+            openMenus[item.label] ?? item.children?.some((child) => pathname.startsWith(child.href))
+
+          return (
+            <li key={item.label} className="flex flex-col">
+              {item.href ? (
+                <Link
+                  href={item.href}
+                  onClick={() => {
+                    closeDrawer()
+
+                    // พับเมนูย่อยทั้งหมดเมื่อกดเมนูหลักที่ไม่มี children
+                    setOpenMenus((prev) => {
+                      const newState: Record<string, boolean> = {}
+                      Object.keys(prev).forEach((key) => {
+                        newState[key] = false
+                      })
+                      return newState
+                    })
+                  }}
+                  className={`flex items-center gap-3 px-4 py-2 rounded-lg transition duration-200 ${
+                    isActive
+                      ? 'bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-medium'
+                      : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-white'
+                  }`}
+                >
+                  <span>{item.icon}</span>
+                  <span>{item.label}</span>
+                </Link>
+              ) : (
+                <button
+                  onClick={() => toggleMenu(item.label)}
+                  className="flex items-center justify-between w-full px-4 py-2 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                >
+                  <span className="flex items-center gap-3 font-medium">
+                    {item.icon}
+                    {item.label}
+                  </span>
+                  {isOpen ? <FiChevronDown /> : <FiChevronRight />}
+                </button>
+              )}
+
+              {isExpandable && isOpen && (
+                <ul className="pl-6 mt-1 space-y-1 border-l border-gray-200 dark:border-gray-600">
+                  {item.children!.map((child) => {
+                    const isChildActive = pathname === child.href
+                    return (
+                      <li key={child.href}>
+                        <Link
+                          href={child.href}
+                          onClick={closeDrawer}
+                          target={child.targetBlank ? '_blank' : undefined}
+                          rel={child.targetBlank ? 'noopener noreferrer' : undefined}
+                          className={`block px-2 py-1 rounded-md text-sm transition ${
+                            isChildActive
+                              ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-gray-700'
+                              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                          }`}
+                        >
+                          {child.label}
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
