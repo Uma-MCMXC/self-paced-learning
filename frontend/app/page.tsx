@@ -4,7 +4,7 @@ import Button from './components/ui/Button'
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-base-200 text-gray-800">
+    <div className="flex flex-col min-h-screen bg-gray-50 from-white to-base-200 text-gray-800">
       {/* Main Content */}
       <main className="flex flex-col flex-1 items-center justify-center px-4 text-center">
         <h1 className="text-5xl md:text-6xl font-extrabold mb-4">Self-Paced Learning</h1>
@@ -13,12 +13,7 @@ export default function Home() {
         </p>
 
         {/* Login Button */}
-        <Button
-          label="Login"
-          variant="primary"
-          size="lg"
-          onClick={() => alert('Redirecting to PSU Passport')}
-        />
+        <Button label="Sign in" variant="primary" size="lg" href="/auth/login" />
 
         {/* ปุ่มเพิ่มเติม */}
         <div className="mt-8 flex flex-wrap gap-4 justify-center">

@@ -28,7 +28,9 @@ export default function FormInput({
   return (
     <div className="form-control w-full">
       <label htmlFor={id} className="mb-1 label">
-        <span className="label-text text-base font-medium">{label}</span>
+        <span className="label-text text-sm font-medium text-gray-700 dark:text-gray-200">
+          {label}
+        </span>
       </label>
       <input
         id={id}

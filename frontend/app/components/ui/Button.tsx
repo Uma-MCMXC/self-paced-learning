@@ -6,7 +6,8 @@ import Link from 'next/link'
 
 type ButtonProps = {
   label: string
-  href?: string // ✅ รองรับการใช้เป็น Link
+  href?: string
+  className?: string
   variant?:
     | 'neutral'
     | 'primary'
@@ -26,6 +27,7 @@ type ButtonProps = {
 const Button: React.FC<ButtonProps> = ({
   label,
   href,
+  className,
   variant = 'primary',
   size = 'md',
   fullWidth = false,
@@ -52,7 +54,8 @@ const Button: React.FC<ButtonProps> = ({
       'btn-lg': size === 'lg',
     },
     fullWidth && 'w-full',
-    disabled && 'btn-disabled'
+    disabled && 'btn-disabled',
+    className
   )
 
   return href ? (
