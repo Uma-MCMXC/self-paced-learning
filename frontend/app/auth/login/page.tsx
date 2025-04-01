@@ -7,13 +7,20 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 export default function LoginPage() {
-  const [error, setError] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [form, setForm] = useState({
+    email: '',
+    password: '',
+  })
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setForm((prev) => ({ ...prev, [name]: value }))
+  }
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    alert(`Logging in as ${email}`)
+    // TODO: ส่งข้อมูลไปยัง backend
+    console.log(form)
   }
 
   return (
@@ -44,26 +51,22 @@ export default function LoginPage() {
         <div className="md:w-1/2 p-8">
           <form onSubmit={handleLogin} className="space-y-4">
             <FormInput
-              type="email"
+              name="email"
               id="email"
               label="E-Mail"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              error={error}
+              value={form.email}
+              onChange={handleChange}
               required
             />
 
             <FormInput
-              type="password"
+              name="password"
               id="password"
               label="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              error={error}
+              value={form.password}
+              onChange={handleChange}
               required
             />
-
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
             <div className="text-sm text-blue-600 hover:underline cursor-pointer text-right">
               Forgot Password?
@@ -75,13 +78,13 @@ export default function LoginPage() {
           <p className="mt-6 text-sm text-center text-gray-600">Don’t have an account?</p>
           <div className="mt-2 flex justify-center gap-4">
             <a
-              href="/register/student"
+              href="/auth/register/student"
               className="text-blue-600 hover:underline text-sm font-medium"
             >
               Register as Student
             </a>
             <a
-              href="/register/lecturer"
+              href="/auth/register/lecturer"
               className="text-blue-600 hover:underline text-sm font-medium"
             >
               Register as Lecturer

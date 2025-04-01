@@ -11,6 +11,7 @@ type Option = {
 type SelectInputProps = {
   id?: string
   label?: string
+  name?: string
   value?: string
   onChange: (value: string) => void
   required?: boolean
@@ -22,6 +23,7 @@ export default function SelectInput({
   id,
   label,
   value,
+  name,
   onChange,
   required = false,
   error,
@@ -52,7 +54,9 @@ export default function SelectInput({
     <div className="form-control w-full relative" ref={wrapperRef}>
       {label && (
         <label htmlFor={id} className="mb-1 label">
-          <span className="label-text text-base font-medium">{label}</span>
+          <span className="label-text text-sm font-medium text-gray-700 dark:text-gray-200">
+            {label}
+          </span>
         </label>
       )}
 

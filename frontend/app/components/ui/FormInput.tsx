@@ -7,6 +7,7 @@ type FormInputProps = {
   label: string
   placeholder?: string
   value: string
+  name: string
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   error?: string
   required?: boolean
@@ -24,6 +25,7 @@ export default function FormInput({
   required = false,
   submitted,
   type = 'text',
+  name,
 }: FormInputProps) {
   return (
     <div className="form-control w-full">
@@ -34,6 +36,7 @@ export default function FormInput({
       </label>
       <input
         id={id}
+        name={name}
         type={type}
         placeholder={placeholder}
         value={value}
