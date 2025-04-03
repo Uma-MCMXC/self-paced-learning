@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useRef } from 'react'
-import { FiUserCheck, FiMenu } from 'react-icons/fi'
+import { Bars3Icon, UserIcon } from '@heroicons/react/24/solid'
 import ThemeToggle from '../hooks/ThemeToggle'
 export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -11,7 +11,7 @@ export default function Navbar() {
   // 🆕 ข้อมูลผู้ใช้ (ทดสอบ)
   const [user] = useState({
     name: 'John Doe',
-    role: 'Lecturer',
+    role: 'xx',
     email: 'johndoe@example.com',
   })
 
@@ -19,7 +19,7 @@ export default function Navbar() {
     <div className="navbar bg-white dark:bg-gray-800 px-6 flex border-b border-gray-200 dark:border-gray-700">
       {/* ปุ่มเปิด Sidebar Drawer เฉพาะบนมือถือ */}
       <label htmlFor="sidebar-drawer" className="btn btn-ghost btn-circle lg:hidden">
-        <FiMenu className="w-6 h-6" />
+        <Bars3Icon className="w-6 h-6" />
       </label>
 
       <div className="ml-auto flex items-center gap-3">
@@ -38,7 +38,7 @@ export default function Navbar() {
             }}
           >
             <div className="w-8 h-8 rounded-full grid place-items-center">
-              <FiUserCheck className="w-5 h-5 text-blue-700 dark:text-blue-400" />
+              <UserIcon className="w-5 h-5 text-blue-700 dark:text-blue-400" />
             </div>
             <span className="hidden sm:block font-medium text-gray-700 dark:text-gray-200">
               {user.name}

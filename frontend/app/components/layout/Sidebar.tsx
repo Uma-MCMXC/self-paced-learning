@@ -3,21 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-  FiHome,
-  FiUsers,
-  FiClipboard,
-  FiSettings,
-  FiFileText,
-  FiMessageSquare,
-  FiRotateCw,
-  FiChevronDown,
-  FiChevronRight,
-  FiCalendar,
-  FiAward,
-  FiSend,
-  FiEdit3,
-} from 'react-icons/fi'
+import { HomeIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
 
 type SidebarItem = {
   label: string
@@ -27,7 +13,7 @@ type SidebarItem = {
   children?: { label: string; href: string; targetBlank?: boolean }[]
 }
 
-type UserRole = 'admin' | 'student' | 'lecturer' | 'visitor'
+type UserRole = 'admin' | 'student' | 'lecturer'
 
 export default function Sidebar({ userRole }: { userRole: UserRole }) {
   const pathname = usePathname()
@@ -49,106 +35,11 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
   }
 
   const menuItems: Record<UserRole, SidebarItem[]> = {
-    admin: [
-      { label: 'Dashboard', href: '/admin', icon: <FiHome /> },
-      { label: 'Manage Users', href: '/admin/users', icon: <FiUsers /> },
-      { label: 'Deadline', href: '/admin/deadline', icon: <FiCalendar /> },
-      { label: 'Scores', href: '/admin/scores', icon: <FiAward /> },
-      {
-        label: 'Group',
-        icon: <FiUsers />,
-        children: [
-          {
-            label: 'Students',
-            href: '/admin/group/student',
-          },
-          {
-            label: 'Instructors',
-            href: '/admin/group/instructor',
-          },
-        ],
-      },
-      {
-        label: 'Submissions',
-        icon: <FiSend />,
-        children: [
-          {
-            label: 'Reports Sent',
-            href: '/admin/submissions/reports-sent',
-          },
-          {
-            label: 'Reviewed',
-            href: '/admin/submissions/reviewed',
-          },
-        ],
-      },
-      {
-        label: 'Keywords',
-        icon: <FiEdit3 />,
-        children: [
-          {
-            label: 'Diagnosis',
-            href: '/admin/keywords/diagnosis',
-          },
-          {
-            label: 'Treatment',
-            href: '/admin/keywords/treatment',
-          },
-        ],
-      },
-    ],
-    student: [
-      { label: 'Dashboard', href: '/student', icon: <FiHome /> },
-      {
-        label: 'Send Report',
-        href: '/student/send-report',
-        icon: <FiFileText />,
-      },
-      {
-        label: 'Report History',
-        href: '/student/report-history',
-        icon: <FiRotateCw />,
-      },
-      {
-        label: 'Manual Report',
-        icon: <FiFileText />,
-        children: [
-          {
-            label: 'User Manual',
-            href: 'https://www.google.com',
-            targetBlank: true,
-          },
-          {
-            label: 'Report Examples',
-            href: 'https://drive.google.com/file/d/1AnSOGFbRJAdCJBdmV8UDBWpM8t3dKFwj/view',
-            targetBlank: true,
-          },
-        ],
-      },
-    ],
+    admin: [{ label: 'Dashboard', href: '/admin', icon: <HomeIcon /> }],
+    student: [{ label: 'Dashboard', href: '/student', icon: <HomeIcon /> }],
     lecturer: [
-      {
-        label: 'Review Cases',
-        href: '/lecturer/review',
-        icon: <FiClipboard />,
-      },
-      {
-        label: 'Manage Criteria',
-        href: '/lecturer/criteria',
-        icon: <FiSettings />,
-      },
-    ],
-    visitor: [
-      {
-        label: 'Public Reports',
-        href: '/visitor/reports',
-        icon: <FiFileText />,
-      },
-      {
-        label: 'Contact Us',
-        href: '/visitor/contact',
-        icon: <FiMessageSquare />,
-      },
+      { label: 'Dashboard', href: '/lecturer', icon: <HomeIcon /> },
+      { label: 'สร้างรายวิชา', href: '/lecturer/create-subject', icon: <HomeIcon /> },
     ],
   }
 
@@ -176,8 +67,6 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
                   href={item.href}
                   onClick={() => {
                     closeDrawer()
-
-                    // พับเมนูย่อยทั้งหมดเมื่อกดเมนูหลักที่ไม่มี children
                     setOpenMenus((prev) => {
                       const newState: Record<string, boolean> = {}
                       Object.keys(prev).forEach((key) => {
@@ -204,7 +93,7 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
                     {item.icon}
                     {item.label}
                   </span>
-                  {isOpen ? <FiChevronDown /> : <FiChevronRight />}
+                  {isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
                 </button>
               )}
 

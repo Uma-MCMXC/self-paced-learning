@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { FiMoon, FiSun } from 'react-icons/fi'
+import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
@@ -25,7 +25,7 @@ export default function ThemeToggle() {
 
   return (
     <button onClick={toggleTheme} aria-label="Toggle theme">
-      {theme === 'light' ? <FiMoon className="w-5 h-5" /> : <FiSun className="w-5 h-5" />}
+      {theme === 'light' ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
     </button>
   )
 }
