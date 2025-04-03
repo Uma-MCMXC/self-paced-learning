@@ -35,11 +35,15 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
   }
 
   const menuItems: Record<UserRole, SidebarItem[]> = {
-    admin: [{ label: 'Dashboard', href: '/admin', icon: <HomeIcon /> }],
-    student: [{ label: 'Dashboard', href: '/student', icon: <HomeIcon /> }],
+    admin: [{ label: 'Dashboard', href: '/admin', icon: <HomeIcon className="w-5 h-5" /> }],
+    student: [{ label: 'Dashboard', href: '/student', icon: <HomeIcon className="w-5 h-5" /> }],
     lecturer: [
-      { label: 'Dashboard', href: '/lecturer', icon: <HomeIcon /> },
-      { label: 'สร้างรายวิชา', href: '/lecturer/create-subject', icon: <HomeIcon /> },
+      { label: 'Dashboard', href: '/lecturer', icon: <HomeIcon className="w-5 h-5" /> },
+      {
+        label: 'สร้างรายวิชา',
+        href: '/lecturer/create-subject',
+        icon: <HomeIcon className="w-5 h-5" />,
+      },
     ],
   }
 
@@ -51,7 +55,7 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
   return (
     <div className="w-64 h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col p-4">
       <h2 className="text-2xl font-bold mb-10 text-center text-gray-800 dark:text-white">
-        e-Clinical Case Report
+        Self-Paced Learning
       </h2>
       <ul className="menu space-y-2">
         {menuItems[userRole].map((item) => {
@@ -61,7 +65,7 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
             openMenus[item.label] ?? item.children?.some((child) => pathname.startsWith(child.href))
 
           return (
-            <li key={item.label} className="flex flex-col">
+            <li key={item.label}>
               {item.href ? (
                 <Link
                   href={item.href}
@@ -75,7 +79,7 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
                       return newState
                     })
                   }}
-                  className={`flex items-center gap-3 px-4 py-2 rounded-lg transition duration-200 ${
+                  className={`w-[215px] flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-150 ease-in-out ${
                     isActive
                       ? 'bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-medium'
                       : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-white'
