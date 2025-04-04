@@ -3,7 +3,15 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { HomeIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
+import {
+  HomeIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  BookOpenIcon,
+  DocumentTextIcon,
+  ClipboardDocumentListIcon,
+  UserGroupIcon,
+} from '@heroicons/react/24/solid'
 
 type SidebarItem = {
   label: string
@@ -38,11 +46,42 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
     admin: [{ label: 'Dashboard', href: '/admin', icon: <HomeIcon className="w-5 h-5" /> }],
     student: [{ label: 'Dashboard', href: '/student', icon: <HomeIcon className="w-5 h-5" /> }],
     lecturer: [
-      { label: 'Dashboard', href: '/lecturer', icon: <HomeIcon className="w-5 h-5" /> },
       {
-        label: 'สร้างรายวิชา',
-        href: '/lecturer/create-subject',
+        label: 'Dashboard',
+        href: '/lecturer',
         icon: <HomeIcon className="w-5 h-5" />,
+      },
+      {
+        label: 'My Subject',
+        icon: <BookOpenIcon className="w-5 h-5" />,
+        children: [
+          { label: 'Create Subject', href: '/lecturer/create-subject' },
+          { label: 'Manage Subject', href: '/lecturer/manage-subjects' },
+        ],
+      },
+      {
+        label: 'Lessons',
+        icon: <DocumentTextIcon className="w-5 h-5" />,
+        children: [
+          { label: 'Add Lesson', href: '/lecturer/add-lesson' },
+          { label: 'Manage Lessons', href: '/lecturer/lessons' },
+        ],
+      },
+      {
+        label: 'Quizzes',
+        icon: <ClipboardDocumentListIcon className="w-5 h-5" />,
+        children: [
+          { label: 'Create Quiz', href: '/lecturer/create-test' },
+          { label: 'Test Results', href: '/lecturer/test-results' },
+        ],
+      },
+      {
+        label: 'Students',
+        icon: <UserGroupIcon className="w-5 h-5" />,
+        children: [
+          { label: 'Student List', href: '/lecturer/students' },
+          { label: 'Progress Tracking', href: '/lecturer/progress-tracking' },
+        ],
       },
     ],
   }
@@ -65,12 +104,14 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
             openMenus[item.label] ?? item.children?.some((child) => pathname.startsWith(child.href))
 
           return (
-            <li key={item.label}>
+            <li key={item.label} className="flex flex-col">
               {item.href ? (
                 <Link
                   href={item.href}
                   onClick={() => {
                     closeDrawer()
+
+                    // พับเมนูย่อยทั้งหมดเมื่อกดเมนูหลักที่ไม่มี children
                     setOpenMenus((prev) => {
                       const newState: Record<string, boolean> = {}
                       Object.keys(prev).forEach((key) => {
@@ -79,7 +120,7 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
                       return newState
                     })
                   }}
-                  className={`w-[215px] flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-150 ease-in-out ${
+                  className={`w-[210px] flex items-center gap-3 px-4 py-2 rounded-lg transition duration-200 ${
                     isActive
                       ? 'bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-medium'
                       : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-white'
@@ -97,7 +138,11 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
                     {item.icon}
                     {item.label}
                   </span>
-                  {isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
+                  {isOpen ? (
+                    <ChevronDownIcon className="w-5 h-5" />
+                  ) : (
+                    <ChevronRightIcon className="w-5 h-5" />
+                  )}
                 </button>
               )}
 
