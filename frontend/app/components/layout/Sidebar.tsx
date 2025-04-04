@@ -52,34 +52,39 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
         icon: <HomeIcon className="w-5 h-5" />,
       },
       {
+        // รายวิชาของฉัน
         label: 'My Subject',
         icon: <BookOpenIcon className="w-5 h-5" />,
         children: [
-          { label: 'Create Subject', href: '/lecturer/create-subject' },
-          { label: 'Manage Subject', href: '/lecturer/manage-subjects' },
+          { label: 'Create Subject', href: '/lecturer/subject/create' },
+          { label: 'Manage Subject', href: '/lecturer/subject/manage' },
         ],
       },
       {
+        // บทเรียน
         label: 'Lessons',
         icon: <DocumentTextIcon className="w-5 h-5" />,
         children: [
-          { label: 'Add Lesson', href: '/lecturer/add-lesson' },
-          { label: 'Manage Lessons', href: '/lecturer/lessons' },
+          { label: 'Add Lesson', href: '/lecturer/lesson/create' },
+          { label: 'Manage Lessons', href: '/lecturer/lesson/manage' },
         ],
       },
       {
+        // กิจกรรม
         label: 'Quizzes',
         icon: <ClipboardDocumentListIcon className="w-5 h-5" />,
         children: [
-          { label: 'Create Quiz', href: '/lecturer/create-test' },
-          { label: 'Test Results', href: '/lecturer/test-results' },
+          { label: 'Create Quiz', href: '/lecturer/quiz/create' },
+          { label: 'Test Results', href: '/lecturer/quiz/manage' },
         ],
       },
       {
+        // นักเรียน
         label: 'Students',
         icon: <UserGroupIcon className="w-5 h-5" />,
         children: [
           { label: 'Student List', href: '/lecturer/students' },
+          // ติดตามความคืบหน้า
           { label: 'Progress Tracking', href: '/lecturer/progress-tracking' },
         ],
       },
