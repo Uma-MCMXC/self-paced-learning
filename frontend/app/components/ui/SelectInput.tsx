@@ -17,6 +17,7 @@ type SelectInputProps = {
   required?: boolean
   error?: string
   options: Option[]
+  disabled?: boolean
 }
 
 export default function SelectInput({
@@ -28,6 +29,7 @@ export default function SelectInput({
   required = false,
   error,
   options,
+  disabled = false,
 }: SelectInputProps) {
   const [search, setSearch] = useState('')
   const [isOpen, setIsOpen] = useState(false)
@@ -63,9 +65,14 @@ export default function SelectInput({
       <div
         className={clsx(
           'flex items-center justify-between dark:border-gray-600 border border-gray-300 rounded px-3 py-2 bg-white text-black dark:bg-gray-900 dark:text-white cursor-pointer',
-          { 'border-red-500': error }
+          {
+            'border-red-500': error,
+            'opacity-50 cursor-not-allowed': disabled,
+          }
         )}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!disabled) setIsOpen(!isOpen)
+        }}
       >
         <span className="truncate">{selectedLabel || 'Select...'}</span>
 

@@ -12,6 +12,7 @@ type FormInputProps = {
   error?: string
   required?: boolean
   submitted?: boolean
+  disabled?: boolean
   type?: 'text' | 'email' | 'number' | 'password' | 'tel'
 }
 
@@ -26,6 +27,7 @@ export default function FormInput({
   submitted,
   type = 'text',
   name,
+  disabled = false,
 }: FormInputProps) {
   return (
     <div className="form-control w-full">
@@ -43,14 +45,18 @@ export default function FormInput({
         onChange={onChange}
         required={required}
         className={clsx(
-          'input input-md w-full',
-          'bg-white text-gray-400 dark:bg-gray-900 dark:text-white dark:border-gray-600 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500',
+          'w-full px-3 py-2 rounded border text-md',
+          'focus:outline-none focus:ring-2 focus:ring-blue-500',
+          'bg-white text-black dark:bg-gray-900 dark:text-white',
           {
-            'input-error border-red-500': submitted && error,
+            'border-red-500': submitted && error,
+            'border-gray-300': !disabled && !(submitted && error),
+            'border-gray-200 bg-gray-50 text-gray-500 cursor-not-allowed': disabled,
           }
         )}
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-error` : undefined}
+        disabled={disabled}
       />
       {error && (
         <span id={`${id}-error`} className="text-red-500 text-sm mt-1" role="alert">
