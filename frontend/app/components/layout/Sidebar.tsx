@@ -65,7 +65,7 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
         label: 'Lessons',
         icon: <DocumentTextIcon className="w-5 h-5" />,
         children: [
-          { label: 'Add Lesson', href: '/lecturer/lesson/create' },
+          { label: 'Create Lesson', href: '/lecturer/lesson/create' },
           { label: 'Manage Lessons', href: '/lecturer/lesson/manage' },
         ],
       },

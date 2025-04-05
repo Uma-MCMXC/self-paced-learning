@@ -9,7 +9,7 @@ type PageContainerProps = {
 
 const PageContainer: React.FC<PageContainerProps> = ({ title, children }: PageContainerProps) => {
   return (
-    <div className="p-6">
+    <div className="p-5">
       <h1 className="text-2xl font-bold mb-4">{title}</h1>
       <div className="text-gray-700 dark:text-gray-300 text-base">{children}</div>
     </div>

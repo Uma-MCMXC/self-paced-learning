@@ -23,6 +23,7 @@ type ButtonProps = {
   fullWidth?: boolean
   disabled?: boolean
   onClick?: () => void
+  icon?: React.ReactNode
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -35,6 +36,7 @@ const Button: React.FC<ButtonProps> = ({
   disabled = false,
   onClick,
   type = 'submit',
+  icon,
 }) => {
   const buttonClass = clsx(
     'btn',
@@ -67,6 +69,7 @@ const Button: React.FC<ButtonProps> = ({
   ) : (
     <button className={buttonClass} onClick={onClick} disabled={disabled} type={type}>
       {label}
+      {icon && <span className="ml-2">{icon}</span>}
     </button>
   )
 }
