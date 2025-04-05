@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import clsx from 'clsx'
+import { XMarkIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid'
 
 type Option = {
   label: string
@@ -74,24 +75,32 @@ export default function SelectInput({
           if (!disabled) setIsOpen(!isOpen)
         }}
       >
-        <span className="truncate">{selectedLabel || 'Select...'}</span>
+        <div className="flex items-center justify-between w-full gap-2">
+          <span className="truncate">{selectedLabel || 'Select...'}</span>
 
-        {/* ปุ่มล้างค่า */}
-        {value && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation() // กันไม่ให้เปิด dropdown
-              onChange('')
-            }}
-            className="ml-2 text-gray-400 hover:text-red-500"
-            aria-label="Clear selection"
-          >
-            ×
-          </button>
-        )}
-
-        <span className="ml-2 text-sm text-gray-400">{isOpen ? '▲' : '▼'}</span>
+          <div className="flex items-center gap-1">
+            {value && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onChange('')
+                }}
+                className="text-gray-400 hover:text-red-500"
+                aria-label="Clear selection"
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+            )}
+            <span className="text-sm text-gray-400">
+              {isOpen ? (
+                <ChevronUpIcon className="w-4 h-4" />
+              ) : (
+                <ChevronDownIcon className="w-4 h-4" />
+              )}
+            </span>
+          </div>
+        </div>
       </div>
 
       {isOpen && (
