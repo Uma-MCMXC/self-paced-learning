@@ -25,19 +25,6 @@ type Subject = {
 const subjects: Subject[] = [
   {
     id: '1',
-    name: 'Computer Science',
-    lessons: 10,
-    course: 'Digital Innovation',
-    description: 'Focus on software development and systems analysis.',
-    createdBy: 'Admin',
-    updatedAt: '2025-04-06 13:45',
-    lecturers: [
-      { name: 'Dr. Alice', role: 'Owner' },
-      { name: 'Dr. Bob', role: 'Co-Owner' },
-    ],
-  },
-  {
-    id: '2',
     name: 'Information Technology',
     lessons: 10,
     course: 'Digital Business',
