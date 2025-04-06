@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon } from '@heroicons/react/24/solid'
 
 export type TableRow = Record<string, string | number | React.ReactNode>
 
@@ -70,7 +71,7 @@ export default function SimpleTable({
               : 'bg-white text-gray-800 dark:bg-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
           }`}
         >
-          Previous
+          <ChevronDoubleLeftIcon className="w-4 h-4" />
         </button>
 
         <span className="text-sm text-gray-800 dark:text-white">
@@ -86,7 +87,7 @@ export default function SimpleTable({
               : 'bg-white text-gray-800 dark:bg-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
           }`}
         >
-          Next
+          <ChevronDoubleRightIcon className="w-4 h-4" />
         </button>
       </div>
     </div>
