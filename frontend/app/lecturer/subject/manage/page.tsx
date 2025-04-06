@@ -16,6 +16,8 @@ type Subject = {
   lessons: number
   course: string
   description: string
+  createdBy: string
+  updatedAt: string
   lecturers: Lecturer[]
 }
 
@@ -27,6 +29,8 @@ const subjects: Subject[] = [
     lessons: 10,
     course: 'Digital Innovation',
     description: 'Focus on software development and systems analysis.',
+    createdBy: 'Admin',
+    updatedAt: '2025-04-06 13:45',
     lecturers: [
       { name: 'Dr. Alice', role: 'Owner' },
       { name: 'Dr. Bob', role: 'Co-Owner' },
@@ -38,6 +42,8 @@ const subjects: Subject[] = [
     lessons: 10,
     course: 'Digital Business',
     description: 'Covers networking, databases, and IT project management.',
+    createdBy: 'Staff User',
+    updatedAt: '2025-04-06 10:20',
     lecturers: [
       { name: 'Dr. Bob', role: 'Owner' },
       { name: 'Dr. Carol', role: 'Co-Owner' },
@@ -204,6 +210,18 @@ export default function ManageSubject() {
               )}
             </div>
           )}
+        </div>
+        <hr className="my-4 border-gray-200" />
+
+        <div className="text-xs text-gray-500">
+          <p>
+            <span className="font-semibold text-gray-600">Created By:</span>{' '}
+            {selectedSubject?.createdBy}
+          </p>
+          <p>
+            <span className="font-semibold text-gray-600">Updated At:</span>{' '}
+            {selectedSubject?.updatedAt}
+          </p>
         </div>
       </Modal>
     </PageContainer>
