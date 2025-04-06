@@ -106,6 +106,8 @@ export default function SelectInput({
       {isOpen && (
         <div className="mt-2 dark:border-gray-600 border border-gray-300 rounded bg-white text-black dark:bg-gray-800 dark:text-white shadow-md absolute z-10 w-full max-h-60 overflow-y-auto">
           <input
+            name={name}
+            required={required}
             type="text"
             placeholder="Search..."
             className="w-full px-3 py-2 border-b border-gray-200 outline-none bg-white text-black dark:bg-gray-800 dark:text-white"
