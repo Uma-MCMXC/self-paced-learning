@@ -54,11 +54,8 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
       {
         // รายวิชาของฉัน
         label: 'My Subject',
+        href: '/lecturer/subject/manage',
         icon: <BookOpenIcon className="w-5 h-5" />,
-        children: [
-          { label: 'Create Subject', href: '/lecturer/subject/create' },
-          { label: 'Manage Subject', href: '/lecturer/subject/manage' },
-        ],
       },
       {
         // บทเรียน

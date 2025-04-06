@@ -7,6 +7,7 @@ import SimpleTable, { TableRow } from '@/app/components/ui/SimpleTable'
 import { EyeIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { UserIcon, UsersIcon, BookOpenIcon } from '@heroicons/react/24/solid'
 import Modal from '@/app/components/ui/Modal'
+import Button from '@/app/components/ui/Button'
 
 type Lecturer = { name: string; role: 'Owner' | 'Co-Owner' }
 type Subject = {
@@ -123,6 +124,15 @@ export default function ManageSubject() {
       </p>
 
       <div className="w-full">
+        <div className="flex justify-end mb-5">
+          <Button
+            label="Create Subject"
+            variant="success"
+            size="md"
+            href="/lecturer/subject/create"
+          />
+        </div>
+
         <SimpleTable
           data={data}
           rowsPerPage={25}
