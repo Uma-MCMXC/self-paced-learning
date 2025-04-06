@@ -91,10 +91,10 @@ export default function ManageSubject() {
       ]),
       action: (
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-          <a href="/student/report-history/view" title="View">
+          <a href="#" title="View">
             <EyeIcon className="w-5 h-5 text-blue-500 hover:text-blue-700 cursor-pointer" />
           </a>
-          <a href="/subject/edit" title="Edit">
+          <a href="#" title="Edit">
             <PencilSquareIcon className="w-5 h-5 text-green-500 hover:text-green-700 cursor-pointer" />
           </a>
           <button title="Delete" onClick={() => alert('Confirm delete')}>

@@ -1,10 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import Navbar from '../layout/Navbar'
 import Sidebar from '../layout/Sidebar'
 
-type UserRole = 'admin' | 'student' | 'lecturer' | 'visitor'
+type UserRole = 'admin' | 'student' | 'lecturer'
 
 type AppLayoutProps = {
   children: React.ReactNode

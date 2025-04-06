@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useState, useRef } from 'react'
 import { Bars3Icon, UserIcon } from '@heroicons/react/24/solid'
 import ThemeToggle from '../hooks/ThemeToggle'
