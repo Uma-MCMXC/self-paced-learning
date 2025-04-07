@@ -9,6 +9,7 @@ import { UserIcon, UsersIcon, BookOpenIcon } from '@heroicons/react/24/solid'
 import Badge from '@/app/components/ui/Badge'
 import Modal from '@/app/components/ui/Modal'
 import Button from '@/app/components/ui/Button'
+import Toast from '@/app/components/ui/Toast'
 
 type Lecturer = { name: string; role: 'Owner' | 'Co-Owner' }
 
@@ -70,7 +71,12 @@ export default function ManageSubject() {
           : subj
       )
     )
+
+    setToastMsg('Subject status has been updated.')
+    setTimeout(() => setToastMsg(null), 3000)
   }
+
+  const [toastMsg, setToastMsg] = useState<string | null>(null)
 
   const handleView = (subject: Subject) => {
     setSelectedSubject(subject)
@@ -157,6 +163,7 @@ export default function ManageSubject() {
 
   return (
     <PageContainer title="Manage Subject">
+      {toastMsg && <Toast message={toastMsg} type="info" />}
       <div className="w-full">
         <div className="flex justify-end mb-5">
           <Button
