@@ -1,17 +1,20 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import PageContainer from '@/app/components/ui/PageContainer'
 import Button from '@/app/components/ui/Button'
 import CardContainer from '@/app/components/ui/CardContainer'
 import SectionTitle from '@/app/components/ui/SectionTitle'
+import StatusToggleButton from '@/app/components/ui/StatusToggleButton'
+import Toast from '@/app/components/ui/Toast'
 import { EyeIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline'
 
 type Lecturer = { name: string; role: 'Owner' | 'Co-Owner' }
 type Subject = {
   id: string
   subject: string
+  status: 'active' | 'inactive'
   lessons: string
   content: string
   createdBy: string
@@ -26,6 +29,7 @@ const lessons: Subject[] = [
     subject: 'Information Technology',
     lessons: 'บทที่ 1',
     content: 'Covers networking, databases, and IT project management.',
+    status: 'active',
     createdBy: 'Staff User',
     updatedAt: '2025-04-06 10:20',
     lecturers: [
@@ -39,6 +43,7 @@ const lessons: Subject[] = [
     subject: 'Information Technology',
     lessons: 'บทที่ 2',
     content: 'Advanced topics in IT project planning.',
+    status: 'active',
     createdBy: 'Staff User',
     updatedAt: '2025-04-06 10:25',
     lecturers: [
@@ -51,6 +56,7 @@ const lessons: Subject[] = [
     subject: 'Database',
     lessons: 'บทที่ 1',
     content: 'Database design and normalization.',
+    status: 'active',
     createdBy: 'Staff User',
     updatedAt: '2025-04-06 10:30',
     lecturers: [
@@ -68,8 +74,24 @@ const groupBySubject = lessons.reduce<Record<string, Subject[]>>((acc, lesson) =
 }, {})
 
 export default function GroupedSubjectLessons() {
+  const [lessonList, setLessonList] = useState<Subject[]>(lessons)
+  const [toastMsg, setToastMsg] = useState<string | null>(null)
+
+  const toggleStatus = (id: string) => {
+    setLessonList((prev) =>
+      prev.map((l) =>
+        l.id === id ? { ...l, status: l.status === 'active' ? 'inactive' : 'active' } : l
+      )
+    )
+
+    setToastMsg('Subject status has been updated.')
+    setTimeout(() => setToastMsg(null), 3000)
+  }
+
   return (
     <PageContainer title="Manage Lessons">
+      {toastMsg && <Toast message={toastMsg} type="success" />}
+
       <p className="text-sm text-base-600 mb-4">
         Below is a list of lessons with subject and actions.
       </p>
@@ -79,10 +101,15 @@ export default function GroupedSubjectLessons() {
       </div>
 
       <div className="space-y-6">
-        {Object.entries(groupBySubject).map(([subjectName, lessons]) => (
+        {Object.entries(
+          lessonList.reduce<Record<string, Subject[]>>((acc, lesson) => {
+            if (!acc[lesson.subject]) acc[lesson.subject] = []
+            acc[lesson.subject].push(lesson)
+            return acc
+          }, {})
+        ).map(([subjectName, lessons]) => (
           <CardContainer key={subjectName}>
             <SectionTitle>{subjectName}</SectionTitle>
-
             <ul className="space-y-4">
               {lessons.map((lesson) => (
                 <li
@@ -92,13 +119,16 @@ export default function GroupedSubjectLessons() {
                   <div>
                     <p className="font-medium text-gray-700">{lesson.lessons}</p>
                     <p className="text-sm text-gray-500 mb-1">{lesson.content}</p>
-
                     <div className="text-sm text-gray-700">
                       <strong>Instructors:</strong> {lesson.lecturers.map((l) => l.name).join(', ')}
                     </div>
                   </div>
 
-                  <div className="flex gap-2 mt-3 md:mt-0 md:ml-4">
+                  <div className="flex gap-2 mt-3 md:mt-0 md:ml-4 items-center">
+                    <StatusToggleButton
+                      status={lesson.status}
+                      onClick={() => toggleStatus(lesson.id)}
+                    />
                     <button title="View" onClick={() => alert(`View ${lesson.subject}`)}>
                       <EyeIcon className="w-5 h-5 text-blue-500 hover:text-blue-700 cursor-pointer" />
                     </button>

@@ -150,7 +150,7 @@ export default function ManageSubject() {
 
   return (
     <PageContainer title="Manage Subject">
-      {toastMsg && <Toast message={toastMsg} type="info" />}
+      {toastMsg && <Toast message={toastMsg} type="success" />}
       <div className="w-full">
         <div className="flex justify-end mb-5">
           <Button
