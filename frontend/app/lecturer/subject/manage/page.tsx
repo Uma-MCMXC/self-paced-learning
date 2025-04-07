@@ -10,7 +10,9 @@ import Badge from '@/app/components/ui/Badge'
 import Modal from '@/app/components/ui/Modal'
 import Button from '@/app/components/ui/Button'
 import Toast from '@/app/components/ui/Toast'
+import StatusToggleButton from '@/app/components/ui/StatusToggleButton'
 
+// type Lecturer และ type Subject
 type Lecturer = { name: string; role: 'Owner' | 'Co-Owner' }
 
 type Subject = {
@@ -60,9 +62,12 @@ const subjects: Subject[] = [
 ]
 
 export default function ManageSubject() {
+  // useState เก็บสถานะของ Modal และ Toast
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
   const [subjectList, setSubjectList] = useState<Subject[]>(subjects)
+  const [toastMsg, setToastMsg] = useState<string | null>(null)
 
+  // toggleStatus() ฟังก์ชันสำหรับเปลี่ยนสถานะวิชา
   const toggleStatus = (id: string) => {
     setSubjectList((prev) =>
       prev.map((subj) =>
@@ -76,14 +81,13 @@ export default function ManageSubject() {
     setTimeout(() => setToastMsg(null), 3000)
   }
 
-  const [toastMsg, setToastMsg] = useState<string | null>(null)
-
   const handleView = (subject: Subject) => {
     setSelectedSubject(subject)
     const modal = document.getElementById('subject_modal') as HTMLDialogElement
     modal?.showModal()
   }
 
+  // สร้างข้อมูลให้ตาราง SimpleTable
   const data: TableRow[] = subjectList.map((subject) => ({
     subjectName: (
       <div className="text-sm">
@@ -125,24 +129,7 @@ export default function ManageSubject() {
         )}
       </div>
     ),
-    status: (
-      <button
-        onClick={() => toggleStatus(subject.id)}
-        title="คลิกเพื่อสลับสถานะ"
-        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 shadow-sm border ${
-          subject.status === 'active'
-            ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
-            : 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200'
-        }`}
-      >
-        <div
-          className={`w-2 h-2 rounded-full mr-2 transition-colors ${
-            subject.status === 'active' ? 'bg-green-500' : 'bg-red-500'
-          }`}
-        ></div>
-        {subject.status === 'active' ? 'active' : 'inactive'}
-      </button>
-    ),
+    status: <StatusToggleButton status={subject.status} onClick={() => toggleStatus(subject.id)} />,
     action: (
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
         <button title="View" onClick={() => handleView(subject)}>
