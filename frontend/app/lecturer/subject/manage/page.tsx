@@ -91,19 +91,19 @@ export default function ManageSubject() {
   const data: TableRow[] = subjectList.map((subject) => ({
     subjectName: (
       <div className="text-sm">
-        <div className="font-medium text-gray-900">{subject.name}</div>
-        <div className="text-xs text-gray-500">{subject.lessons} Lessons</div>
+        <div className="font-medium text-gray-900 dark:text-gray-100">{subject.name}</div>
+        <div className="text-xs text-gray-500 dark:text-gray-400">{subject.lessons} Lessons</div>
       </div>
     ),
     lecturer: (
       <div className="text-sm space-y-3">
         {subject.lecturers.some((l) => l.role === 'Owner') && (
           <div>
-            <div className="flex items-center gap-2 font-semibold text-gray-700 mb-1">
-              <UserIcon className="w-4 h-4 text-blue-700" />
+            <div className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200 mb-1">
+              <UserIcon className="w-4 h-4 text-blue-700 dark:text-blue-400" />
               <span>Owner</span>
             </div>
-            <ul className="ml-6 list-disc text-gray-800">
+            <ul className="ml-6 list-disc text-gray-800 dark:text-gray-100">
               {subject.lecturers
                 .filter((l) => l.role === 'Owner')
                 .map((l, i) => (
@@ -114,11 +114,11 @@ export default function ManageSubject() {
         )}
         {subject.lecturers.some((l) => l.role === 'Co-Owner') && (
           <div>
-            <div className="flex items-center gap-2 font-semibold text-gray-700 mb-1">
-              <UsersIcon className="w-4 h-4 text-blue-700" />
+            <div className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200 mb-1">
+              <UserIcon className="w-4 h-4 text-blue-700 dark:text-blue-400" />
               <span>Co-Owner</span>
             </div>
-            <ul className="ml-6 list-disc text-gray-800">
+            <ul className="ml-6 list-disc text-gray-800 dark:text-gray-100">
               {subject.lecturers
                 .filter((l) => l.role === 'Co-Owner')
                 .map((l, i) => (
@@ -183,7 +183,7 @@ export default function ManageSubject() {
         onClose={() => setSelectedSubject(null)}
       >
         <div>
-          <span className="font-semibold text-gray-700">Status:</span>{' '}
+          <span className="font-semibold text-gray-700 dark:text-gray-100">Status:</span>{' '}
           <Badge
             variant={selectedSubject?.status === 'active' ? 'success' : 'error'}
             className="ml-1 badge-soft"
@@ -191,30 +191,34 @@ export default function ManageSubject() {
             {selectedSubject?.status === 'active' ? 'active' : 'inactive'}
           </Badge>
         </div>
+
         <div className="text-sm space-y-3 mt-4">
           <p>
-            <span className="font-semibold text-gray-700">Course:</span> {selectedSubject?.course}
+            <span className="font-semibold text-gray-700 dark:text-gray-100">Course:</span>{' '}
+            <span className="text-gray-600 dark:text-gray-300">{selectedSubject?.course}</span>
           </p>
           <p>
-            <span className="font-semibold text-gray-700">Subject:</span> {selectedSubject?.name}
+            <span className="font-semibold text-gray-700 dark:text-gray-100">Subject:</span>{' '}
+            <span className="text-gray-600 dark:text-gray-300">{selectedSubject?.name}</span>
           </p>
           <p>
-            <span className="font-semibold text-gray-700">Description:</span>{' '}
-            {selectedSubject?.description}
+            <span className="font-semibold text-gray-700 dark:text-gray-100">Description:</span>{' '}
+            <span className="text-gray-600 dark:text-gray-300">{selectedSubject?.description}</span>
           </p>
           <p>
-            <span className="font-semibold text-gray-700">Total Lessons:</span>{' '}
-            {selectedSubject?.lessons}
+            <span className="font-semibold text-gray-700 dark:text-gray-100">Total Lessons:</span>{' '}
+            <span className="text-gray-600 dark:text-gray-300">{selectedSubject?.lessons}</span>
           </p>
+
           {selectedSubject?.lecturers && (
             <div className="space-y-3 mt-4">
               {selectedSubject.lecturers.some((l) => l.role === 'Owner') && (
                 <div>
-                  <div className="flex items-center gap-2 font-semibold text-gray-800">
+                  <div className="flex items-center gap-2 font-semibold text-gray-800 dark:text-gray-200">
                     <UserIcon className="w-4 h-4 text-blue-700" />
                     <span>Owner</span>
                   </div>
-                  <ul className="ml-6 list-disc text-gray-600">
+                  <ul className="ml-6 list-disc text-gray-700 dark:text-gray-300">
                     {selectedSubject.lecturers
                       .filter((l) => l.role === 'Owner')
                       .map((l, i) => (
@@ -225,11 +229,11 @@ export default function ManageSubject() {
               )}
               {selectedSubject.lecturers.some((l) => l.role === 'Co-Owner') && (
                 <div>
-                  <div className="flex items-center gap-2 font-semibold text-gray-800">
+                  <div className="flex items-center gap-2 font-semibold text-gray-800 dark:text-gray-200">
                     <UsersIcon className="w-4 h-4 text-blue-700" />
                     <span>Co-Owner</span>
                   </div>
-                  <ul className="ml-6 list-disc text-gray-600">
+                  <ul className="ml-6 list-disc text-gray-700 dark:text-gray-300">
                     {selectedSubject.lecturers
                       .filter((l) => l.role === 'Co-Owner')
                       .map((l, i) => (
@@ -241,14 +245,16 @@ export default function ManageSubject() {
             </div>
           )}
         </div>
-        <hr className="my-4 border-gray-200" />
-        <div className="text-xs text-gray-500">
+
+        <hr className="my-4 border-gray-200 dark:border-gray-700" />
+
+        <div className="text-xs text-gray-500 dark:text-gray-400">
           <p>
-            <span className="font-semibold text-gray-600">Created By:</span>{' '}
+            <span className="font-semibold text-gray-600 dark:text-gray-300">Created By:</span>{' '}
             {selectedSubject?.createdBy}
           </p>
           <p>
-            <span className="font-semibold text-gray-600">Updated At:</span>{' '}
+            <span className="font-semibold text-gray-600 dark:text-gray-300">Updated At:</span>{' '}
             {selectedSubject?.updatedAt}
           </p>
         </div>

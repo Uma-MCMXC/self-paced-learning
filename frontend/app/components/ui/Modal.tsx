@@ -17,7 +17,7 @@ export default function Modal({ id, title, icon, children, onClose }: ModalProps
         {title && (
           <div className="flex items-center gap-2 border-b pb-2 mb-4">
             {icon}
-            <h3 className="font-bold text-lg text-gray-800">{title}</h3>
+            <h3 className="font-bold text-lg text-gray-800 dark:text-white">{title}</h3>
           </div>
         )}
         <div>{children}</div>

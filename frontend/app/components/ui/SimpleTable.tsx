@@ -3,7 +3,9 @@
 import React, { useState } from 'react'
 import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon } from '@heroicons/react/24/solid'
 
-export type TableRow = Record<string, string | number | React.ReactNode>
+export type TableRow = Record<string, string | number | React.ReactNode> & {
+  _isSubjectRow?: boolean
+}
 
 export default function SimpleTable({
   data,
@@ -19,6 +21,8 @@ export default function SimpleTable({
   const totalPages = Math.ceil(data.length / rowsPerPage)
   const startIndex = (currentPage - 1) * rowsPerPage
   const paginatedData = data.slice(startIndex, startIndex + rowsPerPage)
+
+  let displayIndex = (currentPage - 1) * rowsPerPage + 1
 
   const handlePrev = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1))
@@ -39,23 +43,29 @@ export default function SimpleTable({
           )}
 
           <tbody>
-            {paginatedData.map((row, index) => (
-              <tr
-                key={index}
-                className={`${
-                  index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'
-                }`}
-              >
-                <th className={`text-gray-800 dark:text-gray-100 font-semibold`}>
-                  {startIndex + index + 1}
-                </th>
-                {Object.keys(row).map((key) => (
-                  <td key={key} className="text-gray-700 dark:text-gray-100">
-                    {row[key]}
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {paginatedData.map((row, index) => {
+              const isSubjectRow = row._isSubjectRow
+              return (
+                <tr
+                  key={index}
+                  className={`${
+                    index % 2 === 0
+                      ? 'bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-100'
+                      : 'bg-gray-50 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
+                  }`}
+                >
+                  <th className="font-semibold">{!isSubjectRow ? displayIndex++ : ''}</th>
+                  {Object.entries(row).map(([key, value]) => {
+                    if (key === '_isSubjectRow') return null
+                    return (
+                      <td key={key} className="text-gray-800 dark:text-gray-100">
+                        {value}
+                      </td>
+                    )
+                  })}
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
@@ -71,7 +81,7 @@ export default function SimpleTable({
               : 'bg-white text-gray-800 dark:bg-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
           }`}
         >
-          <ChevronDoubleLeftIcon className="w-4 h-4" />
+          <ChevronDoubleLeftIcon className="w-4 h-4 dark:text-white" />
         </button>
 
         <span className="text-sm text-gray-800 dark:text-white">
@@ -87,7 +97,7 @@ export default function SimpleTable({
               : 'bg-white text-gray-800 dark:bg-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
           }`}
         >
-          <ChevronDoubleRightIcon className="w-4 h-4" />
+          <ChevronDoubleRightIcon className="w-4 h-4 dark:text-white" />
         </button>
       </div>
     </div>
