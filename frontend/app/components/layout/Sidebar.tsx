@@ -60,11 +60,8 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
       {
         // บทเรียน
         label: 'Lessons',
+        href: '/lecturer/lesson/manage',
         icon: <DocumentTextIcon className="w-5 h-5" />,
-        children: [
-          { label: 'Create Lesson', href: '/lecturer/lesson/create' },
-          { label: 'Manage Lessons', href: '/lecturer/lesson/manage' },
-        ],
       },
       {
         // กิจกรรม
