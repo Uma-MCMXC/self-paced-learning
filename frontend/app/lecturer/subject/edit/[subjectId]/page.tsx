@@ -8,6 +8,7 @@ import SelectInput from '@/app/components/ui/SelectInput'
 import TextareaInput from '@/app/components/ui/TextareaInput'
 import Button from '@/app/components/ui/Button'
 import RadioGroupInput from '@/app/components/ui/RadioGroupInput'
+import FileInput from '@/app/components/ui/FileInput'
 import { useEffect, useState } from 'react'
 import { TrashIcon } from '@heroicons/react/24/solid'
 import { useParams } from 'next/navigation'
@@ -114,6 +115,9 @@ export default function EditSubject() {
     setForm((prev) => ({ ...prev, staffId: '', staffName: '', role: '' }))
   }
 
+  const [subjectFile, setSubjectFile] = useState<File | null>(null)
+  const [submitted, setSubmitted] = useState(false)
+
   useEffect(() => {
     const currentUserInstructor = { role: '1', staffId: 'me', staffName: 'You' }
     const alreadyExists = instructors.some((inst) => inst.staffId === 'me')
@@ -153,6 +157,14 @@ export default function EditSubject() {
               required
               error={formErrors.subjectName}
             />
+            <div className="col-span-full">
+              <FileInput
+                label="Upload Image"
+                onFileChange={(file) => setSubjectFile(file)}
+                required
+                submitted={submitted}
+              />
+            </div>
             <div className="col-span-full">
               <TextareaInput
                 id="description"
