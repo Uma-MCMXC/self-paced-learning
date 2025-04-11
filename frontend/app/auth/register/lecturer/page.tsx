@@ -11,7 +11,7 @@ import RadioGroupInput from '@/app/components/ui/RadioGroupInput'
 export default function LecturerRegisterPage() {
   const [form, setForm] = useState({
     titleId: '',
-    academicPositionId: '',
+    academicTitle: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -19,8 +19,6 @@ export default function LecturerRegisterPage() {
     courseId: '',
     password: '',
     confirmPassword: '',
-    isLecturer: '',
-    isDoctor: '',
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,21 +106,26 @@ export default function LecturerRegisterPage() {
             onChange={(val) => setForm((prev) => ({ ...prev, titleId: val }))}
             required
             options={[
-              { label: 'Mr.', value: '1' },
-              { label: 'Ms.', value: '2' },
-              { label: 'Dr.', value: '3' },
+              { label: 'นาย', value: '1' },
+              { label: 'นาง', value: '2' },
+              { label: 'นางสาว', value: '3' },
             ]}
           />
-
           <SelectInput
-            label="Academic position"
-            name="academicPositionId"
-            value={form.academicPositionId}
-            onChange={(val) => setForm((prev) => ({ ...prev, academicPositionId: val }))}
+            label="Academic Title"
+            name="academicTitle"
+            value={form.academicTitle}
+            onChange={(val) => setForm((prev) => ({ ...prev, academicTitle: val }))}
+            required
             options={[
-              { label: 'Professor', value: '1' },
-              { label: 'Associate Professor', value: '2' },
-              { label: 'Assistant Professor', value: '3' },
+              { label: 'อ.', value: '1' },
+              { label: 'อ.ดร', value: '2' },
+              { label: 'อ.ผศ.', value: '3' },
+              { label: 'อ.รศ.', value: '4' },
+              { label: 'อ.ศ.', value: '5' },
+              { label: 'ผศ.ดร.', value: '6' },
+              { label: 'รศ.ดร.', value: '7' },
+              { label: 'ศ.ดร.', value: '8' },
             ]}
           />
 
@@ -141,26 +144,6 @@ export default function LecturerRegisterPage() {
             value={form.lastName}
             onChange={handleChange}
             required
-          />
-
-          <RadioGroupInput
-            name="isLecturer"
-            label="Are you a lecturer?"
-            defaultValue="1"
-            options={[
-              { value: '1', label: 'Yes' },
-              { value: '0', label: 'No' },
-            ]}
-          />
-
-          <RadioGroupInput
-            name="isDoctor"
-            label="Do you hold a doctoral degree?"
-            defaultValue="0"
-            options={[
-              { value: '1', label: 'Yes' },
-              { value: '0', label: 'No' },
-            ]}
           />
 
           <SelectInput
