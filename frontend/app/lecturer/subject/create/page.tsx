@@ -8,6 +8,7 @@ import SelectInput from '@/app/components/ui/SelectInput'
 import TextareaInput from '@/app/components/ui/TextareaInput'
 import Button from '@/app/components/ui/Button'
 import RadioGroupInput from '@/app/components/ui/RadioGroupInput'
+import FileInput from '@/app/components/ui/FileInput'
 import { useEffect, useState } from 'react'
 import { TrashIcon } from '@heroicons/react/24/solid'
 
@@ -23,6 +24,7 @@ export default function CreateSubject() {
   const [form, setForm] = useState({
     isInstructor: '1', // 1 = เลือกจาก staff, 0 = กรอกเอง
     subjectName: '',
+    subjectFile: '',
     courseId: '',
     description: '',
     staffId: '',
@@ -130,6 +132,9 @@ export default function CreateSubject() {
     }
   }, [form.isCurrentUserInstructor])
 
+  const [subjectFile, setSubjectFile] = useState<File | null>(null)
+  const [submitted, setSubmitted] = useState(false)
+
   return (
     <PageContainer title="Create Subject">
       <CardContainer>
@@ -161,6 +166,15 @@ export default function CreateSubject() {
               required
               error={formErrors.subjectName}
             />
+
+            <div className="col-span-full">
+              <FileInput
+                label="Upload Image"
+                onFileChange={(file) => setSubjectFile(file)}
+                required
+                submitted={submitted}
+              />
+            </div>
 
             <div className="col-span-full">
               <TextareaInput
