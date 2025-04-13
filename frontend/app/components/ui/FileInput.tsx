@@ -71,7 +71,7 @@ export default function FileInput({
         ref={inputRef}
         type="file"
         onChange={handleFileChange}
-        className={`file-input file-input-bordered file-input-md w-full dark:bg-gray-900 dark:text-white dark:border-gray-600 ${
+        className={`file-input file-input-bordered file-input-md w-full bg-white text-black border border-gray-300 text-md rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-white dark:border-gray-600 ${
           error ? 'border-red-500' : ''
         }`}
       />
