@@ -53,8 +53,8 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
       },
       {
         // รายวิชาของฉัน
-        label: 'My Subject',
-        href: '/lecturer/subject/manage',
+        label: 'My Course',
+        href: '/lecturer/course/manage',
         icon: <BookOpenIcon className="w-5 h-5" />,
       },
       {

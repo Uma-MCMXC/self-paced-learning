@@ -12,10 +12,10 @@ import Button from '@/app/components/ui/Button'
 import Toast from '@/app/components/ui/Toast'
 import StatusToggleButton from '@/app/components/ui/StatusToggleButton'
 
-// type Lecturer และ type Subject
+// type Lecturer และ type Course
 type Lecturer = { name: string; role: 'Owner' | 'Co-Owner' }
 
-type Subject = {
+type Course = {
   id: string
   name: string
   lessons: number
@@ -28,7 +28,7 @@ type Subject = {
 }
 
 // Mock data
-const subjects: Subject[] = [
+const Courses: Course[] = [
   {
     id: '1',
     name: 'Information Technology',
@@ -61,50 +61,50 @@ const subjects: Subject[] = [
   },
 ]
 
-export default function ManageSubject() {
+export default function ManageCourse() {
   // useState เก็บสถานะของ Modal และ Toast
-  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
-  const [subjectList, setSubjectList] = useState<Subject[]>(subjects)
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
+  const [courseList, setCourseList] = useState<Course[]>(Courses)
   const [toastMsg, setToastMsg] = useState<string | null>(null)
 
   // toggleStatus() ฟังก์ชันสำหรับเปลี่ยนสถานะวิชา
   const toggleStatus = (id: string) => {
-    setSubjectList((prev) =>
-      prev.map((subj) =>
-        subj.id === id
-          ? { ...subj, status: subj.status === 'active' ? 'inactive' : 'active' }
-          : subj
+    setCourseList((prev) =>
+      prev.map((course) =>
+        course.id === id
+          ? { ...course, status: course.status === 'active' ? 'inactive' : 'active' }
+          : course
       )
     )
 
-    setToastMsg('Subject status has been updated.')
+    setToastMsg('Course status has been updated.')
     setTimeout(() => setToastMsg(null), 3000)
   }
 
-  const handleView = (subject: Subject) => {
-    setSelectedSubject(subject)
-    const modal = document.getElementById('subject_modal') as HTMLDialogElement
+  const handleView = (course: Course) => {
+    setSelectedCourse(course)
+    const modal = document.getElementById('course_modal') as HTMLDialogElement
     modal?.showModal()
   }
 
   // สร้างข้อมูลให้ตาราง SimpleTable
-  const data: TableRow[] = subjectList.map((subject) => ({
-    subjectName: (
+  const data: TableRow[] = courseList.map((course) => ({
+    courseName: (
       <div className="text-sm">
-        <div className="font-medium text-gray-900 dark:text-gray-100">{subject.name}</div>
-        <div className="text-xs text-gray-500 dark:text-gray-400">{subject.lessons} Lessons</div>
+        <div className="font-medium text-gray-900 dark:text-gray-100">{course.name}</div>
+        <div className="text-xs text-gray-500 dark:text-gray-400">{course.lessons} Lessons</div>
       </div>
     ),
     lecturer: (
       <div className="text-sm space-y-3">
-        {subject.lecturers.some((l) => l.role === 'Owner') && (
+        {course.lecturers.some((l) => l.role === 'Owner') && (
           <div>
             <div className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200 mb-1">
               <UserIcon className="w-4 h-4 text-blue-700 dark:text-blue-400" />
               <span>Owner</span>
             </div>
             <ul className="ml-6 list-disc text-gray-800 dark:text-gray-100">
-              {subject.lecturers
+              {course.lecturers
                 .filter((l) => l.role === 'Owner')
                 .map((l, i) => (
                   <li key={`owner-${i}`}>{l.name}</li>
@@ -112,14 +112,14 @@ export default function ManageSubject() {
             </ul>
           </div>
         )}
-        {subject.lecturers.some((l) => l.role === 'Co-Owner') && (
+        {course.lecturers.some((l) => l.role === 'Co-Owner') && (
           <div>
             <div className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200 mb-1">
               <UserIcon className="w-4 h-4 text-blue-700 dark:text-blue-400" />
               <span>Co-Owner</span>
             </div>
             <ul className="ml-6 list-disc text-gray-800 dark:text-gray-100">
-              {subject.lecturers
+              {course.lecturers
                 .filter((l) => l.role === 'Co-Owner')
                 .map((l, i) => (
                   <li key={`coowner-${i}`}>{l.name}</li>
@@ -129,18 +129,18 @@ export default function ManageSubject() {
         )}
       </div>
     ),
-    status: <StatusToggleButton status={subject.status} onClick={() => toggleStatus(subject.id)} />,
+    status: <StatusToggleButton status={course.status} onClick={() => toggleStatus(course.id)} />,
     action: (
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-        <button title="View" onClick={() => handleView(subject)}>
+        <button title="View" onClick={() => handleView(course)}>
           <EyeIcon className="w-5 h-5 text-blue-500 hover:text-blue-700 cursor-pointer" />
         </button>
-        <Link href={`/lecturer/subject/edit/${subject.id}`} title="Edit">
+        <Link href={`/lecturer/course/edit/${course.id}`} title="Edit">
           <PencilSquareIcon className="w-5 h-5 text-green-500 hover:text-green-700 cursor-pointer" />
         </Link>
         <button
           title="Delete"
-          onClick={() => confirm(`Delete subject "${subject.name}"?`) && alert('Deleted')}
+          onClick={() => confirm(`Delete Course "${course.name}"?`) && alert('Deleted')}
         >
           <TrashIcon className="w-5 h-5 text-red-500 hover:text-red-700 cursor-pointer" />
         </button>
@@ -149,15 +149,15 @@ export default function ManageSubject() {
   }))
 
   return (
-    <PageContainer title="Manage Subject">
+    <PageContainer title="Manage Course">
       {toastMsg && <Toast message={toastMsg} type="success" />}
       <div className="w-full">
         <div className="flex justify-end mb-5">
           <Button
-            label="Create Subject"
+            label="Create Course"
             variant="success"
             size="md"
-            href="/lecturer/subject/create"
+            href="/lecturer/course/create"
           />
         </div>
 
@@ -167,7 +167,7 @@ export default function ManageSubject() {
           thead={
             <tr>
               <th className="w-6">#</th>
-              <th>Subject</th>
+              <th>Course</th>
               <th>Lecturer</th>
               <th className="min-w-[150px]">Status</th>
               <th>Action</th>
@@ -177,49 +177,49 @@ export default function ManageSubject() {
       </div>
 
       <Modal
-        id="subject_modal"
+        id="course_modal"
         icon={<BookOpenIcon className="w-7 h-7" />}
-        title="Subject Info"
-        onClose={() => setSelectedSubject(null)}
+        title="Course Info"
+        onClose={() => setSelectedCourse(null)}
       >
         <div>
           <span className="font-semibold text-gray-700 dark:text-gray-100">Status:</span>{' '}
           <Badge
-            variant={selectedSubject?.status === 'active' ? 'success' : 'error'}
+            variant={selectedCourse?.status === 'active' ? 'success' : 'error'}
             className="ml-1 badge-soft"
           >
-            {selectedSubject?.status === 'active' ? 'active' : 'inactive'}
+            {selectedCourse?.status === 'active' ? 'active' : 'inactive'}
           </Badge>
         </div>
 
         <div className="text-sm space-y-3 mt-4">
           <p>
             <span className="font-semibold text-gray-700 dark:text-gray-100">Course:</span>{' '}
-            <span className="text-gray-600 dark:text-gray-300">{selectedSubject?.course}</span>
+            <span className="text-gray-600 dark:text-gray-300">{selectedCourse?.course}</span>
           </p>
           <p>
-            <span className="font-semibold text-gray-700 dark:text-gray-100">Subject:</span>{' '}
-            <span className="text-gray-600 dark:text-gray-300">{selectedSubject?.name}</span>
+            <span className="font-semibold text-gray-700 dark:text-gray-100">Course:</span>{' '}
+            <span className="text-gray-600 dark:text-gray-300">{selectedCourse?.name}</span>
           </p>
           <p>
             <span className="font-semibold text-gray-700 dark:text-gray-100">Description:</span>{' '}
-            <span className="text-gray-600 dark:text-gray-300">{selectedSubject?.description}</span>
+            <span className="text-gray-600 dark:text-gray-300">{selectedCourse?.description}</span>
           </p>
           <p>
             <span className="font-semibold text-gray-700 dark:text-gray-100">Total Lessons:</span>{' '}
-            <span className="text-gray-600 dark:text-gray-300">{selectedSubject?.lessons}</span>
+            <span className="text-gray-600 dark:text-gray-300">{selectedCourse?.lessons}</span>
           </p>
 
-          {selectedSubject?.lecturers && (
+          {selectedCourse?.lecturers && (
             <div className="space-y-3 mt-4">
-              {selectedSubject.lecturers.some((l) => l.role === 'Owner') && (
+              {selectedCourse.lecturers.some((l) => l.role === 'Owner') && (
                 <div>
                   <div className="flex items-center gap-2 font-semibold text-gray-800 dark:text-gray-200">
                     <UserIcon className="w-4 h-4 text-blue-700" />
                     <span>Owner</span>
                   </div>
                   <ul className="ml-6 list-disc text-gray-700 dark:text-gray-300">
-                    {selectedSubject.lecturers
+                    {selectedCourse.lecturers
                       .filter((l) => l.role === 'Owner')
                       .map((l, i) => (
                         <li key={`owner-${i}`}>{l.name}</li>
@@ -227,14 +227,14 @@ export default function ManageSubject() {
                   </ul>
                 </div>
               )}
-              {selectedSubject.lecturers.some((l) => l.role === 'Co-Owner') && (
+              {selectedCourse.lecturers.some((l) => l.role === 'Co-Owner') && (
                 <div>
                   <div className="flex items-center gap-2 font-semibold text-gray-800 dark:text-gray-200">
                     <UsersIcon className="w-4 h-4 text-blue-700" />
                     <span>Co-Owner</span>
                   </div>
                   <ul className="ml-6 list-disc text-gray-700 dark:text-gray-300">
-                    {selectedSubject.lecturers
+                    {selectedCourse.lecturers
                       .filter((l) => l.role === 'Co-Owner')
                       .map((l, i) => (
                         <li key={`coowner-${i}`}>{l.name}</li>
@@ -251,11 +251,11 @@ export default function ManageSubject() {
         <div className="text-xs text-gray-500 dark:text-gray-400">
           <p>
             <span className="font-semibold text-gray-600 dark:text-gray-300">Created By:</span>{' '}
-            {selectedSubject?.createdBy}
+            {selectedCourse?.createdBy}
           </p>
           <p>
             <span className="font-semibold text-gray-600 dark:text-gray-300">Updated At:</span>{' '}
-            {selectedSubject?.updatedAt}
+            {selectedCourse?.updatedAt}
           </p>
         </div>
       </Modal>

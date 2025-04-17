@@ -11,21 +11,23 @@ import RadioGroupInput from '@/app/components/ui/RadioGroupInput'
 import FileInput from '@/app/components/ui/FileInput'
 import { useEffect, useState } from 'react'
 import { TrashIcon } from '@heroicons/react/24/solid'
+import { useParams } from 'next/navigation'
 
-export default function CreateSubject() {
-  // ตัวอย่างรายชื่อ staff สำหรับให้เลือก
+export default function EditCourse() {
+  const rawParams = useParams()
+  const courseId = Array.isArray(rawParams.courseId) ? rawParams.courseId[0] : rawParams.courseId
+
   const staffList = [
     { label: 'Dr. Alice', value: '1' },
     { label: 'Dr. Bob', value: '2' },
     { label: 'Dr. Carol', value: '3' },
   ]
 
-  // State หลักของแบบฟอร์ม
   const [form, setForm] = useState({
-    isInstructor: '1', // 1 = เลือกจาก staff, 0 = กรอกเอง
-    subjectName: '',
-    subjectFile: '',
-    courseId: '',
+    isInstructor: '1',
+    courseName: '',
+    courseFee: '',
+    categoryId: '',
     description: '',
     staffId: '',
     staffName: '',
@@ -33,56 +35,86 @@ export default function CreateSubject() {
     isCurrentUserInstructor: false,
   })
 
-  // รายชื่อ instructor ที่ถูกเพิ่มเข้ารายวิชา
   const [instructors, setInstructors] = useState<
     { role: string; staffId?: string; staffName?: string }[]
   >([])
 
-  // handle input ทั่วไป
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({})
+
+  useEffect(() => {
+    if (typeof courseId !== 'string') return alert('Invalid Course ID')
+
+    // mock data lookup จาก id
+    const mockCourses = [
+      {
+        id: '1',
+        name: 'Computer Science',
+        categoryId: '1',
+        description: 'Focus on software development and systems analysis.',
+        instructors: [
+          { role: '1', staffId: '1', staffName: 'Dr. Alice' },
+          { role: '0', staffId: '2', staffName: 'Dr. Bob' },
+        ],
+      },
+      {
+        id: '2',
+        name: 'Information Technology',
+        categoryId: '2',
+        description: 'Focus on networks and databases.',
+        instructors: [
+          { role: '1', staffId: '2', staffName: 'Dr. Bob' },
+          { role: '0', staffId: '3', staffName: 'Dr. Carol' },
+        ],
+      },
+    ]
+
+    const selected = mockCourses.find((c) => c.id === courseId)
+    if (!selected) {
+      return alert('Course not found')
+    }
+
+    setForm({
+      isInstructor: '1',
+      courseName: selected.name,
+      courseFee: '0',
+      categoryId: selected.categoryId,
+      description: selected.description,
+      staffId: '',
+      staffName: '',
+      role: '',
+      isCurrentUserInstructor: false,
+    })
+
+    setInstructors(selected.instructors)
+  }, [courseId])
+
+  const validateForm = () => {
+    const errors: { [key: string]: string } = {}
+    if (!form.categoryId) errors.categoryId = 'This field is required'
+    if (!form.courseName.trim()) errors.courseName = 'This field is required'
+    return errors
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  // ตรวจสอบข้อมูลฟอร์ม
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({})
-
-  const validateForm = () => {
-    const errors: { [key: string]: string } = {}
-
-    if (!form.courseId) {
-      errors.courseId = 'This field is required'
-    }
-
-    if (!form.subjectName.trim()) {
-      errors.subjectName = 'This field is required'
-    }
-
-    return errors
-  }
-
-  // เมื่อกด Submit ฟอร์ม
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
     const errors = validateForm()
     setFormErrors(errors)
-
     if (Object.keys(errors).length > 0) return
-
     if (instructors.length === 0 && !form.isCurrentUserInstructor) {
       return alert('Please add at least one instructor or mark yourself as instructor')
     }
-
-    console.log({ ...form, instructors })
+    console.log('Submitting update:', { ...form, instructors })
   }
 
-  // เปลี่ยนวิธีเพิ่มอาจารย์ (staff หรือ กรอกเอง)
   const handleRadioChange = (val: string) => {
     setForm((prev) => ({ ...prev, isInstructor: val }))
   }
 
-  // เพิ่ม instructor ใหม่
   const handleAddInstructor = () => {
     if (form.role === '') return alert('Please select role')
     if (form.isInstructor === '1' && form.staffId === '')
@@ -107,23 +139,14 @@ export default function CreateSubject() {
     if (isDuplicate) return alert('This instructor already exists.')
 
     setInstructors((prev) => [...prev, newInstructor])
-
-    // ล้างค่า input หลังเพิ่ม
-    setForm((prev) => ({
-      ...prev,
-      staffId: '',
-      staffName: '',
-      role: '',
-    }))
+    setForm((prev) => ({ ...prev, staffId: '', staffName: '', role: '' }))
   }
 
-  // ถ้าผู้ใช้ติ๊กว่าเป็น instructor เอง ให้เพิ่มเข้า list
+  const [courseFile, setCourseFile] = useState<File | null>(null)
+  const [submitted, setSubmitted] = useState(false)
+
   useEffect(() => {
-    const currentUserInstructor = {
-      role: '1',
-      staffId: 'me',
-      staffName: 'You',
-    }
+    const currentUserInstructor = { role: '1', staffId: 'me', staffName: 'You' }
     const alreadyExists = instructors.some((inst) => inst.staffId === 'me')
     if (form.isCurrentUserInstructor && !alreadyExists) {
       setInstructors((prev) => [...prev, currentUserInstructor])
@@ -132,55 +155,56 @@ export default function CreateSubject() {
     }
   }, [form.isCurrentUserInstructor])
 
-  const [subjectFile, setSubjectFile] = useState<File | null>(null)
-  const [submitted, setSubmitted] = useState(false)
-
   return (
-    <PageContainer title="Create Subject">
+    <PageContainer title="Edit Course">
       <CardContainer>
-        <SectionTitle>Input Subject Information</SectionTitle>
+        <SectionTitle>Input Course Information</SectionTitle>
         <form onSubmit={handleSubmit}>
-          {/* ส่วนกรอกข้อมูลรายวิชา */}
           <div className="grid grid-cols-2 gap-4">
             <SelectInput
-              label="Course"
-              name="courseId"
-              value={form.courseId}
-              onChange={(val) => setForm((prev) => ({ ...prev, courseId: val }))}
+              label="Category"
+              name="categoryId"
+              value={form.categoryId}
+              onChange={(val) => setForm((prev) => ({ ...prev, categoryId: val }))}
               required
               options={[
                 { label: 'Computer Science', value: '1' },
                 { label: 'Information Technology', value: '2' },
                 { label: 'Software Engineering', value: '3' },
               ]}
-              error={formErrors.courseId}
+              error={formErrors.categoryId}
             />
-
             <FormInput
-              name="subjectName"
-              id="subjectName"
+              name="courseName"
+              id="courseName"
               type="text"
-              label="Subject Name"
-              value={form.subjectName}
+              label="Course Name"
+              value={form.courseName}
               onChange={handleChange}
               required
-              error={formErrors.subjectName}
+              error={formErrors.courseName}
             />
-
-            <div className="col-span-full">
-              <FileInput
-                label="Upload Image"
-                onFileChange={(file) => setSubjectFile(file)}
-                required
-                submitted={submitted}
-              />
-            </div>
-
+            <FileInput
+              label="Upload Image"
+              onFileChange={(file) => setCourseFile(file)}
+              required
+              submitted={submitted}
+            />
+            <FormInput
+              name="courseFee"
+              id="courseFee"
+              type="number"
+              label="Course Fee"
+              value={form.courseFee}
+              onChange={handleChange}
+              required
+              error={formErrors.courseFee}
+            />
             <div className="col-span-full">
               <TextareaInput
                 id="description"
                 label="Description"
-                placeholder="Tell us about yourself..."
+                placeholder="Tell us about the Course..."
                 value={form.description}
                 onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
                 maxLength={5000}
@@ -188,13 +212,11 @@ export default function CreateSubject() {
             </div>
           </div>
 
-          {/* กลุ่มเพิ่ม Instructor */}
           <fieldset className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 mt-6">
             <legend className="text-lg font-semibold text-gray-700 dark:text-white">
-              Add Instructor
+              Edit Instructor
             </legend>
 
-            {/* ตัวเลือกเพิ่มจาก staff หรือกรอกเอง */}
             <div className="flex items-center gap-4 mb-4">
               <RadioGroupInput
                 name="isInstructor"
@@ -208,7 +230,6 @@ export default function CreateSubject() {
               />
             </div>
 
-            {/* 🔹 ฟอร์มเลือกบทบาท + ชื่ออาจารย์ */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <SelectInput
                 label="Role"
@@ -220,7 +241,6 @@ export default function CreateSubject() {
                   { label: 'Co-Owner', value: '0' },
                 ]}
               />
-
               <SelectInput
                 label="Select from staff"
                 name="staffId"
@@ -230,7 +250,6 @@ export default function CreateSubject() {
                 required={form.isInstructor === '1'}
                 options={staffList}
               />
-
               <FormInput
                 name="staffName"
                 id="staffName"
@@ -243,7 +262,6 @@ export default function CreateSubject() {
               />
             </div>
 
-            {/* Checkbox ตัวเองเป็นอาจารย์ */}
             <div className="flex items-center mt-4">
               <input
                 type="checkbox"
@@ -268,7 +286,6 @@ export default function CreateSubject() {
               />
             </div>
 
-            {/* รายชื่อที่ถูกเพิ่ม */}
             <div className="mt-6 space-y-2">
               {instructors.map((inst, index) => (
                 <div
@@ -294,7 +311,7 @@ export default function CreateSubject() {
           </fieldset>
 
           <div className="mt-8 text-end">
-            <Button label="Create Subject" variant="info" size="md" />
+            <Button label="Update Course" variant="info" size="md" type="submit" />
           </div>
         </form>
       </CardContainer>
