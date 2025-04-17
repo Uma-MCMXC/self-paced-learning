@@ -9,20 +9,19 @@ import TextareaInput from '@/app/components/ui/TextareaInput'
 import Button from '@/app/components/ui/Button'
 import RadioGroupInput from '@/app/components/ui/RadioGroupInput'
 import FileInput from '@/app/components/ui/FileInput'
+import Toast from '@/app/components/ui/Toast'
 import { useEffect, useState } from 'react'
 import { TrashIcon } from '@heroicons/react/24/solid'
 
 export default function CreateCourse() {
-  // ตัวอย่างรายชื่อ staff สำหรับให้เลือก
   const staffList = [
     { label: 'Dr. Alice', value: '1' },
     { label: 'Dr. Bob', value: '2' },
     { label: 'Dr. Carol', value: '3' },
   ]
 
-  // State หลักของแบบฟอร์ม
   const [form, setForm] = useState({
-    isInstructor: '1', // 1 = เลือกจาก staff, 0 = กรอกเอง
+    isInstructor: '1',
     courseName: '',
     courseFile: '',
     categoryId: '',
@@ -34,62 +33,47 @@ export default function CreateCourse() {
     courseFee: '0',
   })
 
-  // รายชื่อ instructor ที่ถูกเพิ่มเข้ารายวิชา
   const [instructors, setInstructors] = useState<
     { role: string; staffId?: string; staffName?: string }[]
   >([])
 
-  // handle input ทั่วไป
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({})
+  const [toastMsg, setToastMsg] = useState<string | null>(null)
+
+  const validateForm = () => {
+    const errors: { [key: string]: string } = {}
+    if (!form.categoryId) errors.categoryId = 'This field is required'
+    if (!form.courseName.trim()) errors.courseName = 'This field is required'
+    return errors
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  // ตรวจสอบข้อมูลฟอร์ม
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({})
-
-  const validateForm = () => {
-    const errors: { [key: string]: string } = {}
-
-    if (!form.categoryId) {
-      errors.courseId = 'This field is required'
-    }
-
-    if (!form.courseName.trim()) {
-      errors.CourseName = 'This field is required'
-    }
-
-    return errors
-  }
-
-  // เมื่อกด Submit ฟอร์ม
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
     const errors = validateForm()
     setFormErrors(errors)
-
     if (Object.keys(errors).length > 0) return
-
     if (instructors.length === 0 && !form.isCurrentUserInstructor) {
-      return alert('Please add at least one instructor or mark yourself as instructor')
+      setToastMsg('Please add at least one instructor or mark yourself as instructor')
+      return
     }
-
     console.log({ ...form, instructors })
   }
 
-  // เปลี่ยนวิธีเพิ่มอาจารย์ (staff หรือ กรอกเอง)
   const handleRadioChange = (val: string) => {
     setForm((prev) => ({ ...prev, isInstructor: val }))
   }
 
-  // เพิ่ม instructor ใหม่
   const handleAddInstructor = () => {
-    if (form.role === '') return alert('Please select role')
+    if (form.role === '') return setToastMsg('Please select role')
     if (form.isInstructor === '1' && form.staffId === '')
-      return alert('Please select a staff member')
+      return setToastMsg('Please select a staff member')
     if (form.isInstructor === '0' && form.staffName.trim() === '')
-      return alert('Please enter a name')
+      return setToastMsg('Please enter a name')
 
     const newInstructor = {
       role: form.role,
@@ -105,20 +89,12 @@ export default function CreateCourse() {
         (inst.staffId && inst.staffId === newInstructor.staffId) ||
         (inst.staffName && inst.staffName === newInstructor.staffName)
     )
-    if (isDuplicate) return alert('This instructor already exists.')
+    if (isDuplicate) return setToastMsg('This instructor already exists.')
 
     setInstructors((prev) => [...prev, newInstructor])
-
-    // ล้างค่า input หลังเพิ่ม
-    setForm((prev) => ({
-      ...prev,
-      staffId: '',
-      staffName: '',
-      role: '',
-    }))
+    setForm((prev) => ({ ...prev, staffId: '', staffName: '', role: '' }))
   }
 
-  // ถ้าผู้ใช้ติ๊กว่าเป็น instructor เอง ให้เพิ่มเข้า list
   useEffect(() => {
     const currentUserInstructor = {
       role: '1',
@@ -133,15 +109,22 @@ export default function CreateCourse() {
     }
   }, [form.isCurrentUserInstructor])
 
+  useEffect(() => {
+    if (toastMsg) {
+      const timeout = setTimeout(() => setToastMsg(null), 3000)
+      return () => clearTimeout(timeout)
+    }
+  }, [toastMsg])
+
   const [courseFile, setCourseFile] = useState<File | null>(null)
   const [submitted, setSubmitted] = useState(false)
 
   return (
     <PageContainer title="Create Course">
+      {toastMsg && <Toast message={toastMsg} type="error" />}
       <CardContainer>
         <SectionTitle>Input Course Information</SectionTitle>
         <form onSubmit={handleSubmit}>
-          {/* ส่วนกรอกข้อมูลรายวิชา */}
           <div className="grid grid-cols-2 gap-4">
             <SelectInput
               label="Category"
@@ -156,7 +139,6 @@ export default function CreateCourse() {
               ]}
               error={formErrors.categoryId}
             />
-
             <FormInput
               name="courseName"
               id="courseName"
@@ -167,14 +149,12 @@ export default function CreateCourse() {
               required
               error={formErrors.courseName}
             />
-
             <FileInput
               label="Upload Image"
               onFileChange={(file) => setCourseFile(file)}
               required
               submitted={submitted}
             />
-
             <FormInput
               name="courseFee"
               id="courseFee"
@@ -185,7 +165,6 @@ export default function CreateCourse() {
               required
               error={formErrors.courseFee}
             />
-
             <div className="col-span-full">
               <TextareaInput
                 id="description"
@@ -198,13 +177,10 @@ export default function CreateCourse() {
             </div>
           </div>
 
-          {/* กลุ่มเพิ่ม Instructor */}
           <fieldset className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 mt-6">
             <legend className="text-lg font-semibold text-gray-700 dark:text-white">
               Add Instructor
             </legend>
-
-            {/* ตัวเลือกเพิ่มจาก staff หรือกรอกเอง */}
             <div className="flex items-center gap-4 mb-4">
               <RadioGroupInput
                 name="isInstructor"
@@ -217,8 +193,6 @@ export default function CreateCourse() {
                 ]}
               />
             </div>
-
-            {/* 🔹 ฟอร์มเลือกบทบาท + ชื่ออาจารย์ */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <SelectInput
                 label="Role"
@@ -230,7 +204,6 @@ export default function CreateCourse() {
                   { label: 'Co-Owner', value: '0' },
                 ]}
               />
-
               <SelectInput
                 label="Select from staff"
                 name="staffId"
@@ -240,7 +213,6 @@ export default function CreateCourse() {
                 required={form.isInstructor === '1'}
                 options={staffList}
               />
-
               <FormInput
                 name="staffName"
                 id="staffName"
@@ -252,8 +224,6 @@ export default function CreateCourse() {
                 required={form.isInstructor === '0'}
               />
             </div>
-
-            {/* Checkbox ตัวเองเป็นอาจารย์ */}
             <div className="flex items-center mt-4">
               <input
                 type="checkbox"
@@ -267,7 +237,6 @@ export default function CreateCourse() {
                 I am one of the instructors
               </label>
             </div>
-
             <div className="mt-4 text-end">
               <Button
                 label="Add Instructor"
@@ -277,8 +246,6 @@ export default function CreateCourse() {
                 type="button"
               />
             </div>
-
-            {/* รายชื่อที่ถูกเพิ่ม */}
             <div className="mt-6 space-y-2">
               {instructors.map((inst, index) => (
                 <div
@@ -302,7 +269,6 @@ export default function CreateCourse() {
               ))}
             </div>
           </fieldset>
-
           <div className="mt-8 text-end">
             <Button label="Create Course" variant="info" size="md" />
           </div>
