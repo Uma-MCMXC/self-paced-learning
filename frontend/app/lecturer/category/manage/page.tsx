@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useRef } from 'react'
-import Link from 'next/link'
 import PageContainer from '@/app/components/ui/PageContainer'
 import SimpleTable, { TableRow } from '@/app/components/ui/SimpleTable'
 import { PencilSquareIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline'
@@ -10,6 +9,7 @@ import Toast from '@/app/components/ui/Toast'
 import Modal from '@/app/components/ui/Modal'
 import StatusToggleButton from '@/app/components/ui/StatusToggleButton'
 import FormInput from '@/app/components/ui/FormInput'
+import ConfirmModal from '@/app/components/ui/ConfirmModal'
 
 type Category = {
   id: string
@@ -42,7 +42,9 @@ export default function ManageCategory() {
   const [formName, setFormName] = useState('')
   const [formError, setFormError] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
   const modalRef = useRef<HTMLDialogElement | null>(null)
+  const confirmRef = useRef<HTMLDialogElement | null>(null)
 
   const openCreateModal = () => {
     setFormName('')
@@ -80,13 +82,11 @@ export default function ManageCategory() {
     }
 
     if (editingId) {
-      // Edit mode
       setCategoryList((prev) =>
         prev.map((cat) => (cat.id === editingId ? { ...cat, name: formName } : cat))
       )
       setToastMsg('Category updated successfully.')
     } else {
-      // Create mode
       const newCategory: Category = {
         id: Date.now().toString(),
         name: formName,
@@ -104,6 +104,19 @@ export default function ManageCategory() {
     setTimeout(() => setToastMsg(null), 3000)
   }
 
+  const handleConfirmDelete = () => {
+    if (!selectedCategory) return
+    setCategoryList((prev) => prev.filter((c) => c.id !== selectedCategory.id))
+    setToastMsg(`Category "${selectedCategory.name}" deleted.`)
+    confirmRef.current?.close()
+    setTimeout(() => setToastMsg(null), 3000)
+  }
+
+  const handleDeleteClick = (category: Category) => {
+    setSelectedCategory(category)
+    confirmRef.current?.showModal()
+  }
+
   const data: TableRow[] = categoryList.map((category) => ({
     categoryName: (
       <div className="text-sm">
@@ -118,9 +131,7 @@ export default function ManageCategory() {
         <button onClick={() => openEditModal(category)}>
           <PencilSquareIcon className="w-5 h-5 text-green-500 hover:text-green-700 cursor-pointer" />
         </button>
-        <button
-          onClick={() => confirm(`Delete Category \"${category.name}\"?`) && alert('Deleted')}
-        >
+        <button onClick={() => handleDeleteClick(category)}>
           <TrashIcon className="w-5 h-5 text-red-500 hover:text-red-700 cursor-pointer" />
         </button>
       </div>
@@ -181,6 +192,16 @@ export default function ManageCategory() {
         </div>
         <hr className="my-4 border-gray-200 dark:border-gray-700" />
       </Modal>
+
+      <ConfirmModal
+        id="confirm_delete_category"
+        ref={confirmRef}
+        title="Delete Category"
+        message={`Are you sure you want to delete "${selectedCategory?.name}"?`}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => confirmRef.current?.close()}
+        size="sm"
+      />
     </PageContainer>
   )
 }

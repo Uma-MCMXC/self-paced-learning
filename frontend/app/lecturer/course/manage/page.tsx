@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import Link from 'next/link'
 import PageContainer from '@/app/components/ui/PageContainer'
 import SimpleTable, { TableRow } from '@/app/components/ui/SimpleTable'
@@ -11,6 +11,7 @@ import Modal from '@/app/components/ui/Modal'
 import Button from '@/app/components/ui/Button'
 import Toast from '@/app/components/ui/Toast'
 import StatusToggleButton from '@/app/components/ui/StatusToggleButton'
+import ConfirmModal from '@/app/components/ui/ConfirmModal'
 
 // type Lecturer และ type Course
 type Lecturer = { name: string; role: 'Owner' | 'Co-Owner' }
@@ -87,6 +88,24 @@ export default function ManageCourse() {
     modal?.showModal()
   }
 
+  // การลบ
+  const [deletingCourse, setDeletingCourse] = useState<Course | null>(null)
+  const confirmRef = useRef<HTMLDialogElement>(null)
+
+  const handleDeleteClick = (course: Course) => {
+    setDeletingCourse(course)
+    confirmRef.current?.showModal()
+  }
+
+  const handleDeleteConfirmed = () => {
+    if (deletingCourse) {
+      setCourseList((prev) => prev.filter((c) => c.id !== deletingCourse.id))
+      setToastMsg(`Course "${deletingCourse.name}" has been deleted.`)
+      setDeletingCourse(null)
+      setTimeout(() => setToastMsg(null), 3000)
+    }
+  }
+
   // สร้างข้อมูลให้ตาราง SimpleTable
   const data: TableRow[] = courseList.map((course) => ({
     courseName: (
@@ -138,10 +157,7 @@ export default function ManageCourse() {
         <Link href={`/lecturer/course/edit/${course.id}`} title="Edit">
           <PencilSquareIcon className="w-5 h-5 text-green-500 hover:text-green-700 cursor-pointer" />
         </Link>
-        <button
-          title="Delete"
-          onClick={() => confirm(`Delete Course "${course.name}"?`) && alert('Deleted')}
-        >
+        <button title="Delete" onClick={() => handleDeleteClick(course)}>
           <TrashIcon className="w-5 h-5 text-red-500 hover:text-red-700 cursor-pointer" />
         </button>
       </div>
@@ -259,6 +275,16 @@ export default function ManageCourse() {
           </p>
         </div>
       </Modal>
+
+      <ConfirmModal
+        id="confirm_delete_course"
+        ref={confirmRef}
+        title="Delete Course"
+        message={`Are you sure you want to delete "${deletingCourse?.name}"?`}
+        onConfirm={handleDeleteConfirmed}
+        onCancel={() => confirmRef.current?.close()}
+        size="sm"
+      />
     </PageContainer>
   )
 }
