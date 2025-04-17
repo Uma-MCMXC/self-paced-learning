@@ -7,7 +7,8 @@ import Button from '@/app/components/ui/Button'
 import FormInput from '@/app/components/ui/FormInput'
 import SelectInput from '@/app/components/ui/SelectInput'
 import SectionTitle from '@/app/components/ui/SectionTitle'
-import RadioGroupInput from '@/app/components/ui/RadioGroupInput'
+import Badge from '@/app/components/ui/Badge'
+
 export default function LecturerRegisterPage() {
   const [form, setForm] = useState({
     titleId: '',
@@ -15,8 +16,8 @@ export default function LecturerRegisterPage() {
     firstName: '',
     lastName: '',
     email: '',
-    facultyId: '',
-    courseId: '',
+    organizationId: '',
+    departmentId: '',
     password: '',
     confirmPassword: '',
   })
@@ -40,6 +41,12 @@ export default function LecturerRegisterPage() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-12">
       <div className="max-w-4xl w-full bg-white shadow-lg rounded-2xl p-10">
+        <div className="text-end justify-end">
+          <Badge variant="primary" className="badge-lg">
+            Lecturer
+          </Badge>
+        </div>
+
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <Link href="/" className="w-fit">
@@ -147,22 +154,22 @@ export default function LecturerRegisterPage() {
           />
 
           <SelectInput
-            label="Faculty"
-            name="facultyId"
-            value={form.facultyId}
-            onChange={(val) => setForm((prev) => ({ ...prev, facultyId: val }))}
+            label="Organization"
+            name="organizationId"
+            value={form.organizationId}
+            onChange={(val) => setForm((prev) => ({ ...prev, organizationId: val }))}
             required
             options={['1', '2', '3', '4', '5', '6'].map((f) => ({
-              label: `Faculty ${f}`,
+              label: `Organization ${f}`,
               value: f,
             }))}
           />
 
           <SelectInput
-            label="Course"
-            name="courseId"
-            value={form.courseId}
-            onChange={(val) => setForm((prev) => ({ ...prev, courseId: val }))}
+            label="Department"
+            name="departmentId"
+            value={form.departmentId}
+            onChange={(val) => setForm((prev) => ({ ...prev, departmentId: val }))}
             required
             options={['1', '2', '3', '4', '5', '6'].map((c) => ({
               label: `Course ${c}`,
