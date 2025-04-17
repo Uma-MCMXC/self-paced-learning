@@ -11,6 +11,7 @@ import {
   DocumentTextIcon,
   ClipboardDocumentListIcon,
   UserGroupIcon,
+  TagIcon,
 } from '@heroicons/react/24/solid'
 
 type SidebarItem = {
@@ -52,8 +53,14 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
         icon: <HomeIcon className="w-5 h-5" />,
       },
       {
+        // หมวดหมู่
+        label: 'Category',
+        href: '/lecturer/category/manage',
+        icon: <TagIcon className="w-5 h-5" />,
+      },
+      {
         // รายวิชาของฉัน
-        label: 'My Course',
+        label: 'Course',
         href: '/lecturer/course/manage',
         icon: <BookOpenIcon className="w-5 h-5" />,
       },
