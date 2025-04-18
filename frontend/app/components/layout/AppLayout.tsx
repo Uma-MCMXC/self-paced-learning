@@ -2,6 +2,7 @@
 
 import Navbar from '../layout/Navbar'
 import Sidebar from '../layout/Sidebar'
+import ScrollToTop from '../hooks/ScrollToTop'
 
 type UserRole = 'admin' | 'student' | 'lecturer'
 
@@ -27,6 +28,7 @@ export default function AppLayout({ children, userRole }: AppLayoutProps) {
         <label htmlFor="sidebar-drawer" className="drawer-overlay"></label>
         <Sidebar userRole={userRole} />
       </div>
+      <ScrollToTop />
     </div>
   )
 }
