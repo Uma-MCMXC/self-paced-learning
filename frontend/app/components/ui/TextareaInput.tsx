@@ -12,6 +12,7 @@ type TextareaInputProps = {
   maxLength?: number
   submitted?: boolean
   error?: string
+  name: string
 }
 
 export default function TextareaInput({
@@ -24,6 +25,7 @@ export default function TextareaInput({
   maxLength,
   submitted = false,
   error,
+  name,
 }: TextareaInputProps) {
   const [internalError, setInternalError] = useState('')
 
@@ -51,6 +53,7 @@ export default function TextareaInput({
 
       <textarea
         id={id}
+        name={name}
         placeholder={placeholder}
         value={value}
         onChange={onChange}

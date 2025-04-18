@@ -169,6 +169,7 @@ export default function CreateCourse() {
               <TextareaInput
                 id="description"
                 label="Description"
+                name="description"
                 placeholder="Tell us about yourself..."
                 value={form.description}
                 onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}

@@ -64,7 +64,9 @@ export default function FileInput({
   return (
     <div className="form-control w-full">
       <label className="label mb-1">
-        <span className="label-text text-base font-medium">{label}</span>
+        <span className="label-text text-sm font-medium text-gray-700 dark:text-gray-200">
+          {label}
+        </span>
       </label>
 
       <input

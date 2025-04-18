@@ -204,6 +204,7 @@ export default function EditCourse() {
               <TextareaInput
                 id="description"
                 label="Description"
+                name="description"
                 placeholder="Tell us about the Course..."
                 value={form.description}
                 onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
