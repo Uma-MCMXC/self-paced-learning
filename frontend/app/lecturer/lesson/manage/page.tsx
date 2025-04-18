@@ -6,6 +6,7 @@ import Button from '@/app/components/ui/Button'
 import StatusToggleButton from '@/app/components/ui/StatusToggleButton'
 import Toast from '@/app/components/ui/Toast'
 import SelectInput from '@/app/components/ui/SelectInput'
+import CardContainer from '@/app/components/ui/CardContainer'
 import {
   EyeIcon,
   PencilSquareIcon,
@@ -19,7 +20,7 @@ import Link from 'next/link'
 const sampleLessons = [
   {
     id: '1',
-    subject: 'Information Technology',
+    course: 'Information Technology',
     lessons: Array.from({ length: 10 }, (_, i) => ({
       id: `1.${i + 1}`,
       title: `บทที่ ${i + 1}`,
@@ -38,37 +39,37 @@ const sampleLessons = [
   // รายวิชาเพิ่มเติมอีก 7 วิชา
   {
     id: '2',
-    subject: 'Data Science',
+    course: 'Data Science',
     lessons: [{ id: '2.1', title: 'บทที่ 1', status: 'active', instructors: ['Dr. Lisa'] }],
   },
   {
     id: '3',
-    subject: 'Computer Science',
+    course: 'Computer Science',
     lessons: [{ id: '3.1', title: 'บทที่ 1', status: 'inactive', instructors: ['Dr. John'] }],
   },
   {
     id: '4',
-    subject: 'AI',
+    course: 'AI',
     lessons: [{ id: '4.1', title: 'บทที่ 1', status: 'active', instructors: ['Dr. Emma'] }],
   },
   {
     id: '5',
-    subject: 'Cybersecurity',
+    course: 'Cybersecurity',
     lessons: [{ id: '5.1', title: 'บทที่ 1', status: 'inactive', instructors: ['Dr. Marie'] }],
   },
   {
     id: '6',
-    subject: 'Big Data',
+    course: 'Big Data',
     lessons: [{ id: '6.1', title: 'บทที่ 1', status: 'active', instructors: ['Dr. Max'] }],
   },
   {
     id: '7',
-    subject: 'Software Engineering',
+    course: 'Software Engineering',
     lessons: [{ id: '7.1', title: 'บทที่ 1', status: 'active', instructors: ['Dr. Dan'] }],
   },
   {
     id: '8',
-    subject: 'Cloud Computing',
+    course: 'Cloud Computing',
     lessons: [{ id: '8.1', title: 'บทที่ 1', status: 'inactive', instructors: ['Dr. Eve'] }],
   },
 ]
@@ -77,14 +78,14 @@ export default function LessonCardPage() {
   // แจ้งเตือนเมื่ออัปเดตสถานะบทเรียน
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   // รหัสวิชาที่เลือกจาก SelectInput
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('')
+  const [selectedCourseId, setSelectedCourseId] = useState<string>('')
   // รายการบทเรียนที่ถูกคลิกเพื่อแสดงบทย่อย
   const [openLessonIds, setOpenLessonIds] = useState<string[]>([])
 
   // 🔹 เปลี่ยนสถานะบทเรียน
-  const toggleStatus = (subjectId: string, lessonId: string) => {
-    const subject = sampleLessons.find((s) => s.id === subjectId)
-    const lesson = subject?.lessons.find((l) => l.id === lessonId)
+  const toggleStatus = (courseId: string, lessonId: string) => {
+    const course = sampleLessons.find((s) => s.id === courseId)
+    const lesson = course?.lessons.find((l) => l.id === lessonId)
     if (lesson) {
       lesson.status = lesson.status === 'active' ? 'inactive' : 'active'
       setToastMsg('Lesson status updated.')
@@ -100,14 +101,11 @@ export default function LessonCardPage() {
   }
 
   // 🔹 วิชาที่ถูกเลือกจาก SelectInput
-  const selectedSubject = sampleLessons.find((s) => s.id === selectedSubjectId)
+  const selectedCourse = sampleLessons.find((s) => s.id === selectedCourseId)
 
   // 🔹 แสดงการ์ดบทเรียน
-  const renderLessonCard = (lesson: any, subjectId: string) => (
-    <div
-      key={lesson.id}
-      className="border rounded-2xl p-5 bg-white dark:bg-slate-800 shadow-md mb-4"
-    >
+  const renderLessonCard = (lesson: any, courseId: string) => (
+    <CardContainer key={lesson.id} className="shadow-md mb-4">
       {/* หัวบทเรียน + ปุ่มเปิด/ปิด บทย่อย */}
       <div
         className="flex justify-between items-center cursor-pointer"
@@ -141,12 +139,9 @@ export default function LessonCardPage() {
       <div className="mt-3 flex justify-between items-center">
         <StatusToggleButton
           status={lesson.status}
-          onClick={() => toggleStatus(subjectId, lesson.id)}
+          onClick={() => toggleStatus(courseId, lesson.id)}
         />
         <div className="flex gap-3">
-          <button title="View">
-            <EyeIcon className="w-5 h-5 text-blue-500 hover:text-blue-700" />
-          </button>
           <Link href={`#`} title="Edit">
             <PencilSquareIcon className="w-5 h-5 text-green-500 hover:text-green-700" />
           </Link>
@@ -155,7 +150,7 @@ export default function LessonCardPage() {
           </button>
         </div>
       </div>
-    </div>
+    </CardContainer>
   )
 
   return (
@@ -170,12 +165,17 @@ export default function LessonCardPage() {
 
       {/* 🔹 แสดงรายวิชาแรกแบบเต็ม 10 บท */}
       <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-        {sampleLessons.slice(0, 1).map((subject) => (
-          <div key={subject.id} className="bg-gray-50 dark:bg-slate-900 p-4 rounded-xl">
-            <div className="text-xl font-bold text-indigo-700 dark:text-white mb-4 border-b pb-2">
-              {subject.subject}
+        {sampleLessons.slice(0, 1).map((course) => (
+          <div key={course.id} className="bg-gray-50 dark:bg-slate-900 p-4 rounded-xl">
+            <div className="flex items-center justify-between mb-4 border-b pb-2">
+              <div className="text-xl font-bold text-indigo-700 dark:text-white">
+                {course.course}
+              </div>
+              <Link href={`/lecturer/lesson/view/${course.id}`} title="View">
+                <EyeIcon className="w-6 h-6 text-blue-500 hover:text-blue-700" />
+              </Link>
             </div>
-            {subject.lessons.map((lesson) => renderLessonCard(lesson, subject.id))}
+            {course.lessons.map((lesson) => renderLessonCard(lesson, course.id))}
           </div>
         ))}
       </div>
@@ -183,20 +183,20 @@ export default function LessonCardPage() {
       {/* 🔹 Dropdown สำหรับเลือกวิชาเพิ่มเติม */}
       <div className="mt-10">
         <SelectInput
-          label="View more subjects"
-          name="selectedSubject"
-          value={selectedSubjectId}
-          onChange={(val) => setSelectedSubjectId(val)}
-          options={sampleLessons.slice(1).map((s) => ({ label: s.subject, value: s.id }))}
+          label="View more courses"
+          name="selectedCourse"
+          value={selectedCourseId}
+          onChange={(val) => setSelectedCourseId(val)}
+          options={sampleLessons.slice(1).map((s) => ({ label: s.course, value: s.id }))}
         />
 
         {/* แสดงบทเรียนของวิชาที่เลือก */}
-        {selectedSubject && (
+        {selectedCourse && (
           <div className="mt-6 bg-gray-50 dark:bg-slate-900 p-4 rounded-xl">
             <div className="text-xl font-bold text-indigo-700 dark:text-white mb-4 border-b pb-2">
-              {selectedSubject.subject}
+              {selectedCourse.course}
             </div>
-            {selectedSubject.lessons.map((lesson) => renderLessonCard(lesson, selectedSubject.id))}
+            {selectedCourse.lessons.map((lesson) => renderLessonCard(lesson, selectedCourse.id))}
           </div>
         )}
       </div>
