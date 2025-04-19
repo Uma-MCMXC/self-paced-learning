@@ -12,9 +12,9 @@ import {
   EyeIcon,
   PencilSquareIcon,
   TrashIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  InformationCircleIcon,
+  ArrowsUpDownIcon,
+  ClockIcon,
+  CalendarDaysIcon,
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 
@@ -37,6 +37,9 @@ const sampleLessons = [
           : [],
       status: i % 3 === 0 ? 'inactive' : 'active',
       instructors: [`Dr. ${i % 2 === 0 ? 'Bob' : 'Alice'}`],
+      videoUrl: 'https://youtu.be/sample',
+      pdfUrl: '/docs/sample.pdf',
+      files: [{ name: 'slide.pdf' }, { name: 'quiz.docx' }],
     })),
   },
   {
@@ -51,6 +54,9 @@ const sampleLessons = [
         duration: '7 mins',
         status: 'active',
         instructors: ['Dr. Lisa'],
+        videoUrl: '',
+        pdfUrl: '',
+        files: [],
       },
     ],
   },
@@ -66,6 +72,9 @@ const sampleLessons = [
         duration: '8 mins',
         status: 'inactive',
         instructors: ['Dr. John'],
+        videoUrl: '',
+        pdfUrl: '',
+        files: [],
       },
     ],
   },
@@ -80,7 +89,6 @@ export default function LessonCardPage() {
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const [selectedCourseId, setSelectedCourseId] = useState<string>('')
   const [selectedReport, setSelectedReport] = useState<string>('')
-  const [openLessonIds, setOpenLessonIds] = useState<string[]>([])
   const [search, setSearch] = useState<string>('')
 
   const toggleStatus = (courseId: string, lessonId: string) => {
@@ -93,50 +101,69 @@ export default function LessonCardPage() {
     }
   }
 
-  const toggleLesson = (lessonId: string) => {
-    setOpenLessonIds((prev) =>
-      prev.includes(lessonId) ? prev.filter((id) => id !== lessonId) : [...prev, lessonId]
-    )
-  }
-
   const filteredCourses = sampleLessons.filter(
     (c) => c.id === selectedCourseId && c.type === selectedReport
   )
   const selectedCourse = filteredCourses[0]
 
   const renderLessonCard = (lesson: any, courseId: string) => (
-    <CardContainer key={lesson.id} className="shadow-md mb-4">
-      <div
-        className="flex justify-between items-center cursor-pointer"
-        onClick={() => toggleLesson(lesson.id)}
-      >
-        <div className="text-lg font-semibold text-gray-900 dark:text-white">{lesson.title}</div>
-        {lesson.sub?.length > 0 &&
-          (openLessonIds.includes(lesson.id) ? (
-            <ChevronDownIcon className="w-5 h-5" />
-          ) : (
-            <ChevronRightIcon className="w-5 h-5" />
-          ))}
+    <CardContainer key={lesson.id} className="shadow-md">
+      {/* Title + ID */}
+      <div className="flex justify-between items-start">
+        <div>
+          <div className="text-lg font-semibold text-gray-900 dark:text-white">{lesson.title}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">#ID: {lesson.id}</div>
+        </div>
+        <div className="text-sm text-gray-500 dark:text-gray-400 flex flex-col items-end gap-1 whitespace-nowrap">
+          <span className="flex items-center gap-1">
+            <ClockIcon className="w-4 h-4" />
+            {lesson.duration}
+          </span>
+          <span className="flex items-center gap-1">
+            <CalendarDaysIcon className="w-4 h-4" />
+            {lesson.updatedAt}
+          </span>
+        </div>
       </div>
 
-      <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-        <p>
-          ⏱ Duration: {lesson.duration} &nbsp; 📅 Updated: {lesson.updatedAt}
-        </p>
+      {/* Summary Info */}
+      <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-300">
+        {lesson.sub?.length > 0 && <div>📘 Sub-lessons: {lesson.sub.length} บท</div>}
+        {lesson.videoUrl && (
+          <div>
+            🎞 Video:{' '}
+            <a
+              href={lesson.videoUrl}
+              target="_blank"
+              className="text-blue-500 hover:underline"
+              rel="noopener noreferrer"
+            >
+              Watch
+            </a>
+          </div>
+        )}
+        {lesson.pdfUrl && (
+          <div>
+            📄 PDF:{' '}
+            <a
+              href={lesson.pdfUrl}
+              target="_blank"
+              className="text-blue-500 hover:underline"
+              rel="noopener noreferrer"
+            >
+              View
+            </a>
+          </div>
+        )}
+        {lesson.files?.length > 0 && <div>📎 Attachments: {lesson.files.length} files</div>}
       </div>
 
-      {lesson.sub?.length > 0 && openLessonIds.includes(lesson.id) && (
-        <ul className="ml-6 mt-2 list-disc text-sm text-gray-600 dark:text-gray-300">
-          {lesson.sub.map((sub: any) => (
-            <li key={sub.id}>{sub.title}</li>
-          ))}
-        </ul>
-      )}
-
+      {/* Instructor */}
       <div className="text-sm mt-3 text-gray-700 dark:text-gray-300">
-        <span className="font-medium">Instructors:</span> {lesson.instructors.join(', ')}
+        👨‍🏫 <span className="font-medium">Instructors:</span> {lesson.instructors.join(', ')}
       </div>
 
+      {/* Action Buttons */}
       <div className="mt-3 flex justify-between items-center">
         <StatusToggleButton
           status={lesson.status}
@@ -186,9 +213,15 @@ export default function LessonCardPage() {
             <div className="text-xl font-bold text-indigo-700 dark:text-white">
               {selectedReport.toUpperCase()}: {selectedCourse.course}
             </div>
-            <div className="flex gap-5">
+            <div className="flex gap-3">
               <Link href={`/lecturer/lesson/view/${selectedCourse.id}`} title="View Lesson">
                 <EyeIcon className="w-5 h-5 text-blue-500 hover:text-blue-700" />
+              </Link>
+              <Link
+                href={`/lecturer/lesson/edit/order-course/${selectedCourse.id}`}
+                title="Edit Order Course"
+              >
+                <ArrowsUpDownIcon className="w-5 h-5 text-green-500 hover:text-green-700" />
               </Link>
             </div>
           </div>
@@ -202,9 +235,10 @@ export default function LessonCardPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          {selectedCourse.lessons
-            .filter((l) => l.title.toLowerCase().includes(search.toLowerCase()))
-            .map((lesson) => renderLessonCard(lesson, selectedCourse.id))}
+          {/* show lesson */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+            {selectedCourse.lessons.map((lesson) => renderLessonCard(lesson, selectedCourse.id))}
+          </div>
         </div>
       )}
     </PageContainer>
