@@ -17,7 +17,7 @@ export default function StatusToggleButton({ status, onClick, title }: StatusTog
       onClick={onClick}
       title={title || 'คลิกเพื่อสลับสถานะ'}
       className={clsx(
-        'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 shadow-sm border',
+        'inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium transition-all duration-300 border',
         isActive
           ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
           : 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200'

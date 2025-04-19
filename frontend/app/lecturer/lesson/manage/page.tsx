@@ -8,6 +8,7 @@ import Toast from '@/app/components/ui/Toast'
 import SelectInput from '@/app/components/ui/SelectInput'
 import CardContainer from '@/app/components/ui/CardContainer'
 import FormInput from '@/app/components/ui/FormInput'
+import Badge from '@/app/components/ui/Badge'
 import {
   EyeIcon,
   PencilSquareIcon,
@@ -15,6 +16,10 @@ import {
   ArrowsUpDownIcon,
   ClockIcon,
   CalendarDaysIcon,
+  BookOpenIcon,
+  VideoCameraIcon,
+  DocumentIcon,
+  LinkIcon,
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 
@@ -112,7 +117,6 @@ export default function LessonCardPage() {
       <div className="flex justify-between items-start">
         <div>
           <div className="text-lg font-semibold text-gray-900 dark:text-white">{lesson.title}</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">#ID: {lesson.id}</div>
         </div>
         <div className="text-sm text-gray-500 dark:text-gray-400 flex flex-col items-end gap-1 whitespace-nowrap">
           <span className="flex items-center gap-1">
@@ -128,34 +132,58 @@ export default function LessonCardPage() {
 
       {/* Summary Info */}
       <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-300">
-        {lesson.sub?.length > 0 && <div>📘 Sub-lessons: {lesson.sub.length} บท</div>}
+        {lesson.sub?.length > 0 && (
+          <div>
+            <span className="flex items-center gap-1">
+              <BookOpenIcon className="w-4 h-4" /> Topic-lessons: {lesson.sub.length} บท
+            </span>
+          </div>
+        )}
         {lesson.videoUrl && (
           <div>
-            🎞 Video:{' '}
-            <a
-              href={lesson.videoUrl}
-              target="_blank"
-              className="text-blue-500 hover:underline"
-              rel="noopener noreferrer"
-            >
-              Watch
-            </a>
+            <span className="flex items-center gap-1">
+              <VideoCameraIcon className="w-4 h-4" /> Video:{' '}
+              <a
+                href={lesson.videoUrl}
+                target="_blank"
+                className="text-blue-500 hover:underline"
+                rel="noopener noreferrer"
+              >
+                Watch
+              </a>
+            </span>
           </div>
         )}
         {lesson.pdfUrl && (
           <div>
-            📄 PDF:{' '}
-            <a
-              href={lesson.pdfUrl}
-              target="_blank"
-              className="text-blue-500 hover:underline"
-              rel="noopener noreferrer"
-            >
-              View
-            </a>
+            <span className="flex items-center gap-1">
+              <DocumentIcon className="w-4 h-4" /> PDF:{' '}
+              <a
+                href={lesson.pdfUrl}
+                target="_blank"
+                className="text-blue-500 hover:underline"
+                rel="noopener noreferrer"
+              >
+                View
+              </a>
+            </span>
           </div>
         )}
-        {lesson.files?.length > 0 && <div>📎 Attachments: {lesson.files.length} files</div>}
+        {lesson.files?.length > 0 && (
+          <div>
+            <span className="flex items-center gap-1">
+              <LinkIcon className="w-4 h-4" /> Link:{' '}
+              <a
+                href={lesson.pdfUrl}
+                target="_blank"
+                className="text-blue-500 hover:underline"
+                rel="noopener noreferrer"
+              >
+                View
+              </a>
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Instructor */}
@@ -165,10 +193,16 @@ export default function LessonCardPage() {
 
       {/* Action Buttons */}
       <div className="mt-3 flex justify-between items-center">
-        <StatusToggleButton
-          status={lesson.status}
-          onClick={() => toggleStatus(courseId, lesson.id)}
-        />
+        <div className="flex items-center gap-2">
+          <StatusToggleButton
+            status={lesson.status}
+            onClick={() => toggleStatus(courseId, lesson.id)}
+          />
+          <Badge variant="neutral" className="badge-md border badge-soft border-gray-800">
+            #ID: {lesson.id}
+          </Badge>
+        </div>
+
         <div className="flex gap-3">
           <Link href={`#`} title="Edit">
             <PencilSquareIcon className="w-5 h-5 text-green-500 hover:text-green-700" />

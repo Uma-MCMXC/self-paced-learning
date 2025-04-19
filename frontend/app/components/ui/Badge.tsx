@@ -20,7 +20,7 @@ export default function Badge({ children, variant, className }: BadgeProps) {
   return (
     <div
       className={clsx(
-        'badge',
+        'text-xs badge',
         variant && {
           'badge-primary': variant === 'primary',
           'badge-secondary': variant === 'secondary',
