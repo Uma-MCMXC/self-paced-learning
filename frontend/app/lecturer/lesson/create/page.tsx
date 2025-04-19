@@ -8,7 +8,7 @@ import TextareaInput from '@/app/components/ui/TextareaInput'
 import FileInput from '@/app/components/ui/FileInput'
 import Button from '@/app/components/ui/Button'
 import SelectInput from '@/app/components/ui/SelectInput'
-import { TrashIcon } from '@heroicons/react/24/solid'
+import { TrashIcon } from '@heroicons/react/24/outline'
 
 // 🔸 Dummy Course list
 const sampleCourses = [
