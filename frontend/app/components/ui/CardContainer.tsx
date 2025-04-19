@@ -1,18 +1,32 @@
+// components/ui/CardContainer.tsx
 'use client'
 
-import React from 'react'
+import React, { forwardRef } from 'react'
+import clsx from 'clsx'
 
 type CardProps = {
   children: React.ReactNode
-  className?: string // เพิ่ม className เป็น optional prop
-}
+  className?: string
+  style?: React.CSSProperties
+} & React.HTMLAttributes<HTMLDivElement> // 👈 สำคัญมาก
 
-export default function CardContainer({ children, className = '' }: CardProps) {
+const CardContainer = forwardRef<HTMLDivElement, CardProps>(function CardContainer(
+  { children, className = '', style, ...rest },
+  ref
+) {
   return (
     <div
-      className={`card w-full mt-4 bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-700 ${className}`}
+      ref={ref}
+      style={style}
+      {...rest} // 👈 ต้องกระจาย attributes
+      className={clsx(
+        'card w-full mt-4 bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-700',
+        className
+      )}
     >
       <div className="card-body">{children}</div>
     </div>
   )
-}
+})
+
+export default CardContainer
