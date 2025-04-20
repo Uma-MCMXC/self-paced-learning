@@ -204,7 +204,7 @@ export default function LessonCardPage() {
         </div>
 
         <div className="flex gap-3">
-          <Link href={`#`} title="Edit">
+          <Link href={`/lecturer/lesson/edit/${lesson.id}`} title="Edit">
             <PencilSquareIcon className="w-5 h-5 text-green-500 hover:text-green-700" />
           </Link>
           <button title="Delete">
@@ -255,7 +255,7 @@ export default function LessonCardPage() {
                 href={`/lecturer/lesson/edit/order-course/${selectedCourse.id}`}
                 title="Edit Order Course"
               >
-                <ArrowsUpDownIcon className="w-5 h-5 text-green-500 hover:text-green-700" />
+                <PencilSquareIcon className="w-5 h-5 text-green-500 hover:text-green-700" />
               </Link>
             </div>
           </div>
