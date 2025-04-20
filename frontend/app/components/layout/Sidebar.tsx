@@ -116,8 +116,6 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
                   href={item.href}
                   onClick={() => {
                     closeDrawer()
-
-                    // พับเมนูย่อยทั้งหมดเมื่อกดเมนูหลักที่ไม่มี children
                     setOpenMenus((prev) => {
                       const newState: Record<string, boolean> = {}
                       Object.keys(prev).forEach((key) => {
@@ -126,10 +124,8 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
                       return newState
                     })
                   }}
-                  className={`w-[210px] flex items-center gap-3 px-4 py-2 rounded-lg transition duration-200 ${
-                    isActive
-                      ? 'bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-medium'
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-white'
+                  className={`w-[210px] flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 shadow-sm dark:text-[#CAF0F8] ${
+                    isActive ? 'bg-[#0077B6] text-white' : 'hover:bg-[#90E0EF] text-[#03045E]'
                   }`}
                 >
                   <span>{item.icon}</span>
@@ -138,22 +134,22 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
               ) : (
                 <button
                   onClick={() => toggleMenu(item.label)}
-                  className="flex items-center justify-between w-full px-4 py-2 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                  className="flex items-center justify-between w-full px-4 py-2 text-[#03045E] dark:text-[#CAF0F8] hover:bg-[#90E0EF] dark:hover:bg-[#0077B6] rounded-xl transition"
                 >
                   <span className="flex items-center gap-3 font-medium">
                     {item.icon}
                     {item.label}
                   </span>
                   {isOpen ? (
-                    <ChevronDownIcon className="w-5 h-5" />
+                    <ChevronDownIcon className="w-5 h-5 transition-transform duration-200 rotate-180" />
                   ) : (
-                    <ChevronRightIcon className="w-5 h-5" />
+                    <ChevronRightIcon className="w-5 h-5 transition-transform duration-200" />
                   )}
                 </button>
               )}
 
               {isExpandable && isOpen && (
-                <ul className="pl-6 mt-1 space-y-1 border-l border-gray-200 dark:border-gray-600">
+                <ul className="pl-6 mt-1 space-y-1 border-l border-[#00B4D8] dark:border-[#0077B6]">
                   {item.children!.map((child) => {
                     const isChildActive = pathname === child.href
                     return (
@@ -165,8 +161,8 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
                           rel={child.targetBlank ? 'noopener noreferrer' : undefined}
                           className={`block px-2 py-1 rounded-md text-sm transition ${
                             isChildActive
-                              ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-gray-700'
-                              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                              ? 'text-white bg-[#0077B6]'
+                              : 'text-[#0077B6] hover:bg-[#CAF0F8]'
                           }`}
                         >
                           {child.label}

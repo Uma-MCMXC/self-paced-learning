@@ -23,12 +23,12 @@ export default function Navbar() {
 
       <div className="ml-auto flex items-center gap-3">
         <ThemeToggle /> {/* ✅ ปุ่มเปลี่ยนธีม */}
+        {/* User Dropdown */}
         <div className="relative" ref={dropdownRef}>
-          {/* Avatar Button */}
           <button
             tabIndex={0}
             role="button"
-            className="btn btn-ghost rounded-full bg-blue-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center gap-2 px-4 py-2 normal-case transition-all duration-200 hover:shadow-md"
+            className="flex items-center gap-2 px-4 py-2 dark:bg-[#0077B6] rounded-full shadow-md hover:shadow-md transition-all duration-200"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             onBlur={(e) => {
               if (!dropdownRef.current?.contains(e.relatedTarget as Node)) {
@@ -36,29 +36,26 @@ export default function Navbar() {
               }
             }}
           >
-            <div className="w-8 h-8 rounded-full grid place-items-center">
-              <UserIcon className="w-5 h-5 text-blue-700 dark:text-blue-400" />
+            <div className="w-8 h-8 rounded-full bg-[#90E0EF] dark:bg-[#00B4D8] grid place-items-center">
+              <UserIcon className="w-5 h-5 text-[#03045E] dark:text-white" />
             </div>
-            <span className="hidden sm:block font-medium text-gray-700 dark:text-gray-200">
+            <span className="hidden sm:block font-medium text-[#03045E] dark:text-white">
               {user.name}
             </span>
           </button>
 
           {/* Dropdown Menu */}
           {isDropdownOpen && (
-            <ul
-              tabIndex={0}
-              className="absolute right-0 bg-white dark:bg-gray-800 rounded-box z-20 mt-3 w-64 p-2 shadow-lg border border-gray-200 dark:border-gray-700"
-            >
-              <li className="p-3 border-b border-gray-200 dark:border-gray-700">
+            <ul className="absolute right-0 mt-2 w-64 z-20 bg-white dark:bg-[#003049] border border-gray-200 dark:border-[#0077B6] rounded-xl shadow-lg">
+              <li className="px-4 py-3 border-b border-gray-100 dark:border-[#0077B6]">
                 <p className="text-sm font-semibold text-gray-800 dark:text-white">{user.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Role: {user.role}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Email: {user.email}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-300">Role: {user.role}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-300">Email: {user.email}</p>
               </li>
               <li>
                 <a
                   href="/auth/logout"
-                  className="hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-lg block text-red-500 dark:text-red-400 font-medium"
+                  className="block px-4 py-2 text-red-500 dark:text-red-400 hover:bg-[#f3f4f6] dark:hover:bg-[#0077B6] rounded-b-xl transition-colors"
                 >
                   Logout
                 </a>
