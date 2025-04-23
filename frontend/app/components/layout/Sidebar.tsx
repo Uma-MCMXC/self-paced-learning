@@ -72,11 +72,12 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
       },
       {
         // กิจกรรม
-        label: 'Quizzes',
+        label: 'Questions',
         icon: <ClipboardDocumentListIcon className="w-5 h-5" />,
         children: [
-          { label: 'Create Quiz', href: '/lecturer/quiz/create' },
-          { label: 'Test Results', href: '/lecturer/quiz/manage' },
+          { label: 'Question Set', href: '/lecturer/question/question-set/manage' },
+          // ติดตามความคืบหน้า
+          { label: 'Progress Tracking', href: '/lecturer/progress-tracking' },
         ],
       },
       {
@@ -124,7 +125,7 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
                       return newState
                     })
                   }}
-                  className={`w-[210px] flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 shadow-sm dark:text-[#CAF0F8] ${
+                  className={`w-[210px] flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 dark:text-[#CAF0F8] ${
                     isActive ? 'bg-[#0077B6] text-white' : 'hover:bg-[#90E0EF] text-[#03045E]'
                   }`}
                 >

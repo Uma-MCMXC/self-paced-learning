@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { XMarkIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid'
 
 type Option = {
   label: string
@@ -60,7 +61,9 @@ export default function MultiSelect({
   return (
     <div className="form-control w-full" ref={wrapperRef}>
       <label htmlFor={id} className="mb-1 label">
-        <span className="label-text text-base font-medium">{label}</span>
+        <span className="label-text text-sm font-medium text-gray-700 dark:text-gray-200">
+          {label}
+        </span>
       </label>
 
       <div
@@ -78,7 +81,9 @@ export default function MultiSelect({
                 .join(', ')
             : 'Select options'}
         </span>
-        <span className="ml-2 text-sm text-gray-400">{isOpen ? '▲' : '▼'}</span>
+        <span className="ml-2 text-sm text-gray-400">
+          {isOpen ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />}
+        </span>
       </div>
 
       {isOpen && (

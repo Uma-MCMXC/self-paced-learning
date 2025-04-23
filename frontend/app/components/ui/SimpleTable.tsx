@@ -10,7 +10,7 @@ export type TableRow = Record<string, string | number | React.ReactNode> & {
 export default function SimpleTable({
   data,
   thead,
-  rowsPerPage = 5,
+  rowsPerPage = 25,
 }: {
   data: TableRow[]
   thead?: React.ReactNode
