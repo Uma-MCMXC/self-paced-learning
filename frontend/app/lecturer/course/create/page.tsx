@@ -123,7 +123,7 @@ export default function CreateCourse() {
     <PageContainer title="Create Course">
       {toastMsg && <Toast message={toastMsg} type="error" />}
       <CardContainer>
-        <SectionTitle>Input Course Information</SectionTitle>
+        <SectionTitle title="Input Course Information" />
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-4">
             <SelectInput

@@ -62,7 +62,7 @@ export default function StudentRegisterPage() {
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* 🔐 Section: Account Credentials */}
           <div className="col-span-full mb-2">
-            <SectionTitle>Account Credentials</SectionTitle>
+            <SectionTitle title="Account Credentials" />
             <p className="text-sm text-gray-500">
               This email and password will be used to log in to the system.
             </p>
@@ -100,7 +100,7 @@ export default function StudentRegisterPage() {
 
           {/* 🔹 Section: Student Info */}
           <div className="col-span-full mb-2 mt-6">
-            <SectionTitle>Student Profile</SectionTitle>
+            <SectionTitle title="Student Profile" />
             <p className="text-sm text-gray-500">Please provide your basic personal information.</p>
           </div>
 

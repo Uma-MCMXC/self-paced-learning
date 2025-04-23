@@ -158,7 +158,7 @@ export default function EditCourse() {
   return (
     <PageContainer title="Edit Course">
       <CardContainer>
-        <SectionTitle>Input Course Information</SectionTitle>
+        <SectionTitle title="Input Course Information" />
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-4">
             <SelectInput
