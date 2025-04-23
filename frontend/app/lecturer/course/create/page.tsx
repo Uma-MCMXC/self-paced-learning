@@ -271,7 +271,7 @@ export default function CreateCourse() {
             </div>
           </fieldset>
           <div className="mt-8 text-end">
-            <Button label="Create Course" variant="info" size="md" />
+            <Button label="Save Course" variant="info" size="md" />
           </div>
         </form>
       </CardContainer>

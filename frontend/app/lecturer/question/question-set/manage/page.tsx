@@ -160,16 +160,42 @@ export default function ManageQuestionSetPage() {
               />
             ),
             manage: (
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                <button title="View Details">
-                  <EyeIcon className="w-5 h-5 text-blue-500 hover:text-blue-700 cursor-pointer" />
-                </button>
-                <Link href={`/lecturer/question-sets/edit/${qs.id}`} title="Edit">
-                  <PencilSquareIcon className="w-5 h-5 text-green-500 hover:text-green-700 cursor-pointer" />
-                </Link>
-                <button title="Delete">
-                  <TrashIcon className="w-5 h-5 text-red-500 hover:text-red-700 cursor-pointer" />
-                </button>
+              <div className="flex flex-col gap-4">
+                {/* Actions for Question Set */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-medium text-gray-400 dark:text-gray-300">
+                    Question Sets:
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <Link href={`/lecturer/question-sets/${qs.id}`} title="View Details">
+                      <EyeIcon className="w-5 h-5 text-blue-500 hover:text-blue-700 cursor-pointer" />
+                    </Link>
+                    <Link href={`/lecturer/question-sets/edit/${qs.id}`} title="Edit Question Set">
+                      <PencilSquareIcon className="w-5 h-5 text-green-500 hover:text-green-700 cursor-pointer" />
+                    </Link>
+                    <button title="Delete">
+                      <TrashIcon className="w-5 h-5 text-red-500 hover:text-red-700 cursor-pointer" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Actions for Questions in the Set */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-medium text-gray-400 dark:text-gray-300">
+                    Question Bank:
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <Link href={`/lecturer/question//${qs.id}/questions`} title="Manage Questions">
+                      <EyeIcon className="w-5 h-5 text-purple-500 hover:text-purple-700 cursor-pointer" />
+                    </Link>
+                    <Link
+                      href={`/lecturer/question/question-bank/create/${qs.id}`}
+                      title="Create Question"
+                    >
+                      <PlusIcon className="w-5 h-5 text-indigo-500 hover:text-indigo-700 cursor-pointer" />
+                    </Link>
+                  </div>
+                </div>
               </div>
             ),
             _isSubjectRow: false,

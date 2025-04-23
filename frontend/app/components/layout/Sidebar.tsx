@@ -71,14 +71,10 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
         icon: <DocumentTextIcon className="w-5 h-5" />,
       },
       {
-        // กิจกรรม
+        // คำถาม - คำตอบ
         label: 'Questions',
         icon: <ClipboardDocumentListIcon className="w-5 h-5" />,
-        children: [
-          { label: 'Question Set', href: '/lecturer/question/question-set/manage' },
-          // ติดตามความคืบหน้า
-          { label: 'Progress Tracking', href: '/lecturer/progress-tracking' },
-        ],
+        href: '/lecturer/question/question-set/manage',
       },
       {
         // นักเรียน
