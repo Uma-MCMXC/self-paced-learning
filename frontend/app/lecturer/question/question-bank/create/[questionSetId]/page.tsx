@@ -6,6 +6,8 @@ import PageContainer from '@/app/components/ui/PageContainer'
 import CardContainer from '@/app/components/ui/CardContainer'
 import SectionTitle from '@/app/components/ui/SectionTitle'
 import FormInput from '@/app/components/ui/FormInput'
+import TextareaInput from '@/app/components/ui/TextareaInput'
+import FileInput from '@/app/components/ui/FileInput'
 import SelectInput from '@/app/components/ui/SelectInput'
 import Button from '@/app/components/ui/Button'
 import Badge from '@/app/components/ui/Badge'
@@ -37,6 +39,7 @@ type Question = {
   difficulty: string
   choices: Choice[]
   answer?: string
+  attachment?: File | null
 }
 
 export default function CreateMultipleQuestionsPage() {
@@ -138,7 +141,7 @@ export default function CreateMultipleQuestionsPage() {
           }
         }
       } catch (err) {
-        console.error('❌ Invalid JSON in answer_data:', answerDataRaw)
+        console.error('Invalid JSON in answer_data:', answerDataRaw)
       }
 
       newQuestions.push({
@@ -208,17 +211,33 @@ export default function CreateMultipleQuestionsPage() {
               )}
             </div>
 
-            <FormInput
-              id={`questionText-${index}`}
-              name="questionText"
-              label="Question Text"
-              value={q.questionText}
-              onChange={(e) => handleChange(index, 'questionText', e.target.value)}
-              placeholder="Enter question text..."
-              required
-            />
-
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="col-span-full">
+                {/* Question Text */}
+                <TextareaInput
+                  id={`questionText-${index}`}
+                  name="questionText"
+                  label="Question Text"
+                  placeholder="Tell us about yourself..."
+                  value={q.questionText}
+                  onChange={(e) => handleChange(index, 'questionText', e.target.value)}
+                  maxLength={5000}
+                />
+
+                {/* Upload Attachment */}
+                <div className="col-sapn-full mt-2">
+                  <FileInput
+                    label="Upload File (optional)"
+                    accept="image/*,.pdf"
+                    onFileChange={(file) => {
+                      const updated = [...questions]
+                      updated[index].attachment = file
+                      setQuestions(updated)
+                    }}
+                  />
+                </div>
+              </div>
+
               <SelectInput
                 id={`questionType-${index}`}
                 label="Question Type"
