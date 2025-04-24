@@ -175,7 +175,12 @@ export default function CreateMultipleQuestionsPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
             <h2 className="text-lg font-semibold mb-4">Upload Questions (.xlsx)</h2>
-            <input type="file" accept=".xlsx" onChange={handleFileUpload} className="mb-4" />
+            <input
+              type="file"
+              accept=".xlsx"
+              onChange={handleFileUpload}
+              className="mb-4 file-input file-input-bordered file-input-md w-full bg-white text-black border border-gray-300 text-md rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-white dark:border-gray-600"
+            />
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
