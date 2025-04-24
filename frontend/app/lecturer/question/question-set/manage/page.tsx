@@ -5,7 +5,13 @@ import PageContainer from '@/app/components/ui/PageContainer'
 import Button from '@/app/components/ui/Button'
 import SimpleTable from '@/app/components/ui/SimpleTable'
 import StatusToggleButton from '@/app/components/ui/StatusToggleButton'
-import { EyeIcon, PencilSquareIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline'
+import {
+  EyeIcon,
+  PencilSquareIcon,
+  TrashIcon,
+  PlusIcon,
+  ArrowUpTrayIcon,
+} from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import Toast from '@/app/components/ui/Toast'
 
@@ -118,7 +124,14 @@ export default function ManageQuestionSetPage() {
       {toast && <Toast message={toast.message} type={toast.type} />}
 
       <div className="w-full">
-        <div className="flex justify-end mb-5">
+        <div className="flex justify-end mb-5 gap-4">
+          <Button
+            label="Export Sample Question Template"
+            icon={<PlusIcon />}
+            variant="primary"
+            size="md"
+            href="/uploads/question/question_import_multiple_and_fillin.xlsx"
+          />
           <Button
             label="Create New Question Set"
             icon={<PlusIcon />}
@@ -171,7 +184,7 @@ export default function ManageQuestionSetPage() {
                       <EyeIcon className="w-5 h-5 text-blue-500 hover:text-blue-700 cursor-pointer" />
                     </Link>
                     <Link href={`/lecturer/question-sets/edit/${qs.id}`} title="Edit Question Set">
-                      <PencilSquareIcon className="w-5 h-5 text-green-500 hover:text-green-700 cursor-pointer" />
+                      <PencilSquareIcon className="w-5 h-5 text-yellow-500 hover:text-yellow-700 cursor-pointer" />
                     </Link>
                     <button title="Delete">
                       <TrashIcon className="w-5 h-5 text-red-500 hover:text-red-700 cursor-pointer" />
@@ -186,13 +199,13 @@ export default function ManageQuestionSetPage() {
                   </span>
                   <div className="flex items-center gap-3">
                     <Link href={`/lecturer/question//${qs.id}/questions`} title="Manage Questions">
-                      <EyeIcon className="w-5 h-5 text-purple-500 hover:text-purple-700 cursor-pointer" />
+                      <EyeIcon className="w-5 h-5 text-blue-500 hover:text-blue-700 cursor-pointer" />
                     </Link>
                     <Link
                       href={`/lecturer/question/question-bank/create/${qs.id}`}
                       title="Create Question"
                     >
-                      <PlusIcon className="w-5 h-5 text-indigo-500 hover:text-indigo-700 cursor-pointer" />
+                      <PlusIcon className="w-5 h-5 text-green-500 hover:text-green-700 cursor-pointer" />
                     </Link>
                   </div>
                 </div>

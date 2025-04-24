@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import * as ExcelJS from 'exceljs'
 import PageContainer from '@/app/components/ui/PageContainer'
 import CardContainer from '@/app/components/ui/CardContainer'
 import SectionTitle from '@/app/components/ui/SectionTitle'
@@ -50,6 +51,8 @@ export default function CreateMultipleQuestionsPage() {
     },
   ])
 
+  const [showModal, setShowModal] = useState(false)
+
   const handleChange = (index: number, key: keyof Question, value: string) => {
     const updated = [...questions]
     updated[index] = { ...updated[index], [key]: value }
@@ -97,6 +100,61 @@ export default function CreateMultipleQuestionsPage() {
     setQuestions(questions.filter((_, i) => i !== index))
   }
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const buffer = await file.arrayBuffer()
+    const workbook = new ExcelJS.Workbook()
+    await workbook.xlsx.load(buffer)
+    const worksheet = workbook.getWorksheet(1)
+
+    const newQuestions: Question[] = []
+
+    worksheet?.eachRow((row, rowIndex) => {
+      if (rowIndex === 1) return // Skip header
+
+      const questionText = row.getCell(1).value?.toString() || ''
+      const questionType = row.getCell(2).value?.toString() || 'multiple'
+      const difficulty = row.getCell(3).value?.toString() || 'easy'
+      const score = row.getCell(4).value?.toString() || '1'
+      const answerDataRaw = row.getCell(5).value?.toString() || ''
+
+      let choices: Choice[] = []
+      let answer = ''
+
+      try {
+        const parsed = JSON.parse(answerDataRaw)
+
+        if (questionType === 'multiple') {
+          if (Array.isArray(parsed)) {
+            choices = parsed // กรณี [{ text, isCorrect }]
+          } else if ('choices' in parsed && Array.isArray(parsed.choices)) {
+            choices = parsed.choices
+          }
+        } else if (questionType === 'fill_in_blank') {
+          if (typeof parsed === 'object' && 'answer' in parsed) {
+            answer = parsed.answer
+          }
+        }
+      } catch (err) {
+        console.error('❌ Invalid JSON in answer_data:', answerDataRaw)
+      }
+
+      newQuestions.push({
+        questionText,
+        questionType,
+        difficulty,
+        score,
+        choices,
+        answer,
+      })
+    })
+
+    setQuestions(newQuestions)
+    setShowModal(false)
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     console.log('Submitting Questions:', questions)
@@ -104,11 +162,36 @@ export default function CreateMultipleQuestionsPage() {
 
   return (
     <PageContainer title={`Create Questions for: ${mockQuestionSetName}`}>
+      <div className="text-right mb-4">
+        <Button
+          type="button"
+          variant="outline"
+          label="Upload Questions"
+          onClick={() => setShowModal(true)}
+        />
+      </div>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h2 className="text-lg font-semibold mb-4">Upload Questions (.xlsx)</h2>
+            <input type="file" accept=".xlsx" onChange={handleFileUpload} className="mb-4" />
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                label="Cancel"
+                onClick={() => setShowModal(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-10">
         {questions.map((q, index) => (
           <CardContainer key={index}>
             <div className="flex justify-between items-center">
-              {/* <SectionTitle title={`Question ID: ${index + 1}`} /> */}
               <Badge variant="primary" className="badge-lg badge-outline mb-5">
                 Question ID: {index + 1}
               </Badge>
