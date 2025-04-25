@@ -8,6 +8,7 @@ import SectionTitle from '@/app/components/ui/SectionTitle'
 import FormInput from '@/app/components/ui/FormInput'
 import TextareaInput from '@/app/components/ui/TextareaInput'
 import FileInput from '@/app/components/ui/FileInput'
+import CKEditorComponent from '@/app/components/ui/CKEditor'
 import SelectInput from '@/app/components/ui/SelectInput'
 import Button from '@/app/components/ui/Button'
 import Badge from '@/app/components/ui/Badge'
@@ -213,8 +214,7 @@ export default function CreateMultipleQuestionsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="col-span-full">
-                {/* Question Text */}
-                <TextareaInput
+                {/* <TextareaInput
                   id={`questionText-${index}`}
                   name="questionText"
                   label="Question Text"
@@ -224,8 +224,6 @@ export default function CreateMultipleQuestionsPage() {
                   maxLength={5000}
                 />
 
-                {/* Upload Attachment */}
-                <div className="col-sapn-full mt-2">
                   <FileInput
                     label="Upload File (optional)"
                     accept="image/*,.pdf"
@@ -234,8 +232,14 @@ export default function CreateMultipleQuestionsPage() {
                       updated[index].attachment = file
                       setQuestions(updated)
                     }}
-                  />
-                </div>
+                  /> */}
+                <CKEditorComponent
+                  id={`questionText-${index}`}
+                  name="questionText"
+                  label="Question Text"
+                  value={q.questionText}
+                  onChange={(val) => handleChange(index, 'questionText', val)}
+                />
               </div>
 
               <SelectInput
