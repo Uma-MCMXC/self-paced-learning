@@ -41,6 +41,7 @@ type Question = {
   answer?: string
   attachment?: File | null
   previewUrl?: string | null
+  explanation?: string | null
 }
 
 export default function CreateMultipleQuestionsPage() {
@@ -52,6 +53,7 @@ export default function CreateMultipleQuestionsPage() {
       difficulty: 'easy',
       choices: [{ text: '', isCorrect: false }],
       answer: '',
+      explanation: '',
     },
   ])
 
@@ -96,6 +98,7 @@ export default function CreateMultipleQuestionsPage() {
         difficulty: 'easy',
         choices: [{ text: '', isCorrect: false }],
         answer: '',
+        explanation: '',
       },
     ])
   }
@@ -277,6 +280,18 @@ export default function CreateMultipleQuestionsPage() {
                 onChange={(e) => handleChange(index, 'score', e.target.value)}
                 required
               />
+
+              <div className="col-span-full">
+                <TextareaInput
+                  id="explanation"
+                  name="explanation"
+                  label="Explanation"
+                  placeholder="Tell us about yourself..."
+                  value=""
+                  onChange={(e) => handleChange(index, 'explanation', e.target.value)}
+                  maxLength={5000}
+                />
+              </div>
             </div>
 
             {q.questionType === 'multiple' && (
