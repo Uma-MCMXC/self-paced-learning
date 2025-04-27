@@ -41,6 +41,8 @@ export default function CreateQuestionSetPage() {
     testType: '',
     totalScore: '',
     status: 'Draft',
+    passScore: '60',
+    attemptLimit: '0',
   })
 
   const [submitted, setSubmitted] = useState(false)
@@ -95,6 +97,28 @@ export default function CreateQuestionSetPage() {
               options={statuses}
               value={formData.status}
               onChange={(val) => handleChange('status', val)}
+            />
+
+            <FormInput
+              id="passScore"
+              label="Pass Score"
+              name="passScore"
+              type="number"
+              required
+              value={formData.passScore}
+              onChange={(e) => handleChange('passScore', e.target.value)}
+              submitted={submitted}
+            />
+
+            <FormInput
+              id="attemptLimit"
+              label="Attempt Limit"
+              name="attemptLimit"
+              type="number"
+              required
+              value={formData.attemptLimit}
+              onChange={(e) => handleChange('attemptLimit', e.target.value)}
+              submitted={submitted}
             />
 
             <div className="col-span-full">
