@@ -5,7 +5,7 @@ import Link from 'next/link'
 import PageContainer from '@/app/components/ui/PageContainer'
 import Card from '@/app/components/ui/Card'
 import Badge from '@/app/components/ui/Badge'
-import { CheckBadgeIcon } from '@heroicons/react/24/solid'
+import { CheckBadgeIcon, UsersIcon } from '@heroicons/react/24/solid'
 
 type Course = {
   id: number
@@ -18,6 +18,7 @@ type Course = {
   hasFoundationTest: boolean
   lessonCount: number
   enrolled: boolean
+  enrollmentCount: number
 }
 
 const courses: Course[] = [
@@ -32,6 +33,7 @@ const courses: Course[] = [
     hasFoundationTest: true,
     lessonCount: 5,
     enrolled: false,
+    enrollmentCount: 35,
   },
   {
     id: 2,
@@ -44,6 +46,7 @@ const courses: Course[] = [
     hasFoundationTest: false,
     lessonCount: 6,
     enrolled: true,
+    enrollmentCount: 10,
   },
 ]
 
@@ -78,10 +81,15 @@ export default function CourseListPage() {
                 }
                 description={
                   <>
-                    {course.instructor}
-                    <br />
-                    {course.lessonCount} lessons •{' '}
-                    {course.hasFoundationTest ? 'Has Foundation Test' : 'Start Immediately'}
+                    <div className="text-gray-700">{course.instructor}</div>
+                    <div className="text-gray-500 text-sm flex items-center gap-2 mt-1">
+                      <UsersIcon className="w-4 h-4 text-gray-400" />
+                      {course.enrollmentCount} students
+                    </div>
+                    <div className="text-gray-500 text-sm mt-1">
+                      {course.lessonCount} lessons •{' '}
+                      {course.hasFoundationTest ? 'Has Foundation Test' : 'Start Immediately'}
+                    </div>
                   </>
                 }
                 footer={
