@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import PageContainer from '@/app/components/ui/PageContainer'
 import Card from '@/app/components/ui/Card'
+import Badge from '@/app/components/ui/Badge'
+import { CheckBadgeIcon } from '@heroicons/react/24/solid'
 
 type Course = {
   id: number
@@ -22,9 +24,9 @@ const courses: Course[] = [
   {
     id: 1,
     name: 'Introduction to Computer Science',
-    description: 'พื้นฐานความรู้ด้านคอมพิวเตอร์เบื้องต้น',
+    description: 'Basic knowledge of computer science.',
     imageUrl: '/uploads/course/ex-course.png',
-    instructor: 'ดร.สมชาย อินทร์สุข',
+    instructor: 'Dr. Somchai Insuk',
     category: 'Computer Science',
     fee: 0,
     hasFoundationTest: true,
@@ -34,9 +36,9 @@ const courses: Course[] = [
   {
     id: 2,
     name: 'Digital Marketing Basics',
-    description: 'เรียนรู้พื้นฐานการทำการตลาดออนไลน์',
+    description: 'Learn the fundamentals of online marketing.',
     imageUrl: '/uploads/course/ex-course.png',
-    instructor: 'อ.กนกพร วัฒนกุล',
+    instructor: 'Ms. Kanokporn Wattanakul',
     category: 'Business',
     fee: 1500,
     hasFoundationTest: false,
@@ -52,16 +54,50 @@ export default function CourseListPage() {
     <PageContainer title="Available Courses">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {courseList.map((course) => (
-          <Card
-            key={course.id}
-            id={course.id}
-            imageUrl={course.imageUrl}
-            name={course.name}
-            instructor={course.instructor}
-            lessonCount={course.lessonCount}
-            hasFoundationTest={course.hasFoundationTest}
-            fee={course.fee}
-          />
+          <div key={course.id} className="relative">
+            <Link
+              href={`/student/courses/view/${course.id}`}
+              key={course.id}
+              className="relative block group hover:shadow-lg transition"
+            >
+              <Card
+                header={
+                  <div className="relative w-full h-56 overflow-hidden rounded-t-lg">
+                    <img
+                      src={course.imageUrl}
+                      alt={course.name}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                }
+                title={
+                  <div className="flex items-center gap-1">
+                    {course.name}
+                    {course.enrolled && <CheckBadgeIcon className="w-5 h-5 text-green-500" />}
+                  </div>
+                }
+                description={
+                  <>
+                    {course.instructor}
+                    <br />
+                    {course.lessonCount} lessons •{' '}
+                    {course.hasFoundationTest ? 'Has Foundation Test' : 'Start Immediately'}
+                  </>
+                }
+                footer={
+                  course.fee === 0 ? (
+                    <Badge variant="success" className="badge-lg badge-dash">
+                      Free
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="badge-lg badge-dash">
+                      ฿{course.fee.toLocaleString()}
+                    </Badge>
+                  )
+                }
+              />
+            </Link>
+          </div>
         ))}
       </div>
     </PageContainer>
