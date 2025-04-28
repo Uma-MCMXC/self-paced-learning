@@ -5,7 +5,8 @@ import Link from 'next/link'
 import PageContainer from '@/app/components/ui/PageContainer'
 import Card from '@/app/components/ui/Card'
 import Badge from '@/app/components/ui/Badge'
-import { CheckBadgeIcon, UsersIcon } from '@heroicons/react/24/solid'
+import Progress from '@/app/components/ui/Progress'
+import { CheckBadgeIcon } from '@heroicons/react/24/solid'
 
 type Course = {
   id: number
@@ -19,6 +20,7 @@ type Course = {
   lessonCount: number
   enrolled: boolean
   enrollmentCount: number
+  progress: number
 }
 
 const courses: Course[] = [
@@ -32,8 +34,9 @@ const courses: Course[] = [
     fee: 0,
     hasFoundationTest: true,
     lessonCount: 5,
-    enrolled: false,
+    enrolled: true,
     enrollmentCount: 35,
+    progress: 30,
   },
   {
     id: 2,
@@ -42,11 +45,12 @@ const courses: Course[] = [
     imageUrl: '/uploads/course/ex-course.png',
     instructor: 'Ms. Kanokporn Wattanakul',
     category: 'Business',
-    fee: 1500,
+    fee: 0,
     hasFoundationTest: false,
     lessonCount: 6,
     enrolled: true,
     enrollmentCount: 10,
+    progress: 70,
   },
 ]
 
@@ -54,7 +58,7 @@ export default function CourseListPage() {
   const [courseList] = useState<Course[]>(courses)
 
   return (
-    <PageContainer title="Available Courses">
+    <PageContainer title="My Courses">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {courseList.map((course) => (
           <div key={course.id} className="relative">
@@ -82,13 +86,12 @@ export default function CourseListPage() {
                 description={
                   <>
                     <div className="text-gray-700 dark:text-white">{course.instructor}</div>
-                    <div className="text-gray-500 text-sm flex items-center gap-2 mt-1">
-                      <UsersIcon className="w-4 h-4 text-gray-400" />
-                      {course.enrollmentCount} students
-                    </div>
                     <div className="text-gray-500 text-sm mt-1">
                       {course.lessonCount} lessons •{' '}
                       {course.hasFoundationTest ? 'Has Foundation Test' : 'Start Immediately'}
+                    </div>
+                    <div className="mt-1">
+                      <Progress value={course.progress} max={100} label="Progress" />
                     </div>
                   </>
                 }

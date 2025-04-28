@@ -55,7 +55,7 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
       },
       {
         label: 'My Courses',
-        href: '/student/courses/manage',
+        href: '/student/my-courses/manage',
         icon: <TagIcon className="w-5 h-5" />,
       },
       {
