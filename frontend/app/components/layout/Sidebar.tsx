@@ -12,6 +12,7 @@ import {
   ClipboardDocumentListIcon,
   UserGroupIcon,
   TagIcon,
+  ClipboardDocumentCheckIcon,
 } from '@heroicons/react/24/solid'
 
 type SidebarItem = {
@@ -45,7 +46,24 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
 
   const menuItems: Record<UserRole, SidebarItem[]> = {
     admin: [{ label: 'Dashboard', href: '/admin', icon: <HomeIcon className="w-5 h-5" /> }],
-    student: [{ label: 'Dashboard', href: '/student', icon: <HomeIcon className="w-5 h-5" /> }],
+    student: [
+      { label: 'Dashboard', href: '/student', icon: <HomeIcon className="w-5 h-5" /> },
+      {
+        label: 'Courses',
+        href: '/student/courses/manage',
+        icon: <BookOpenIcon className="w-5 h-5" />,
+      },
+      {
+        label: 'My Courses',
+        href: '/student/courses/manage',
+        icon: <TagIcon className="w-5 h-5" />,
+      },
+      {
+        label: 'My Tests',
+        href: '/student/courses/manage',
+        icon: <ClipboardDocumentCheckIcon className="w-5 h-5" />,
+      },
+    ],
     lecturer: [
       {
         label: 'Dashboard',
