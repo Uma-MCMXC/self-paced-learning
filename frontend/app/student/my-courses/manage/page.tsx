@@ -63,7 +63,7 @@ export default function CourseListPage() {
         {courseList.map((course) => (
           <div key={course.id} className="relative">
             <Link
-              href={`/student/courses/view/${course.id}`}
+              href={`/student/my-courses/learing/${course.id}`}
               key={course.id}
               className="relative block group hover:shadow-lg transition"
             >
