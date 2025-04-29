@@ -97,6 +97,8 @@ export default function CourseDetailPage() {
             </div>
             <p className="text-sm text-gray-400">Published: {coursePublishedAt}</p>
             {getActionButton()}
+
+            <Button variant="error" label="Examination" href={`/student/my-courses/examination`} />
           </div>
         </div>
 
@@ -117,28 +119,38 @@ export default function CourseDetailPage() {
                   </div>
 
                   {/* Lesson Info */}
-                  <div className="flex flex-col w-full">
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-semibold text-gray-800 leading-tight">{lesson.name}</h3>
-                      <span className="text-xs text-gray-400">Published: {lesson.publishedAt}</span>
+                  <div className="flex items-center justify-between w-full p-4 bg-white rounded-xl shadow-sm">
+                    {/* LEFT: Icon + Content */}
+                    <div className="flex items-start gap-4">
+                      {/* Text content */}
+                      <div>
+                        <h3 className="font-semibold text-gray-800 leading-tight">{lesson.name}</h3>
+                        <div className="text-sm text-gray-500">Instructor: {instructorName}</div>
+                        <div className="flex items-center text-sm text-gray-500 gap-2 mt-1">
+                          <span>{lesson.type === 'video' ? 'Video' : 'Document'}</span>
+                          <span>•</span>
+                          <span>
+                            {lesson.type === 'video'
+                              ? formatDuration(lesson.duration)
+                              : `${lesson.pages} pages`}
+                          </span>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="text-sm text-gray-500 mt-2">Instructor: {instructorName}</div>
-
-                    <div className="flex items-center text-sm text-gray-500 mt-1 gap-2">
-                      {lesson.type === 'video' ? (
-                        <>
-                          <span>Video</span>
-                          <span>•</span>
-                          <span>{formatDuration(lesson.duration)}</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Document</span>
-                          <span>•</span>
-                          <span>{lesson.pages} pages</span>
-                        </>
-                      )}
+                    {/* RIGHT: Buttons + Published */}
+                    <div className="flex flex-col items-end gap-2">
+                      <span className="text-xs text-gray-400">Published: {lesson.publishedAt}</span>
+                      <div className="flex gap-2 mt-2">
+                        <Button variant="warning" size="sm" label="Pre-test" className="btn-soft" />
+                        <Button variant="info" size="sm" label="Learning" className="btn-soft" />
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          label="Post-test"
+                          className="btn-soft"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
