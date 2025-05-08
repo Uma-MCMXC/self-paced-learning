@@ -21,8 +21,8 @@ datasource db {
 
 // รวม model ทั้งหมด
 function mergeModels(): string {
-  const files = fs.readdirSync(modelDir).filter(f => f.endsWith('.prisma'));
-  const merged = files.map(file => {
+  const files = fs.readdirSync(modelDir).filter((f) => f.endsWith('.prisma'));
+  const merged = files.map((file) => {
     const content = fs.readFileSync(path.join(modelDir, file), 'utf-8');
     return `// --- ${file} ---\n\n${content.trim()}\n`;
   });
