@@ -1,0 +1,20 @@
+/// ติดตามการเรียน
+model LessonView {
+    id          Int       @id @default(autoincrement())
+    userId      Int       @map("user_id")
+    lessonId    Int       @map("lesson_id")
+    completed   Boolean   @default(false)
+    /// เวลาดูวิดิโอ
+    watchedTime Int       @map("watched_time")
+    /// จำนวนหน้าที่อ่าน
+    readPages   Int       @map("read_pages")
+    /// วันที่เรียนสำเร็จ
+    completedAt DateTime? @map("completed_at")
+    createdAt   DateTime  @map("created_at")
+
+    // Relations
+    users   User   @relation("LessonViewUserId", fields: [userId], references: [id])
+    lessons Lesson @relation("LessonViewLessonId", fields: [lessonId], references: [id])
+}
+
+

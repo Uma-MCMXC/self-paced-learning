@@ -1,0 +1,7 @@
+// การลงทะเบียนเรียน
+model CourseEnrollment {
+    id          Int         @id @default(autoincrement())
+    courseId    Int         @map("course_id")
+    userId      Int         @map("user_id")
+    enrolledAt  DateTime    @map("enrolled_at")
+}

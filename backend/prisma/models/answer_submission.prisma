@@ -1,0 +1,22 @@
+/// เก็บคำตอบรายข้อที่ผู้เรียนตอบ
+model AnswerSubmission {
+    id             Int      @id @default(autoincrement())
+    userId         Int      @map("user_id")
+    questionSetId  Int      @map("question_set_id")
+    questionBankId Int      @map("question_bank_id")
+    /// เก็บคำตอบ choice
+    selectedChoice Json?    @map("selected_choice")
+    /// เก็บคำตอบ fill in blank
+    filledText     String?  @map("filled_text")
+    /// upload
+    fileUrl        String?  @map("file_url")
+    /// ตอบถูกหรือผิด
+    isCorrect      Boolean  @map("is_correct")
+    submittedAt    DateTime @map("submitted_at")
+
+    user User @relation("AnswerSubmissionUserId", fields: [userId], references: [id])
+
+    questionSet QuestionSet @relation("AnswerSubmissionQuestionSetId", fields: [questionSetId], references: [id])
+
+    questionBank QuestionBank @relation("AnswerSubmissionQuestionBankId", fields: [questionBankId], references: [id])
+}

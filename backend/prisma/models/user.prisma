@@ -1,0 +1,66 @@
+model User {
+  id Int @id @default(autoincrement())
+
+  userRoleId      Int     @map("user_role_id")
+  titleId         Int     @map("title_id")
+  academicTitleId Int?    @map("academic_title_id")
+  firstName       String  @map("first_name")
+  lastName        String  @map("last_name")
+  email           String
+  password        String
+  departmentId    Int     @map("department_id")
+  isActive        Boolean @default(true) @map("is_active")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // Relations
+  userRole      UserRole       @relation(fields: [userRoleId], references: [id])
+  title         Title          @relation(fields: [titleId], references: [id])
+  academicTitle AcademicTitle? @relation(fields: [academicTitleId], references: [id])
+  department    Department     @relation(fields: [departmentId], references: [id])
+
+  // Reverse relations
+  organizationsCreated Organization[] @relation("OrgCreatedByUser")
+  organizationsUpdated Organization[] @relation("OrgUpdatedByUser")
+  organizationsDeleted Organization[] @relation("OrgDeletedByUser")
+
+  categoryCreated Category[] @relation("CatCreatedByUser")
+  categoryUpdated Category[] @relation("CatUpdatedByUser")
+  categoryDeleted Category[] @relation("CatDeletedByUser")
+
+  courseCreated Course[] @relation("CourseCreatedByUser")
+  courseUpdated Course[] @relation("CourseUpdatedByUser")
+  courseDeleted Course[] @relation("CourseDeletedByUser")
+
+  courseInstructorUpdated CourseInstructor[] @relation("CourseInstructorUpdatedByUser")
+  courseInstructorDeleted CourseInstructor[] @relation("CourseInstructorDeletedByUser")
+
+  courseInstructorUserId CourseInstructor[] @relation("UserId")
+
+  courseCompletionUserId CourseCompletion[] @relation("UserId")
+
+  lessonCreated Lesson[] @relation("LessonCreatedByUser")
+  lessonUpdated Lesson[] @relation("LessonUpdatedByUser")
+  lessonDeleted Lesson[] @relation("LessonDeletedByUser")
+
+  lessonContentUpdated LessonContent[] @relation("LessonContentUpdatedByUser")
+  lessonContentDeleted LessonContent[] @relation("LessonContentDeletedByUser")
+
+  lessonViewUserId LessonView[] @relation("LessonViewUserId")
+
+  lessonAttemptUserId LessonAttempt[] @relation("LessonAttemptUserId")
+
+  questionSetCreated QuestionSet[] @relation("QuestionSetCreatedByUser")
+  questionSetUpdated QuestionSet[] @relation("QuestionSetUpdatedByUser")
+  questionSetDeleted QuestionSet[] @relation("QuestionSetDeletedByUser")
+
+  questionBankCreated QuestionBank[] @relation("QuestionBankCreatedByUser")
+  questionBankUpdated QuestionBank[] @relation("QuestionBankUpdatedByUser")
+  questionBankDeleted QuestionBank[] @relation("QuestionBankDeletedByUser")
+
+  testResultUser TestResult[] @relation("TestResultUserId")
+
+  answerSubmissionUser AnswerSubmission[] @relation("AnswerSubmissionUserId")
+}

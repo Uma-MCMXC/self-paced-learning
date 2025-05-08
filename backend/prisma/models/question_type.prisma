@@ -1,0 +1,9 @@
+/// ประเภทคลังข้อสอบ
+// data: choice, fill_in_blank, upload_file
+model QuestionType {
+    id       Int     @id @default(autoincrement())
+    name     String
+    isActive Boolean @default(true) @map("is_active")
+
+    questionBank QuestionBank[] @relation("QuestionBankQuestionTypeId")
+}

@@ -1,0 +1,9 @@
+/// ระดับข้อสอบ
+// data: easy, medium, hard
+model QuestionLevel {
+    id       Int     @id @default(autoincrement())
+    name     String
+    isActive Boolean @default(true) @map("is_active")
+
+    questionBank QuestionBank[] @relation("QuestionBankQuestionLevelId")
+}

@@ -1,0 +1,47 @@
+/// คลังข้อสอบ
+
+enum CreationMethod {
+    UPLOAD @map("upload")
+    MANUAL @map("manual")
+}
+
+model QuestionBank {
+    id              Int            @id @default(autoincrement())
+    questionTypeId  Int            @map("question_type_id")
+    questionLevelId Int            @map("question_level_id")
+    questionSetId   Int            @map("question_set_id")
+    questionText    String         @map("question_text")
+    score           Int
+    imageUrl        String?        @map("image_url")
+    /// ตัวเลือกและคำตอบที่ถูกต้อง
+    answerData      Json           @map("answer_data")
+    /// คำอธิบายเฉลย
+    explanation     String?
+    versioning      String?
+    creationMethod  CreationMethod @map("creation_method")
+    sortOrder       Int            @map("sort_order")
+    /// ใช้สุ่มหรือไม่
+    randomize       Boolean        @default(false)
+    isActive        Boolean        @default(true) @map("is_active")
+
+    createdBy Int  @map("created_by")
+    updatedBy Int? @map("updated_by")
+    deletedBy Int? @map("deleted_by")
+
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime? @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
+
+    // Relations
+    questionType QuestionType @relation("QuestionBankQuestionTypeId", fields: [questionTypeId], references: [id])
+
+    questionLevel QuestionLevel @relation("QuestionBankQuestionLevelId", fields: [questionLevelId], references: [id])
+
+    questionSet QuestionSet @relation("QuestionBankQuestionSetId", fields: [questionSetId], references: [id])
+
+    createdByUser User  @relation("QuestionBankCreatedByUser", fields: [createdBy], references: [id])
+    updatedByUser User? @relation("QuestionBankUpdatedByUser", fields: [updatedBy], references: [id])
+    deletedByUser User? @relation("QuestionBankDeletedByUser", fields: [deletedBy], references: [id])
+
+    answerSubmission AnswerSubmission[] @relation("AnswerSubmissionQuestionBankId")
+}

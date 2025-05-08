@@ -1,0 +1,11 @@
+/// ระดับผลสอบที่ได้
+// data: low, medium, hard
+model ResultLevel {
+    id       Int     @id @default(autoincrement())
+    name     String
+    isActive Boolean @default(true) @map("is_active")
+
+    scoreCriteria ScoreCriteria[] @relation("ScoreCriteriaResultLevelId")
+
+    testResult TestResult[] @relation("TestResultResultLevelId")
+}

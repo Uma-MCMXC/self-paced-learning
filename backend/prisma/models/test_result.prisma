@@ -1,0 +1,21 @@
+/// เก็บผลสอบรวม
+model TestResult {
+    id Int @id @default(autoincrement())
+    userId Int @map("user_id")
+    questionSetId Int @map("question_set_id")
+    resultLevelId Int @map("result_level_id")
+    /// คะแนนดิบ
+    rawScore Int @map("raw_score")
+    /// คะแนนปกติ
+    normalizedScore Int @map("normalized_score")
+    /// ครั้งที่สอบ
+    attemptNo Int @map("attempt_no")
+    /// เวลาที่สอบเสร็จ
+    completedAt DateTime? @map("completed_at")
+
+    user User @relation("TestResultUserId", fields: [userId], references: [id])
+
+    questionSet QuestionSet @relation("TestResultQuestionSetId", fields: [questionSetId], references: [id])
+
+    resultLevel ResultLevel @relation("TestResultResultLevelId", fields: [resultLevelId], references: [id])
+}

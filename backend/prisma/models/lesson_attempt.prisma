@@ -1,0 +1,14 @@
+/// การเรียนซ้ำ
+model LessonAttempt {
+    id          Int       @id @default(autoincrement())
+    userId      Int       @map("user_id")
+    lessonId    Int       @map("lesson_id")
+    /// จำนวนรอบที่เรียน
+    attemptNo   Int       @map("attempt_no")
+    completedAt DateTime? @map("completed_at")
+    createdAt   DateTime  @map("created_at")
+
+    // Relations
+    users   User   @relation("LessonAttemptUserId", fields: [userId], references: [id])
+    lessons Lesson @relation("LessonAttemptLessonId", fields: [lessonId], references: [id])
+}

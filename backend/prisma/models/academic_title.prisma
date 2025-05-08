@@ -1,0 +1,6 @@
+model AcademicTitle {
+  id    Int    @id @default(autoincrement())
+  name  String
+
+  users User[]
+}

@@ -1,0 +1,12 @@
+/// รองรับการล็อกบทเรียนก่อนเรียน
+model LessonPrerequisite {
+    id               Int @id @default(autoincrement())
+    /// บทเรียนหลักที่ต้องการกำหนดเงื่อนไข
+    lessonId         Int @map("lesson_id")
+    /// บทเรียนที่ต้องเรียนจบก่อน
+    requiredLessonId Int @map("required_lesson_id")
+
+    // Relations
+    lessons        Lesson @relation("LessonPrerequisiteLessonId", fields: [lessonId], references: [id])
+    requiredLesson Lesson @relation("LessonPrerequisiteRequiredLessonId", fields: [requiredLessonId], references: [id])
+}

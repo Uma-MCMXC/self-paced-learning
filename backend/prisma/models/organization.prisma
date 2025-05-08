@@ -1,0 +1,20 @@
+model Organization {
+  id          Int       @id @default(autoincrement())
+  name        String
+  isActive    Boolean   @default(true) @map("is_active")
+
+  createdBy   Int       @map("created_by")
+  updatedBy   Int?      @map("updated_by")
+  deletedBy   Int?      @map("deleted_by")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  // Relations to User
+  createdByUser User   @relation("OrgCreatedByUser", fields: [createdBy], references: [id])
+  updatedByUser User?  @relation("OrgUpdatedByUser", fields: [updatedBy], references: [id])
+  deletedByUser User?  @relation("OrgDeletedByUser", fields: [deletedBy], references: [id])
+
+  departments  Department[]
+}

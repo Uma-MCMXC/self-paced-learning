@@ -1,0 +1,48 @@
+/// บทเรียน
+model Lesson {
+    id                 Int     @id @default(autoincrement())
+    lessonTypeId       Int     @map("lesson_type_id")
+    courseId           Int     @map("course_id")
+    courseInstructorId Int     @map("course_instructor_id")
+    name               String
+    description        String?
+    imageUrl           String? @map("image_url")
+    sortOrder          Int     @map("sort_order")
+    /// บทเรียนย่อย อ้างอิง lessonId
+    parentId           Int?    @map("parent_id")
+
+    isActive Boolean @default(true) @map("is_active")
+
+    createdBy Int  @map("created_by")
+    updatedBy Int? @map("updated_by")
+    deletedBy Int? @map("deleted_by")
+
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime? @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
+
+    // Self-reference
+    parent   Lesson?  @relation("LessonToParent", fields: [parentId], references: [id])
+    children Lesson[] @relation("LessonToParent")
+
+    // Relations
+    lessonType       LessonType       @relation("LessonTypeId", fields: [lessonTypeId], references: [id])
+    course           Course           @relation("CourseId", fields: [courseId], references: [id])
+    courseInstructor CourseInstructor @relation("CourseInstructorId", fields: [courseInstructorId], references: [id])
+
+    createdByUser User  @relation("LessonCreatedByUser", fields: [createdBy], references: [id])
+    updatedByUser User? @relation("LessonUpdatedByUser", fields: [updatedBy], references: [id])
+    deletedByUser User? @relation("LessonDeletedByUser", fields: [deletedBy], references: [id])
+
+    // Reverse relations
+    lessonContent LessonContent[] @relation("LessonTypeId")
+
+    lessonViewLessonId LessonView[] @relation("LessonViewLessonId")
+
+    lessonAttemptLessonId LessonAttempt[] @relation("LessonAttemptLessonId")
+
+    lessonPrerequisiteLessonId         LessonPrerequisite[] @relation("LessonPrerequisiteLessonId")
+    lessonPrerequisiteRequiredLessonId LessonPrerequisite[] @relation("LessonPrerequisiteRequiredLessonId")
+
+    questionSetLessonId QuestionSet[] @relation("QuestionSetLessonId")
+}

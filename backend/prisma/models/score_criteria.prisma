@@ -1,0 +1,15 @@
+/// เกณฑ์การแปลผลคะแนน
+
+model ScoreCriteria {
+    id            Int       @id @default(autoincrement())
+    questionSetId Int       @map("question_set_id")
+    resultLevelId Int       @map("result_level_id")
+    minScore      Int       @map("min_score")
+    maxScore      Int       @map("max_score")
+    description   String?
+    updatedAt     DateTime?
+
+    questionSet QuestionSet @relation("ScoreCriteriaQuestionSetId", fields: [questionSetId], references: [id])
+
+    resultLevel ResultLevel @relation("ScoreCriteriaResultLevelId", fields: [resultLevelId], references: [id])
+}

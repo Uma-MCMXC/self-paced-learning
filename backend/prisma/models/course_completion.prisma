@@ -1,0 +1,13 @@
+// การเรียนจบรายวิชา
+model CourseCompletion {
+    id             Int      @id @default(autoincrement())
+    courseId       Int      @map("course_id")
+    userId         Int      @map("user_id")
+    completedAt    DateTime @map("completed_at")
+    finalScore     Int      @map("final_score")
+    isCertified    Boolean  @default(false) @map("is_certified")
+    certificateUrl String   @map("certificate_url")
+
+    course Course @relation("CourseId", fields: [courseId], references: [id])
+    user User? @relation("UserId", fields: [userId], references: [id])
+}

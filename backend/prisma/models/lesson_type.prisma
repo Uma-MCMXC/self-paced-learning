@@ -1,0 +1,9 @@
+/// ประเภทบทเรียน
+// data: Main Lesson, Supplementary Lesson
+model LessonType {
+    id   Int    @id @default(autoincrement())
+    name String
+
+    // Reverse relations
+    lessonTypeId Lesson[] @relation("LessonTypeId")
+}

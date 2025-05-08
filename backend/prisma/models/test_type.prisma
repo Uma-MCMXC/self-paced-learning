@@ -1,0 +1,9 @@
+/// ประเภทแบบทดสอบ
+// data: foundation, pre, post, test
+model TestType {
+    id       Int     @id @default(autoincrement())
+    name     String
+    isActive Boolean @default(true) @map("is_active")
+
+    questionSet QuestionSet[] @relation("QuestionSetTestTypeId")
+}

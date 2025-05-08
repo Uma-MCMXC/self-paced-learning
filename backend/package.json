@@ -19,8 +19,10 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "fix:format": "prettier --write \"src/**/*.ts\"",
-    "build:schema": "cat prisma/models/*.prisma > prisma/schema.prisma",
-    "generate": "npm run build:schema && prisma generate"
+    "build:schema": "cat prisma/models/_base.prisma prisma/models/*.prisma > prisma/schema.prisma",
+    "generate": "npm run build:schema && prisma generate",
+    "migrate": "npm run build:schema && prisma migrate dev",
+    "format:schema": "prisma format"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -55,7 +57,7 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.7.3",
+    "typescript": "^5.8.3",
     "typescript-eslint": "^8.20.0"
   },
   "jest": {
