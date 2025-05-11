@@ -1,21 +1,19 @@
+// prisma/header.prisma
 generator client {
   provider = "prisma-client-js"
+  output   = "./node_modules/@prisma/client"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
-
 model AcademicTitle {
   id    Int    @id @default(autoincrement())
   name  String
 
   users User[]
-}
-
-/// เก็บคำตอบรายข้อที่ผู้เรียนตอบ
+}/// เก็บคำตอบรายข้อที่ผู้เรียนตอบ
 model AnswerSubmission {
     id             Int      @id @default(autoincrement())
     userId         Int      @map("user_id")
@@ -37,8 +35,6 @@ model AnswerSubmission {
 
     questionBank QuestionBank @relation("AnswerSubmissionQuestionBankId", fields: [questionBankId], references: [id])
 }
-
-
 model Category {
     id          Int       @id @default(autoincrement())
     name        String
@@ -58,8 +54,52 @@ model Category {
     deletedByUser User?  @relation("CatDeletedByUser", fields: [deletedBy], references: [id])
 
     categories Course[]
+}// การเรียนจบรายวิชา
+model CourseCompletion {
+    id             Int      @id @default(autoincrement())
+    courseId       Int      @map("course_id")
+    userId         Int      @map("user_id")
+    completedAt    DateTime @map("completed_at")
+    finalScore     Int      @map("final_score")
+    isCertified    Boolean  @default(false) @map("is_certified")
+    certificateUrl String   @map("certificate_url")
+
+    course Course @relation("CourseId", fields: [courseId], references: [id])
+    user User? @relation("UserId", fields: [userId], references: [id])
+}
+// การลงทะเบียนเรียน
+model CourseEnrollment {
+    id          Int         @id @default(autoincrement())
+    courseId    Int         @map("course_id")
+    userId      Int         @map("user_id")
+    enrolledAt  DateTime    @map("enrolled_at")
+}enum Role {
+  OWNER    @map("owner")
+  CO_OWNER @map("co-owner")
 }
 
+model CourseInstructor {
+  id       Int     @id @default(autoincrement())
+  courseId Int     @map("course_id")
+  userId   Int?    @map("user_id")
+  fullName String? @map("full_name")
+  role     Role
+  isActive Boolean @default(true) @map("is_active")
+
+  updatedBy Int? @map("updated_by")
+  deletedBy Int? @map("deleted_by")
+
+  updatedAt DateTime? @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  course Course @relation("CourseId", fields: [courseId], references: [id])
+  user User? @relation("UserId", fields: [userId], references: [id])
+
+  updatedByUser User? @relation("CourseInstructorUpdatedByUser", fields: [updatedBy], references: [id])
+  deletedByUser User? @relation("CourseInstructorDeletedByUser", fields: [deletedBy], references: [id])
+
+  courseInstructor Lesson[] @relation("CourseInstructorId")
+}
 model Course {
     id          Int     @id @default(autoincrement())
     categoryId  Int     @map("category_id")
@@ -93,60 +133,6 @@ model Course {
 
     questionSetCourseId QuestionSet[] @relation("QuestionSetCourseId")
 }
-
-
-// การเรียนจบรายวิชา
-model CourseCompletion {
-    id             Int      @id @default(autoincrement())
-    courseId       Int      @map("course_id")
-    userId         Int      @map("user_id")
-    completedAt    DateTime @map("completed_at")
-    finalScore     Int      @map("final_score")
-    isCertified    Boolean  @default(false) @map("is_certified")
-    certificateUrl String   @map("certificate_url")
-
-    course Course @relation("CourseId", fields: [courseId], references: [id])
-    user User? @relation("UserId", fields: [userId], references: [id])
-}
-
-
-// การลงทะเบียนเรียน
-model CourseEnrollment {
-    id          Int         @id @default(autoincrement())
-    courseId    Int         @map("course_id")
-    userId      Int         @map("user_id")
-    enrolledAt  DateTime    @map("enrolled_at")
-}
-
-enum Role {
-  OWNER    @map("owner")
-  CO_OWNER @map("co-owner")
-}
-
-model CourseInstructor {
-  id       Int     @id @default(autoincrement())
-  courseId Int     @map("course_id")
-  userId   Int?    @map("user_id")
-  fullName String? @map("full_name")
-  role     Role
-  isActive Boolean @default(true) @map("is_active")
-
-  updatedBy Int? @map("updated_by")
-  deletedBy Int? @map("deleted_by")
-
-  updatedAt DateTime? @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-
-  course Course @relation("CourseId", fields: [courseId], references: [id])
-  user User? @relation("UserId", fields: [userId], references: [id])
-
-  updatedByUser User? @relation("CourseInstructorUpdatedByUser", fields: [updatedBy], references: [id])
-  deletedByUser User? @relation("CourseInstructorDeletedByUser", fields: [deletedBy], references: [id])
-
-  courseInstructor Lesson[] @relation("CourseInstructorId")
-}
-
-
 model Department {
   id              Int          @id @default(autoincrement())
   organizationId  Int          @map("organization_id")
@@ -160,7 +146,94 @@ model Department {
   organization Organization @relation(fields: [organizationId], references: [id])
   
   users        User[]
+}/// การเรียนซ้ำ
+model LessonAttempt {
+    id          Int       @id @default(autoincrement())
+    userId      Int       @map("user_id")
+    lessonId    Int       @map("lesson_id")
+    /// จำนวนรอบที่เรียน
+    attemptNo   Int       @map("attempt_no")
+    completedAt DateTime? @map("completed_at")
+    createdAt   DateTime  @map("created_at")
+
+    // Relations
+    users   User   @relation("LessonAttemptUserId", fields: [userId], references: [id])
+    lessons Lesson @relation("LessonAttemptLessonId", fields: [lessonId], references: [id])
 }
+/// ประเภทเนื้อหา
+// data: video, pdf, quiz, embed, interactive, scorm
+model LessonContentType {
+    id Int @id @default(autoincrement())
+    name String
+
+    // Reverse relations
+    lessonContent LessonContent[] @relation("ContentTypeId")
+}/// เนื้อหาในบทเรียน
+model LessonContent {
+    id            Int     @id @default(autoincrement())
+    lessonId      Int     @map("lesson_id")
+    contentTypeId Int     @map("content_type_id")
+    contentUrl    String? @map("content_url")
+    /// เวลาวิดีโอ (วินาที)
+    duration      Int?
+    /// จำนวนหน้า
+    pages         Int?
+    sortOrder     Int     @map("sort_order")
+    isActive      Boolean @default(true) @map("is_active")
+
+    updatedBy Int? @map("updated_by")
+    deletedBy Int? @map("deleted_by")
+
+    updatedAt DateTime? @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
+
+    // Relations
+    lesson            Lesson            @relation("LessonTypeId", fields: [lessonId], references: [id])
+    lessonContentType LessonContentType @relation("ContentTypeId", fields: [contentTypeId], references: [id])
+
+    updatedByUser User? @relation("LessonContentUpdatedByUser", fields: [updatedBy], references: [id])
+    deletedByUser User? @relation("LessonContentDeletedByUser", fields: [deletedBy], references: [id])
+}
+/// รองรับการล็อกบทเรียนก่อนเรียน
+model LessonPrerequisite {
+    id               Int @id @default(autoincrement())
+    /// บทเรียนหลักที่ต้องการกำหนดเงื่อนไข
+    lessonId         Int @map("lesson_id")
+    /// บทเรียนที่ต้องเรียนจบก่อน
+    requiredLessonId Int @map("required_lesson_id")
+
+    // Relations
+    lessons        Lesson @relation("LessonPrerequisiteLessonId", fields: [lessonId], references: [id])
+    requiredLesson Lesson @relation("LessonPrerequisiteRequiredLessonId", fields: [requiredLessonId], references: [id])
+}
+/// ประเภทบทเรียน
+// data: Main Lesson, Supplementary Lesson
+model LessonType {
+    id   Int    @id @default(autoincrement())
+    name String
+
+    // Reverse relations
+    lessonTypeId Lesson[] @relation("LessonTypeId")
+}
+/// ติดตามการเรียน
+model LessonView {
+    id          Int       @id @default(autoincrement())
+    userId      Int       @map("user_id")
+    lessonId    Int       @map("lesson_id")
+    completed   Boolean   @default(false)
+    /// เวลาดูวิดิโอ
+    watchedTime Int       @map("watched_time")
+    /// จำนวนหน้าที่อ่าน
+    readPages   Int       @map("read_pages")
+    /// วันที่เรียนสำเร็จ
+    completedAt DateTime? @map("completed_at")
+    createdAt   DateTime  @map("created_at")
+
+    // Relations
+    users   User   @relation("LessonViewUserId", fields: [userId], references: [id])
+    lessons Lesson @relation("LessonViewLessonId", fields: [lessonId], references: [id])
+}
+
 
 /// บทเรียน
 model Lesson {
@@ -210,109 +283,6 @@ model Lesson {
 
     questionSetLessonId QuestionSet[] @relation("QuestionSetLessonId")
 }
-
-
-/// การเรียนซ้ำ
-model LessonAttempt {
-    id          Int       @id @default(autoincrement())
-    userId      Int       @map("user_id")
-    lessonId    Int       @map("lesson_id")
-    /// จำนวนรอบที่เรียน
-    attemptNo   Int       @map("attempt_no")
-    completedAt DateTime? @map("completed_at")
-    createdAt   DateTime  @map("created_at")
-
-    // Relations
-    users   User   @relation("LessonAttemptUserId", fields: [userId], references: [id])
-    lessons Lesson @relation("LessonAttemptLessonId", fields: [lessonId], references: [id])
-}
-
-
-/// เนื้อหาในบทเรียน
-model LessonContent {
-    id            Int     @id @default(autoincrement())
-    lessonId      Int     @map("lesson_id")
-    contentTypeId Int     @map("content_type_id")
-    contentUrl    String? @map("content_url")
-    /// เวลาวิดีโอ (วินาที)
-    duration      Int?
-    /// จำนวนหน้า
-    pages         Int?
-    sortOrder     Int     @map("sort_order")
-    isActive      Boolean @default(true) @map("is_active")
-
-    updatedBy Int? @map("updated_by")
-    deletedBy Int? @map("deleted_by")
-
-    updatedAt DateTime? @map("updated_at")
-    deletedAt DateTime? @map("deleted_at")
-
-    // Relations
-    lesson            Lesson            @relation("LessonTypeId", fields: [lessonId], references: [id])
-    lessonContentType LessonContentType @relation("ContentTypeId", fields: [contentTypeId], references: [id])
-
-    updatedByUser User? @relation("LessonContentUpdatedByUser", fields: [updatedBy], references: [id])
-    deletedByUser User? @relation("LessonContentDeletedByUser", fields: [deletedBy], references: [id])
-}
-
-
-/// ประเภทเนื้อหา
-// data: video, pdf, quiz, embed, interactive, scorm
-model LessonContentType {
-    id Int @id @default(autoincrement())
-    name String
-
-    // Reverse relations
-    lessonContent LessonContent[] @relation("ContentTypeId")
-}
-
-/// รองรับการล็อกบทเรียนก่อนเรียน
-model LessonPrerequisite {
-    id               Int @id @default(autoincrement())
-    /// บทเรียนหลักที่ต้องการกำหนดเงื่อนไข
-    lessonId         Int @map("lesson_id")
-    /// บทเรียนที่ต้องเรียนจบก่อน
-    requiredLessonId Int @map("required_lesson_id")
-
-    // Relations
-    lessons        Lesson @relation("LessonPrerequisiteLessonId", fields: [lessonId], references: [id])
-    requiredLesson Lesson @relation("LessonPrerequisiteRequiredLessonId", fields: [requiredLessonId], references: [id])
-}
-
-
-/// ประเภทบทเรียน
-// data: Main Lesson, Supplementary Lesson
-model LessonType {
-    id   Int    @id @default(autoincrement())
-    name String
-
-    // Reverse relations
-    lessonTypeId Lesson[] @relation("LessonTypeId")
-}
-
-
-/// ติดตามการเรียน
-model LessonView {
-    id          Int       @id @default(autoincrement())
-    userId      Int       @map("user_id")
-    lessonId    Int       @map("lesson_id")
-    completed   Boolean   @default(false)
-    /// เวลาดูวิดิโอ
-    watchedTime Int       @map("watched_time")
-    /// จำนวนหน้าที่อ่าน
-    readPages   Int       @map("read_pages")
-    /// วันที่เรียนสำเร็จ
-    completedAt DateTime? @map("completed_at")
-    createdAt   DateTime  @map("created_at")
-
-    // Relations
-    users   User   @relation("LessonViewUserId", fields: [userId], references: [id])
-    lessons Lesson @relation("LessonViewLessonId", fields: [lessonId], references: [id])
-}
-
-
-
-
 model Organization {
   id          Int       @id @default(autoincrement())
   name        String
@@ -332,9 +302,7 @@ model Organization {
   deletedByUser User?  @relation("OrgDeletedByUser", fields: [deletedBy], references: [id])
 
   departments  Department[]
-}
-
-/// คลังข้อสอบ
+}/// คลังข้อสอบ
 
 enum CreationMethod {
     UPLOAD @map("upload")
@@ -381,8 +349,6 @@ model QuestionBank {
 
     answerSubmission AnswerSubmission[] @relation("AnswerSubmissionQuestionBankId")
 }
-
-
 /// ระดับข้อสอบ
 // data: easy, medium, hard
 model QuestionLevel {
@@ -392,8 +358,6 @@ model QuestionLevel {
 
     questionBank QuestionBank[] @relation("QuestionBankQuestionLevelId")
 }
-
-
 /// ชุดข้อสอบ
 model QuestionSet {
     id           Int     @id @default(autoincrement())
@@ -435,8 +399,6 @@ model QuestionSet {
 
     answerSubmission AnswerSubmission[] @relation("AnswerSubmissionQuestionSetId")
 }
-
-
 /// ประเภทคลังข้อสอบ
 // data: choice, fill_in_blank, upload_file
 model QuestionType {
@@ -446,8 +408,6 @@ model QuestionType {
 
     questionBank QuestionBank[] @relation("QuestionBankQuestionTypeId")
 }
-
-
 /// ระดับผลสอบที่ได้
 // data: low, medium, hard
 model ResultLevel {
@@ -459,8 +419,6 @@ model ResultLevel {
 
     testResult TestResult[] @relation("TestResultResultLevelId")
 }
-
-
 /// เกณฑ์การแปลผลคะแนน
 
 model ScoreCriteria {
@@ -476,8 +434,6 @@ model ScoreCriteria {
 
     resultLevel ResultLevel @relation("ScoreCriteriaResultLevelId", fields: [resultLevelId], references: [id])
 }
-
-
 /// เก็บผลสอบรวม
 model TestResult {
     id Int @id @default(autoincrement())
@@ -498,9 +454,7 @@ model TestResult {
     questionSet QuestionSet @relation("TestResultQuestionSetId", fields: [questionSetId], references: [id])
 
     resultLevel ResultLevel @relation("TestResultResultLevelId", fields: [resultLevelId], references: [id])
-}
-
-/// ประเภทแบบทดสอบ
+}/// ประเภทแบบทดสอบ
 // data: foundation, pre, post, test
 model TestType {
     id       Int     @id @default(autoincrement())
@@ -509,26 +463,27 @@ model TestType {
 
     questionSet QuestionSet[] @relation("QuestionSetTestTypeId")
 }
-
-
 model Title {
     id      Int       @id @default(autoincrement())
     name    String
 
     users User[]
-}
+}model UserRole {
+    id      Int       @id @default(autoincrement())
+    name    String
 
-model User {
+    users User[]
+}model User {
   id Int @id @default(autoincrement())
 
   userRoleId      Int     @map("user_role_id")
-  titleId         Int?     @map("title_id")
+  titleId         Int?    @map("title_id")
   academicTitleId Int?    @map("academic_title_id")
   firstName       String  @map("first_name")
   lastName        String  @map("last_name")
-  email           String
+  email           String  @unique
   password        String
-  departmentId    Int?     @map("department_id")
+  departmentId    Int?    @map("department_id")
   isActive        Boolean @default(true) @map("is_active")
 
   createdAt DateTime  @default(now()) @map("created_at")
@@ -537,9 +492,9 @@ model User {
 
   // Relations
   userRole      UserRole       @relation(fields: [userRoleId], references: [id])
-  title         Title?          @relation(fields: [titleId], references: [id])
+  title         Title?         @relation(fields: [titleId], references: [id])
   academicTitle AcademicTitle? @relation(fields: [academicTitleId], references: [id])
-  department    Department?     @relation(fields: [departmentId], references: [id])
+  department    Department?    @relation(fields: [departmentId], references: [id])
 
   // Reverse relations
   organizationsCreated Organization[] @relation("OrgCreatedByUser")
@@ -583,12 +538,4 @@ model User {
   testResultUser TestResult[] @relation("TestResultUserId")
 
   answerSubmissionUser AnswerSubmission[] @relation("AnswerSubmissionUserId")
-}
-
-
-model UserRole {
-    id      Int       @id @default(autoincrement())
-    name    String
-
-    users User[]
 }

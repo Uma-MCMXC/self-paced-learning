@@ -2,13 +2,13 @@ model User {
   id Int @id @default(autoincrement())
 
   userRoleId      Int     @map("user_role_id")
-  titleId         Int?     @map("title_id")
+  titleId         Int?    @map("title_id")
   academicTitleId Int?    @map("academic_title_id")
   firstName       String  @map("first_name")
   lastName        String  @map("last_name")
-  email           String
+  email           String  @unique
   password        String
-  departmentId    Int?     @map("department_id")
+  departmentId    Int?    @map("department_id")
   isActive        Boolean @default(true) @map("is_active")
 
   createdAt DateTime  @default(now()) @map("created_at")
@@ -17,9 +17,9 @@ model User {
 
   // Relations
   userRole      UserRole       @relation(fields: [userRoleId], references: [id])
-  title         Title?          @relation(fields: [titleId], references: [id])
+  title         Title?         @relation(fields: [titleId], references: [id])
   academicTitle AcademicTitle? @relation(fields: [academicTitleId], references: [id])
-  department    Department?     @relation(fields: [departmentId], references: [id])
+  department    Department?    @relation(fields: [departmentId], references: [id])
 
   // Reverse relations
   organizationsCreated Organization[] @relation("OrgCreatedByUser")

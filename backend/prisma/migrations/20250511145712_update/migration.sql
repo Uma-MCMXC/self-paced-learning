@@ -341,13 +341,13 @@ CREATE TABLE "Title" (
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
     "user_role_id" INTEGER NOT NULL,
-    "title_id" INTEGER NOT NULL,
+    "title_id" INTEGER,
     "academic_title_id" INTEGER,
     "first_name" TEXT NOT NULL,
     "last_name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "department_id" INTEGER NOT NULL,
+    "department_id" INTEGER,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3),
@@ -363,6 +363,9 @@ CREATE TABLE "UserRole" (
 
     CONSTRAINT "UserRole_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_last_name_key" ON "User"("last_name");
 
 -- AddForeignKey
 ALTER TABLE "AnswerSubmission" ADD CONSTRAINT "AnswerSubmission_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -530,10 +533,10 @@ ALTER TABLE "TestResult" ADD CONSTRAINT "TestResult_result_level_id_fkey" FOREIG
 ALTER TABLE "User" ADD CONSTRAINT "User_user_role_id_fkey" FOREIGN KEY ("user_role_id") REFERENCES "UserRole"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_title_id_fkey" FOREIGN KEY ("title_id") REFERENCES "Title"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "User" ADD CONSTRAINT "User_title_id_fkey" FOREIGN KEY ("title_id") REFERENCES "Title"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_academic_title_id_fkey" FOREIGN KEY ("academic_title_id") REFERENCES "AcademicTitle"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "Department"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "User" ADD CONSTRAINT "User_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "Department"("id") ON DELETE SET NULL ON UPDATE CASCADE;
