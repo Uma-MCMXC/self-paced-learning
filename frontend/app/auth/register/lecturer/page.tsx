@@ -1,15 +1,25 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+import axios from 'axios'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
 import Button from '@/app/components/ui/Button'
 import FormInput from '@/app/components/ui/FormInput'
 import SelectInput from '@/app/components/ui/SelectInput'
 import SectionTitle from '@/app/components/ui/SectionTitle'
 import Badge from '@/app/components/ui/Badge'
 
+// ใช้ API เพื่อดึงคำนำหน้า
+export async function fetchTitles() {
+  const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/titles`)
+  return res.data
+}
+
 export default function LecturerRegisterPage() {
+  // title
+  const [titles, setTitles] = useState<{ id: number; name: string }[]>([])
+
   const [form, setForm] = useState({
     titleId: '',
     academicTitle: '',
@@ -21,6 +31,13 @@ export default function LecturerRegisterPage() {
     password: '',
     confirmPassword: '',
   })
+
+  // โหลด title จาก API เมื่อ component mount
+  useEffect(() => {
+    fetchTitles()
+      .then((data) => setTitles(data))
+      .catch((error) => console.error('Error loading titles:', error))
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -50,14 +67,16 @@ export default function LecturerRegisterPage() {
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <Link href="/" className="w-fit">
-            <Image
-              src="/uploads/logo/logo.png"
-              alt="Self-Paced Learning Logo"
-              width={160}
-              height={160}
-              className="mb-4 cursor-pointer"
-              unoptimized
-            />
+            <div className="relative w-[150px] aspect-square">
+              <Image
+                src="/uploads/logo/logo.png"
+                alt="Self-Paced Learning Logo"
+                fill
+                className="object-contain"
+                unoptimized
+                priority
+              />
+            </div>
           </Link>
         </div>
 
@@ -106,18 +125,16 @@ export default function LecturerRegisterPage() {
             <p className="text-sm text-gray-500">Please provide your basic personal information.</p>
           </div>
 
+          {/* ✅ แสดง Title ที่ดึงมาจาก backend */}
           <SelectInput
             label="Title"
             name="titleId"
             value={form.titleId}
             onChange={(val) => setForm((prev) => ({ ...prev, titleId: val }))}
             required
-            options={[
-              { label: 'นาย', value: '1' },
-              { label: 'นาง', value: '2' },
-              { label: 'นางสาว', value: '3' },
-            ]}
+            options={titles.map((t) => ({ label: t.name, value: String(t.id) }))}
           />
+
           <SelectInput
             label="Academic Title"
             name="academicTitle"
