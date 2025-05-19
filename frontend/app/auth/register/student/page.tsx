@@ -10,15 +10,20 @@ import SelectInput from '@/app/components/ui/SelectInput'
 import SectionTitle from '@/app/components/ui/SectionTitle'
 import Badge from '@/app/components/ui/Badge'
 
-// ใช้ API เพื่อดึงคำนำหน้า
+// use api
 export async function fetchTitles() {
   const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/titles`)
   return res.data
 }
+export async function fetchOrganization() {
+  const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/organization`)
+  return res.data
+}
 
 export default function StudentRegisterPage() {
-  // title
+  // api
   const [titles, setTitles] = useState<{ id: number; name: string }[]>([])
+  const [organization, setOrganization] = useState<{ id: number; name: string }[]>([])
 
   const [form, setForm] = useState({
     titleId: '',
@@ -33,9 +38,17 @@ export default function StudentRegisterPage() {
 
   // โหลด title จาก API เมื่อ component mount
   useEffect(() => {
-    fetchTitles()
-      .then((data) => setTitles(data))
-      .catch((error) => console.error('Error loading titles:', error))
+    const loadData = async () => {
+      try {
+        const [titlesRes, organizationRes] = await Promise.all([fetchTitles(), fetchOrganization()])
+        setTitles(titlesRes)
+        setOrganization(organizationRes)
+      } catch (err) {
+        console.error('Error loading initial data:', err)
+      }
+    }
+
+    loadData()
   }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,13 +169,10 @@ export default function StudentRegisterPage() {
           <SelectInput
             label="Organization"
             name="organizationId"
-            value={form.organizationId}
+            value={form.titleId}
             onChange={(val) => setForm((prev) => ({ ...prev, organizationId: val }))}
             required
-            options={['1', '2', '3', '4', '5', '6'].map((f) => ({
-              label: `Organization ${f}`,
-              value: f,
-            }))}
+            options={organization.map((t) => ({ label: t.name, value: String(t.id) }))}
           />
 
           <SelectInput

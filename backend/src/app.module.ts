@@ -8,9 +8,17 @@ import { UsersModule } from './user/user.module';
 
 import { TitleModule } from './title/title.module';
 import { AcademicTitleModule } from './academic-title/academic-title.module';
+import { OrganizationModule } from './organization/organization.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, TitleModule, AcademicTitleModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    UsersModule,
+    TitleModule,
+    AcademicTitleModule,
+    OrganizationModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

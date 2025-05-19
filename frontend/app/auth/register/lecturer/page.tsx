@@ -19,13 +19,16 @@ export async function fetchAcademicTitles() {
   const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/academic-titles`)
   return res.data
 }
+export async function fetchOrganization() {
+  const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/organization`)
+  return res.data
+}
 
 export default function LecturerRegisterPage() {
-  // title
+  // api
   const [titles, setTitles] = useState<{ id: number; name: string }[]>([])
-
-  // academic-title
   const [academicTitles, setAcademicTitles] = useState<{ id: number; name: string }[]>([])
+  const [organization, setOrganization] = useState<{ id: number; name: string }[]>([])
 
   const [form, setForm] = useState({
     titleId: '',
@@ -43,12 +46,14 @@ export default function LecturerRegisterPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [titlesRes, academicTitlesRes] = await Promise.all([
+        const [titlesRes, academicTitlesRes, organizationRes] = await Promise.all([
           fetchTitles(),
           fetchAcademicTitles(),
+          fetchOrganization(),
         ])
         setTitles(titlesRes)
         setAcademicTitles(academicTitlesRes)
+        setOrganization(organizationRes)
       } catch (err) {
         console.error('Error loading initial data:', err)
       }
@@ -185,10 +190,7 @@ export default function LecturerRegisterPage() {
             value={form.organizationId}
             onChange={(val) => setForm((prev) => ({ ...prev, organizationId: val }))}
             required
-            options={['1', '2', '3', '4', '5', '6'].map((f) => ({
-              label: `Organization ${f}`,
-              value: f,
-            }))}
+            options={organization.map((t) => ({ label: t.name, value: String(t.id) }))}
           />
 
           <SelectInput
