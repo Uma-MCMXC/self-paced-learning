@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -25,23 +25,31 @@ type SidebarItem = {
 
 type UserRole = 'admin' | 'student' | 'lecturer'
 
-export default function Sidebar({ userRole }: { userRole: UserRole }) {
+export default function Sidebar() {
   const pathname = usePathname()
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({})
+  const [userRole, setUserRole] = useState<UserRole | null>(null)
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user')
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser)
+        setUserRole(parsed.role)
+      } catch {
+        setUserRole(null)
+      }
+    }
+  }, [])
 
   const toggleMenu = (label: string) => {
-    setOpenMenus((prev) => {
-      const newState: Record<string, boolean> = {}
-
-      // วนทุกเมนูที่มี children
-      menuItems[userRole].forEach((item) => {
-        if (item.children) {
-          newState[item.label] = item.label === label ? !prev[item.label] : false
-        }
-      })
-
-      return newState
+    const newState: Record<string, boolean> = {}
+    menuItems[userRole!].forEach((item) => {
+      if (item.children) {
+        newState[item.label] = item.label === label ? !openMenus[item.label] : false
+      }
     })
+    setOpenMenus(newState)
   }
 
   const menuItems: Record<UserRole, SidebarItem[]> = {
@@ -65,42 +73,32 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
       },
     ],
     lecturer: [
+      { label: 'Dashboard', href: '/lecturer', icon: <HomeIcon className="w-5 h-5" /> },
       {
-        label: 'Dashboard',
-        href: '/lecturer',
-        icon: <HomeIcon className="w-5 h-5" />,
-      },
-      {
-        // หมวดหมู่
         label: 'Category',
         href: '/lecturer/category/manage',
         icon: <TagIcon className="w-5 h-5" />,
       },
       {
-        // รายวิชาของฉัน
         label: 'Course',
         href: '/lecturer/course/manage',
         icon: <BookOpenIcon className="w-5 h-5" />,
       },
       {
-        // บทเรียน
         label: 'Lessons',
         href: '/lecturer/lesson/manage',
         icon: <DocumentTextIcon className="w-5 h-5" />,
       },
       {
-        // คำถาม - คำตอบ
         label: 'Questions',
-        icon: <ClipboardDocumentListIcon className="w-5 h-5" />,
         href: '/lecturer/question/question-set/manage',
+        icon: <ClipboardDocumentListIcon className="w-5 h-5" />,
       },
       {
-        // นักเรียน
         label: 'Students',
         icon: <UserGroupIcon className="w-5 h-5" />,
         children: [
           { label: 'Student List', href: '/lecturer/students' },
-          // ติดตามความคืบหน้า
           { label: 'Progress Tracking', href: '/lecturer/progress-tracking' },
         ],
       },
@@ -110,6 +108,10 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
   const closeDrawer = () => {
     const drawerCheckbox = document.getElementById('sidebar-drawer') as HTMLInputElement
     if (drawerCheckbox?.checked) drawerCheckbox.checked = false
+  }
+
+  if (!userRole) {
+    return null // หรือ spinner/loading if preferred
   }
 
   return (
@@ -131,13 +133,7 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
                   href={item.href}
                   onClick={() => {
                     closeDrawer()
-                    setOpenMenus((prev) => {
-                      const newState: Record<string, boolean> = {}
-                      Object.keys(prev).forEach((key) => {
-                        newState[key] = false
-                      })
-                      return newState
-                    })
+                    setOpenMenus({})
                   }}
                   className={`w-[210px] flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 dark:text-[#CAF0F8] ${
                     isActive ? 'bg-[#0077B6] text-white' : 'hover:bg-[#90E0EF] text-[#03045E]'
@@ -156,9 +152,9 @@ export default function Sidebar({ userRole }: { userRole: UserRole }) {
                     {item.label}
                   </span>
                   {isOpen ? (
-                    <ChevronDownIcon className="w-5 h-5 transition-transform duration-200 rotate-180" />
+                    <ChevronDownIcon className="w-5 h-5 rotate-180" />
                   ) : (
-                    <ChevronRightIcon className="w-5 h-5 transition-transform duration-200" />
+                    <ChevronRightIcon className="w-5 h-5" />
                   )}
                 </button>
               )}

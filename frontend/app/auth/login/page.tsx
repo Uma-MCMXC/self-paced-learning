@@ -1,32 +1,76 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import axios from 'axios'
 import Button from '@/app/components/ui/Button'
 import FormInput from '@/app/components/ui/FormInput'
 import Image from 'next/image'
 import Link from 'next/link'
 
 export default function LoginPage() {
+  const router = useRouter()
+
+  // 👉 จัดเก็บค่าฟอร์ม email และ password
   const [form, setForm] = useState({
     email: '',
     password: '',
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  // 👉 อัปเดตค่าฟอร์มเมื่อผู้ใช้พิมพ์
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleLogin = (e: React.FormEvent) => {
+  // 👉 ดำเนินการ Login เมื่อกดปุ่ม Submit
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: ส่งข้อมูลไปยัง backend
-    console.log(form)
+
+    try {
+      // 🔗 เรียก backend เพื่อ login
+      const res = await axios.post('http://localhost:3000/auth/login', {
+        email: form.email,
+        password: form.password,
+      })
+
+      console.log('Response from backend:', res.data)
+
+      const { access_token, user } = res.data // ✅ แก้จาก response.data เป็น res.data
+
+      // 🛡 ตรวจสอบว่ามีข้อมูล user และ token หรือไม่
+      if (!user || !access_token) {
+        throw new Error('Invalid response from server')
+      }
+
+      // 💾 เก็บ token และ user ไว้ใน localStorage
+      localStorage.setItem('token', access_token)
+      localStorage.setItem('user', JSON.stringify(user))
+
+      // 📦 ส่งผู้ใช้ไปหน้า dashboard ตาม role
+      switch (user.role) {
+        case 'admin':
+          router.push('/admin')
+          break
+        case 'lecturer':
+          router.push('/lecturer')
+          break
+        case 'student':
+          router.push('/student')
+          break
+        default:
+          router.push('/')
+      }
+    } catch (error: any) {
+      console.error('Login error:', error)
+      alert('Login failed: ' + (error?.response?.data?.message || 'Unknown error'))
+    }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="bg-white rounded-2xl shadow-xl flex flex-col md:flex-row w-full max-w-4xl overflow-hidden">
-        {/* Left Panel */}
+        {/* Left Panel: โลโก้และคำอธิบาย */}
         <div className="md:w-1/2 bg-white p-8 flex flex-col justify-start">
           <div className="mb-8">
             <Link href="/" className="w-fit">
@@ -37,6 +81,8 @@ export default function LoginPage() {
                 height={130}
                 className="mb-4 cursor-pointer"
                 unoptimized
+                priority
+                style={{ height: 'auto' }}
               />
             </Link>
 
@@ -47,7 +93,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right Panel - Form */}
+        {/* Right Panel: ฟอร์ม Login */}
         <div className="md:w-1/2 p-8">
           <form onSubmit={handleLogin} className="space-y-4">
             <FormInput
@@ -63,6 +109,7 @@ export default function LoginPage() {
               name="password"
               id="password"
               label="Password"
+              type="password"
               value={form.password}
               onChange={handleChange}
               required

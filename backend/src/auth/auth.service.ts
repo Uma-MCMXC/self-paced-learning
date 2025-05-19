@@ -1,7 +1,7 @@
-// AuthService ที่ตรวจสอบ user และคืน JWT
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../user/user.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -12,8 +12,7 @@ export class AuthService {
 
   async validateUser(email: string, password: string) {
     const user = await this.usersService.findByEmail(email);
-    if (user && user.password === password) {
-      // ในของจริงให้ใช้ bcrypt เปรียบเทียบ
+    if (user && await bcrypt.compare(password, user.password)) {
       const { password, ...result } = user;
       return result;
     }
@@ -21,13 +20,14 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { sub: user.id, role: user.role };
+    const payload = { sub: user.id, role: user.userRole.name };
     return {
       access_token: this.jwtService.sign(payload),
       user: {
         id: user.id,
-        name: user.name,
-        role: user.role,
+        email: user.email,
+        name: `${user.firstName} ${user.lastName}`,
+        role: user.userRole.name,
       },
     };
   }
