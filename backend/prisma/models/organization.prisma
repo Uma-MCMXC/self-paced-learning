@@ -16,5 +16,5 @@ model Organization {
   updatedByUser User?  @relation("OrgUpdatedByUser", fields: [updatedBy], references: [id])
   deletedByUser User?  @relation("OrgDeletedByUser", fields: [deletedBy], references: [id])
 
-  departments  Department[]
+  division  Division[]
 }

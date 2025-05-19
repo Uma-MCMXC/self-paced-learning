@@ -43,25 +43,6 @@ CREATE TABLE "Category" (
 );
 
 -- CreateTable
-CREATE TABLE "Course" (
-    "id" SERIAL NOT NULL,
-    "category_id" INTEGER NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "image_url" TEXT NOT NULL,
-    "fee" INTEGER NOT NULL,
-    "is_active" BOOLEAN NOT NULL DEFAULT true,
-    "created_by" INTEGER NOT NULL,
-    "updated_by" INTEGER,
-    "deleted_by" INTEGER,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3),
-    "deleted_at" TIMESTAMP(3),
-
-    CONSTRAINT "Course_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "CourseCompletion" (
     "id" SERIAL NOT NULL,
     "course_id" INTEGER NOT NULL,
@@ -101,29 +82,13 @@ CREATE TABLE "CourseInstructor" (
 );
 
 -- CreateTable
-CREATE TABLE "Department" (
+CREATE TABLE "Course" (
     "id" SERIAL NOT NULL,
-    "organization_id" INTEGER NOT NULL,
+    "category_id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
-    "is_active" BOOLEAN NOT NULL DEFAULT true,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3),
-    "deleted_at" TIMESTAMP(3),
-
-    CONSTRAINT "Department_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Lesson" (
-    "id" SERIAL NOT NULL,
-    "lesson_type_id" INTEGER NOT NULL,
-    "course_id" INTEGER NOT NULL,
-    "course_instructor_id" INTEGER NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
-    "image_url" TEXT,
-    "sort_order" INTEGER NOT NULL,
-    "parent_id" INTEGER,
+    "description" TEXT NOT NULL,
+    "image_url" TEXT NOT NULL,
+    "fee" INTEGER NOT NULL,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_by" INTEGER NOT NULL,
     "updated_by" INTEGER,
@@ -132,7 +97,20 @@ CREATE TABLE "Lesson" (
     "updated_at" TIMESTAMP(3),
     "deleted_at" TIMESTAMP(3),
 
-    CONSTRAINT "Lesson_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Course_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Division" (
+    "id" SERIAL NOT NULL,
+    "organization_id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3),
+    "deleted_at" TIMESTAMP(3),
+
+    CONSTRAINT "Division_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -145,6 +123,14 @@ CREATE TABLE "LessonAttempt" (
     "created_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "LessonAttempt_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "LessonContentType" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+
+    CONSTRAINT "LessonContentType_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -163,14 +149,6 @@ CREATE TABLE "LessonContent" (
     "deleted_at" TIMESTAMP(3),
 
     CONSTRAINT "LessonContent_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "LessonContentType" (
-    "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
-
-    CONSTRAINT "LessonContentType_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -202,6 +180,28 @@ CREATE TABLE "LessonView" (
     "created_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "LessonView_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Lesson" (
+    "id" SERIAL NOT NULL,
+    "lesson_type_id" INTEGER NOT NULL,
+    "course_id" INTEGER NOT NULL,
+    "course_instructor_id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "image_url" TEXT,
+    "sort_order" INTEGER NOT NULL,
+    "parent_id" INTEGER,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "created_by" INTEGER NOT NULL,
+    "updated_by" INTEGER,
+    "deleted_by" INTEGER,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3),
+    "deleted_at" TIMESTAMP(3),
+
+    CONSTRAINT "Lesson_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -338,6 +338,14 @@ CREATE TABLE "Title" (
 );
 
 -- CreateTable
+CREATE TABLE "UserRole" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+
+    CONSTRAINT "UserRole_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
     "user_role_id" INTEGER NOT NULL,
@@ -347,7 +355,7 @@ CREATE TABLE "User" (
     "last_name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "department_id" INTEGER,
+    "division_id" INTEGER,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3),
@@ -356,16 +364,8 @@ CREATE TABLE "User" (
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "UserRole" (
-    "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
-
-    CONSTRAINT "UserRole_pkey" PRIMARY KEY ("id")
-);
-
 -- CreateIndex
-CREATE UNIQUE INDEX "User_last_name_key" ON "User"("last_name");
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- AddForeignKey
 ALTER TABLE "AnswerSubmission" ADD CONSTRAINT "AnswerSubmission_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -386,18 +386,6 @@ ALTER TABLE "Category" ADD CONSTRAINT "Category_updated_by_fkey" FOREIGN KEY ("u
 ALTER TABLE "Category" ADD CONSTRAINT "Category_deleted_by_fkey" FOREIGN KEY ("deleted_by") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Course" ADD CONSTRAINT "Course_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Course" ADD CONSTRAINT "Course_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Course" ADD CONSTRAINT "Course_updated_by_fkey" FOREIGN KEY ("updated_by") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Course" ADD CONSTRAINT "Course_deleted_by_fkey" FOREIGN KEY ("deleted_by") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "CourseCompletion" ADD CONSTRAINT "CourseCompletion_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "Course"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -416,28 +404,19 @@ ALTER TABLE "CourseInstructor" ADD CONSTRAINT "CourseInstructor_updated_by_fkey"
 ALTER TABLE "CourseInstructor" ADD CONSTRAINT "CourseInstructor_deleted_by_fkey" FOREIGN KEY ("deleted_by") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Department" ADD CONSTRAINT "Department_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Course" ADD CONSTRAINT "Course_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "Lesson"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Course" ADD CONSTRAINT "Course_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_lesson_type_id_fkey" FOREIGN KEY ("lesson_type_id") REFERENCES "LessonType"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Course" ADD CONSTRAINT "Course_updated_by_fkey" FOREIGN KEY ("updated_by") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "Course"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Course" ADD CONSTRAINT "Course_deleted_by_fkey" FOREIGN KEY ("deleted_by") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_course_instructor_id_fkey" FOREIGN KEY ("course_instructor_id") REFERENCES "CourseInstructor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_updated_by_fkey" FOREIGN KEY ("updated_by") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_deleted_by_fkey" FOREIGN KEY ("deleted_by") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Division" ADD CONSTRAINT "Division_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "LessonAttempt" ADD CONSTRAINT "LessonAttempt_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -468,6 +447,27 @@ ALTER TABLE "LessonView" ADD CONSTRAINT "LessonView_user_id_fkey" FOREIGN KEY ("
 
 -- AddForeignKey
 ALTER TABLE "LessonView" ADD CONSTRAINT "LessonView_lesson_id_fkey" FOREIGN KEY ("lesson_id") REFERENCES "Lesson"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "Lesson"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_lesson_type_id_fkey" FOREIGN KEY ("lesson_type_id") REFERENCES "LessonType"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "Course"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_course_instructor_id_fkey" FOREIGN KEY ("course_instructor_id") REFERENCES "CourseInstructor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_updated_by_fkey" FOREIGN KEY ("updated_by") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_deleted_by_fkey" FOREIGN KEY ("deleted_by") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Organization" ADD CONSTRAINT "Organization_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -539,4 +539,4 @@ ALTER TABLE "User" ADD CONSTRAINT "User_title_id_fkey" FOREIGN KEY ("title_id") 
 ALTER TABLE "User" ADD CONSTRAINT "User_academic_title_id_fkey" FOREIGN KEY ("academic_title_id") REFERENCES "AcademicTitle"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "Department"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "User" ADD CONSTRAINT "User_division_id_fkey" FOREIGN KEY ("division_id") REFERENCES "Division"("id") ON DELETE SET NULL ON UPDATE CASCADE;

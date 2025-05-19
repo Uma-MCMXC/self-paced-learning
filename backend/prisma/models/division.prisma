@@ -1,4 +1,4 @@
-model Department {
+model Division {
   id              Int          @id @default(autoincrement())
   organizationId  Int          @map("organization_id")
   name            String
