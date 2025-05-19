@@ -1,53 +1,48 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import Button from '@/app/components/ui/Button'
 import FormInput from '@/app/components/ui/FormInput'
+import Modal from '@/app/components/ui/Modal'
 import Image from 'next/image'
 import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
 
-  // 👉 จัดเก็บค่าฟอร์ม email และ password
   const [form, setForm] = useState({
     email: '',
     password: '',
   })
 
-  // 👉 อัปเดตค่าฟอร์มเมื่อผู้ใช้พิมพ์
+  const [errorMessage, setErrorMessage] = useState('')
+  const errorModalRef = useRef<HTMLDialogElement>(null)
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  // 👉 ดำเนินการ Login เมื่อกดปุ่ม Submit
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
 
     try {
-      // 🔗 เรียก backend เพื่อ login
-      const res = await axios.post('http://localhost:3000/auth/login', {
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         email: form.email,
         password: form.password,
       })
 
-      console.log('Response from backend:', res.data)
+      const { access_token, user } = res.data
 
-      const { access_token, user } = res.data // ✅ แก้จาก response.data เป็น res.data
-
-      // 🛡 ตรวจสอบว่ามีข้อมูล user และ token หรือไม่
       if (!user || !access_token) {
         throw new Error('Invalid response from server')
       }
 
-      // 💾 เก็บ token และ user ไว้ใน localStorage
       localStorage.setItem('token', access_token)
       localStorage.setItem('user', JSON.stringify(user))
 
-      // 📦 ส่งผู้ใช้ไปหน้า dashboard ตาม role
       switch (user.role) {
         case 'admin':
           router.push('/admin')
@@ -62,15 +57,20 @@ export default function LoginPage() {
           router.push('/')
       }
     } catch (error: any) {
-      console.error('Login error:', error)
-      alert('Login failed: ' + (error?.response?.data?.message || 'Unknown error'))
+      const message =
+        error?.response?.status === 401
+          ? 'Invalid email or password. Please try again.'
+          : error?.response?.data?.message || 'Unknown error occurred'
+
+      setErrorMessage(message)
+      errorModalRef.current?.showModal()
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="bg-white rounded-2xl shadow-xl flex flex-col md:flex-row w-full max-w-4xl overflow-hidden">
-        {/* Left Panel: โลโก้และคำอธิบาย */}
+        {/* Left Panel */}
         <div className="md:w-1/2 bg-white p-8 flex flex-col justify-start">
           <div className="mb-8">
             <Link href="/" className="w-fit">
@@ -93,7 +93,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right Panel: ฟอร์ม Login */}
+        {/* Right Panel: Form */}
         <div className="md:w-1/2 p-8">
           <form onSubmit={handleLogin} className="space-y-4">
             <FormInput
@@ -139,6 +139,17 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      {/* Error Modal */}
+      <Modal
+        id="loginErrorModal"
+        ref={errorModalRef}
+        title="Login Failed"
+        size="sm"
+        onClose={() => setErrorMessage('')}
+      >
+        <p>{errorMessage}</p>
+      </Modal>
     </div>
   )
 }

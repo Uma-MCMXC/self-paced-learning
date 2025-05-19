@@ -6,7 +6,7 @@ import { User } from '@prisma/client';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async findByEmail(email: string): Promise<User & { userRole: { name: string } } | null> {
+  async findByEmail(email: string): Promise<(User & { userRole: { name: string } }) | null> {
     return this.prisma.user.findUnique({
       where: { email },
       include: {
