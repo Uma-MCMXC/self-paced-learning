@@ -11,6 +11,7 @@ import { seedTestTypes } from './test_type';
 import { seedTitles } from './title';
 import { seedUserRoles } from './user_role';
 import { seedUsers } from './user';
+import { seedOrganizations } from './organizations';
 
 async function main() {
   await seedAcademicTitles();
@@ -23,6 +24,7 @@ async function main() {
   await seedTitles();
   await seedUserRoles();
   await seedUsers();
+  await seedOrganizations();
 }
 
 main()
