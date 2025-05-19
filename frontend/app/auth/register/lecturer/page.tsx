@@ -10,9 +10,13 @@ import SelectInput from '@/app/components/ui/SelectInput'
 import SectionTitle from '@/app/components/ui/SectionTitle'
 import Badge from '@/app/components/ui/Badge'
 
-// ใช้ API เพื่อดึงคำนำหน้า
+// use api
 export async function fetchTitles() {
   const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/titles`)
+  return res.data
+}
+export async function fetchAcademicTitles() {
+  const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/academic-titles`)
   return res.data
 }
 
@@ -20,9 +24,12 @@ export default function LecturerRegisterPage() {
   // title
   const [titles, setTitles] = useState<{ id: number; name: string }[]>([])
 
+  // academic-title
+  const [academicTitles, setAcademicTitles] = useState<{ id: number; name: string }[]>([])
+
   const [form, setForm] = useState({
     titleId: '',
-    academicTitle: '',
+    academicTitleId: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -34,9 +41,20 @@ export default function LecturerRegisterPage() {
 
   // โหลด title จาก API เมื่อ component mount
   useEffect(() => {
-    fetchTitles()
-      .then((data) => setTitles(data))
-      .catch((error) => console.error('Error loading titles:', error))
+    const loadData = async () => {
+      try {
+        const [titlesRes, academicTitlesRes] = await Promise.all([
+          fetchTitles(),
+          fetchAcademicTitles(),
+        ])
+        setTitles(titlesRes)
+        setAcademicTitles(academicTitlesRes)
+      } catch (err) {
+        console.error('Error loading initial data:', err)
+      }
+    }
+
+    loadData()
   }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,20 +155,11 @@ export default function LecturerRegisterPage() {
 
           <SelectInput
             label="Academic Title"
-            name="academicTitle"
-            value={form.academicTitle}
-            onChange={(val) => setForm((prev) => ({ ...prev, academicTitle: val }))}
+            name="academicTitleId"
+            value={form.academicTitleId}
+            onChange={(val) => setForm((prev) => ({ ...prev, academicTitleId: val }))}
             required
-            options={[
-              { label: 'อ.', value: '1' },
-              { label: 'อ.ดร', value: '2' },
-              { label: 'อ.ผศ.', value: '3' },
-              { label: 'อ.รศ.', value: '4' },
-              { label: 'อ.ศ.', value: '5' },
-              { label: 'ผศ.ดร.', value: '6' },
-              { label: 'รศ.ดร.', value: '7' },
-              { label: 'ศ.ดร.', value: '8' },
-            ]}
+            options={academicTitles.map((t) => ({ label: t.name, value: String(t.id) }))}
           />
 
           <FormInput
