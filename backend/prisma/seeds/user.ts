@@ -1,10 +1,7 @@
 import { PrismaClient } from '@prisma/client';
-import * as crypto from 'crypto';
-const prisma = new PrismaClient();
+import * as bcrypt from 'bcrypt';
 
-function md5(value: string) {
-  return crypto.createHash('md5').update(value).digest('hex');
-}
+const prisma = new PrismaClient();
 
 export async function seedUsers() {
   // ตรวจสอบ foreign key
@@ -20,35 +17,37 @@ export async function seedUsers() {
   // ✅ รีเซตลำดับก่อน insert
   await prisma.$executeRawUnsafe(`ALTER SEQUENCE "User_id_seq" RESTART WITH 1000`);
 
+  // สร้าง system user
   await prisma.user.create({
     data: {
       userRoleId: systemRole.id,
-      titleId: undefined,
-      academicTitleId: undefined,
+      titleId: null,
+      academicTitleId: null,
       firstName: 'system',
       lastName: 'user',
       email: 'system@example.com',
-      password: md5('system123'),
-      departmentId: undefined,
+      password: await bcrypt.hash('system123', 10),
+      departmentId: null,
       isActive: true,
       createdAt: new Date(),
     },
   });
 
+  // สร้าง admin user
   await prisma.user.create({
     data: {
       userRoleId: adminRole.id,
-      titleId: titleMs?.id,
-      academicTitleId: undefined,
+      titleId: titleMs?.id ?? null,
+      academicTitleId: null,
       firstName: 'อุมา',
       lastName: 'เพ็ชรคง',
       email: 'petkong28@gmail.com',
-      password: md5('admin1234'),
-      departmentId: undefined,
+      password: await bcrypt.hash('admin1234', 10),
+      departmentId: null,
       isActive: true,
       createdAt: new Date(),
     },
   });
 
-  console.log('✅ Seed Users completed.');
+  console.log('✅ Seed Users with bcrypt completed.');
 }
