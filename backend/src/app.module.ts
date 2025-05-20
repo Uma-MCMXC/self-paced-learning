@@ -9,6 +9,7 @@ import { UsersModule } from './user/user.module';
 import { TitleModule } from './title/title.module';
 import { AcademicTitleModule } from './academic-title/academic-title.module';
 import { OrganizationModule } from './organization/organization.module';
+import { DivisionModule } from './division/division.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { OrganizationModule } from './organization/organization.module';
     TitleModule,
     AcademicTitleModule,
     OrganizationModule,
+    DivisionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

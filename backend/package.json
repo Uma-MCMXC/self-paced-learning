@@ -22,6 +22,7 @@
     "build:schema": "cat prisma/header.prisma prisma/models/*.prisma > prisma/schema.prisma",
     "generate": "npm run build:schema && prisma generate",
     "migrate": "npm run build:schema && prisma migrate dev",
+    "reset": "npm run build:schema && prisma migrate reset",
     "seed": "ts-node prisma/seeds/index.ts"
   },
   "dependencies": {
@@ -31,7 +32,7 @@
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
-    "@prisma/client": "^6.7.0",
+    "@prisma/client": "^6.8.2",
     "bcrypt": "^6.0.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
@@ -58,7 +59,7 @@
     "globals": "^16.0.0",
     "jest": "^29.7.0",
     "prettier": "^3.5.3",
-    "prisma": "^6.7.0",
+    "prisma": "^6.8.2",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",

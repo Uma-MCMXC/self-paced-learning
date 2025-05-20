@@ -1,18 +1,19 @@
-// prisma/header.prisma
 generator client {
-  provider = "prisma-client-js"
-  output   = "./node_modules/@prisma/client"
+    provider = "prisma-client-js"
+    output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}model AcademicTitle {
-  id    Int    @id @default(autoincrement())
-  name  String
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+model AcademicTitle {
+    id   Int    @id @default(autoincrement())
+    name String
 
-  users User[]
-}/// เก็บคำตอบรายข้อที่ผู้เรียนตอบ
+    users User[]
+}
+/// เก็บคำตอบรายข้อที่ผู้เรียนตอบ
 model AnswerSubmission {
     id             Int      @id @default(autoincrement())
     userId         Int      @map("user_id")
@@ -34,26 +35,28 @@ model AnswerSubmission {
 
     questionBank QuestionBank @relation("AnswerSubmissionQuestionBankId", fields: [questionBankId], references: [id])
 }
+
 model Category {
-    id          Int       @id @default(autoincrement())
-    name        String
-    isActive    Boolean   @default(true) @map("is_active")
+    id       Int     @id @default(autoincrement())
+    name     String
+    isActive Boolean @default(true) @map("is_active")
 
-    createdBy   Int       @map("created_by")
-    updatedBy   Int?      @map("updated_by")
-    deletedBy   Int?      @map("deleted_by")
+    createdBy Int  @map("created_by")
+    updatedBy Int? @map("updated_by")
+    deletedBy Int? @map("deleted_by")
 
-    createdAt   DateTime  @default(now()) @map("created_at")
-    updatedAt   DateTime? @map("updated_at")
-    deletedAt   DateTime? @map("deleted_at")
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime? @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
 
     // Relations to User
-    createdByUser User   @relation("CatCreatedByUser", fields: [createdBy], references: [id])
-    updatedByUser User?  @relation("CatUpdatedByUser", fields: [updatedBy], references: [id])
-    deletedByUser User?  @relation("CatDeletedByUser", fields: [deletedBy], references: [id])
+    createdByUser User  @relation("CatCreatedByUser", fields: [createdBy], references: [id])
+    updatedByUser User? @relation("CatUpdatedByUser", fields: [updatedBy], references: [id])
+    deletedByUser User? @relation("CatDeletedByUser", fields: [deletedBy], references: [id])
 
     categories Course[]
-}// การเรียนจบรายวิชา
+}
+// การเรียนจบรายวิชา
 model CourseCompletion {
     id             Int      @id @default(autoincrement())
     courseId       Int      @map("course_id")
@@ -64,46 +67,49 @@ model CourseCompletion {
     certificateUrl String   @map("certificate_url")
 
     course Course @relation("CourseId", fields: [courseId], references: [id])
-    user User? @relation("UserId", fields: [userId], references: [id])
+    user   User?  @relation("UserId", fields: [userId], references: [id])
 }
+
 // การลงทะเบียนเรียน
 model CourseEnrollment {
-    id          Int         @id @default(autoincrement())
-    courseId    Int         @map("course_id")
-    userId      Int         @map("user_id")
-    enrolledAt  DateTime    @map("enrolled_at")
-}enum Role {
-  OWNER    @map("owner")
-  CO_OWNER @map("co-owner")
+    id         Int      @id @default(autoincrement())
+    courseId   Int      @map("course_id")
+    userId     Int      @map("user_id")
+    enrolledAt DateTime @map("enrolled_at")
+}
+enum Role {
+    OWNER    @map("owner")
+    CO_OWNER @map("co-owner")
 }
 
 model CourseInstructor {
-  id       Int     @id @default(autoincrement())
-  courseId Int     @map("course_id")
-  userId   Int?    @map("user_id")
-  fullName String? @map("full_name")
-  role     Role
-  isActive Boolean @default(true) @map("is_active")
+    id       Int     @id @default(autoincrement())
+    courseId Int     @map("course_id")
+    userId   Int?    @map("user_id")
+    fullName String? @map("full_name")
+    role     Role
+    isActive Boolean @default(true) @map("is_active")
 
-  updatedBy Int? @map("updated_by")
-  deletedBy Int? @map("deleted_by")
+    updatedBy Int? @map("updated_by")
+    deletedBy Int? @map("deleted_by")
 
-  updatedAt DateTime? @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+    updatedAt DateTime? @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
 
-  course Course @relation("CourseId", fields: [courseId], references: [id])
-  user User? @relation("UserId", fields: [userId], references: [id])
+    course Course @relation("CourseId", fields: [courseId], references: [id])
+    user   User?  @relation("UserId", fields: [userId], references: [id])
 
-  updatedByUser User? @relation("CourseInstructorUpdatedByUser", fields: [updatedBy], references: [id])
-  deletedByUser User? @relation("CourseInstructorDeletedByUser", fields: [deletedBy], references: [id])
+    updatedByUser User? @relation("CourseInstructorUpdatedByUser", fields: [updatedBy], references: [id])
+    deletedByUser User? @relation("CourseInstructorDeletedByUser", fields: [deletedBy], references: [id])
 
-  courseInstructor Lesson[] @relation("CourseInstructorId")
+    courseInstructor Lesson[] @relation("CourseInstructorId")
 }
+
 model Course {
     id          Int     @id @default(autoincrement())
     categoryId  Int     @map("category_id")
     name        String
-    description String  @db.Text
+    description String?
     imageUrl    String  @map("image_url")
     /// ค่าใช้จ่าย
     fee         Int
@@ -132,20 +138,22 @@ model Course {
 
     questionSetCourseId QuestionSet[] @relation("QuestionSetCourseId")
 }
-model Division {
-  id              Int          @id @default(autoincrement())
-  organizationId  Int          @map("organization_id")
-  name            String
-  isActive        Boolean      @default(true) @map("is_active")
-  createdAt       DateTime     @default(now()) @map("created_at")
-  updatedAt       DateTime?    @map("updated_at")
-  deletedAt       DateTime?    @map("deleted_at")
 
-  // Relations
-  organization Organization @relation(fields: [organizationId], references: [id])
-  
-  users        User[]
-}/// การเรียนซ้ำ
+model Division {
+    id             Int       @id @default(autoincrement())
+    organizationId Int       @map("organization_id")
+    name           String
+    isActive       Boolean   @default(true) @map("is_active")
+    createdAt      DateTime  @default(now()) @map("created_at")
+    updatedAt      DateTime? @map("updated_at")
+    deletedAt      DateTime? @map("deleted_at")
+
+    // Relations
+    organization Organization @relation(fields: [organizationId], references: [id])
+
+    users User[]
+}
+/// การเรียนซ้ำ
 model LessonAttempt {
     id          Int       @id @default(autoincrement())
     userId      Int       @map("user_id")
@@ -159,15 +167,17 @@ model LessonAttempt {
     users   User   @relation("LessonAttemptUserId", fields: [userId], references: [id])
     lessons Lesson @relation("LessonAttemptLessonId", fields: [lessonId], references: [id])
 }
+
 /// ประเภทเนื้อหา
 // data: video, pdf, quiz, embed, interactive, scorm
 model LessonContentType {
-    id Int @id @default(autoincrement())
+    id   Int    @id @default(autoincrement())
     name String
 
     // Reverse relations
     lessonContent LessonContent[] @relation("ContentTypeId")
-}/// เนื้อหาในบทเรียน
+}
+/// เนื้อหาในบทเรียน
 model LessonContent {
     id            Int     @id @default(autoincrement())
     lessonId      Int     @map("lesson_id")
@@ -193,6 +203,7 @@ model LessonContent {
     updatedByUser User? @relation("LessonContentUpdatedByUser", fields: [updatedBy], references: [id])
     deletedByUser User? @relation("LessonContentDeletedByUser", fields: [deletedBy], references: [id])
 }
+
 /// รองรับการล็อกบทเรียนก่อนเรียน
 model LessonPrerequisite {
     id               Int @id @default(autoincrement())
@@ -205,6 +216,7 @@ model LessonPrerequisite {
     lessons        Lesson @relation("LessonPrerequisiteLessonId", fields: [lessonId], references: [id])
     requiredLesson Lesson @relation("LessonPrerequisiteRequiredLessonId", fields: [requiredLessonId], references: [id])
 }
+
 /// ประเภทบทเรียน
 // data: Main Lesson, Supplementary Lesson
 model LessonType {
@@ -214,6 +226,7 @@ model LessonType {
     // Reverse relations
     lessonTypeId Lesson[] @relation("LessonTypeId")
 }
+
 /// ติดตามการเรียน
 model LessonView {
     id          Int       @id @default(autoincrement())
@@ -232,7 +245,6 @@ model LessonView {
     users   User   @relation("LessonViewUserId", fields: [userId], references: [id])
     lessons Lesson @relation("LessonViewLessonId", fields: [lessonId], references: [id])
 }
-
 
 /// บทเรียน
 model Lesson {
@@ -282,26 +294,28 @@ model Lesson {
 
     questionSetLessonId QuestionSet[] @relation("QuestionSetLessonId")
 }
+
 model Organization {
-  id          Int       @id @default(autoincrement())
-  name        String
-  isActive    Boolean   @default(true) @map("is_active")
+    id       Int     @id @default(autoincrement())
+    name     String
+    isActive Boolean @default(true) @map("is_active")
 
-  createdBy   Int       @map("created_by")
-  updatedBy   Int?      @map("updated_by")
-  deletedBy   Int?      @map("deleted_by")
+    createdBy Int  @map("created_by")
+    updatedBy Int? @map("updated_by")
+    deletedBy Int? @map("deleted_by")
 
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime? @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime? @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
 
-  // Relations to User
-  createdByUser User   @relation("OrgCreatedByUser", fields: [createdBy], references: [id])
-  updatedByUser User?  @relation("OrgUpdatedByUser", fields: [updatedBy], references: [id])
-  deletedByUser User?  @relation("OrgDeletedByUser", fields: [deletedBy], references: [id])
+    // Relations to User
+    createdByUser User  @relation("OrgCreatedByUser", fields: [createdBy], references: [id])
+    updatedByUser User? @relation("OrgUpdatedByUser", fields: [updatedBy], references: [id])
+    deletedByUser User? @relation("OrgDeletedByUser", fields: [deletedBy], references: [id])
 
-  division  Division[]
-}/// คลังข้อสอบ
+    division Division[]
+}
+/// คลังข้อสอบ
 
 enum CreationMethod {
     UPLOAD @map("upload")
@@ -348,6 +362,7 @@ model QuestionBank {
 
     answerSubmission AnswerSubmission[] @relation("AnswerSubmissionQuestionBankId")
 }
+
 /// ระดับข้อสอบ
 // data: easy, medium, hard
 model QuestionLevel {
@@ -357,6 +372,7 @@ model QuestionLevel {
 
     questionBank QuestionBank[] @relation("QuestionBankQuestionLevelId")
 }
+
 /// ชุดข้อสอบ
 model QuestionSet {
     id           Int     @id @default(autoincrement())
@@ -398,6 +414,7 @@ model QuestionSet {
 
     answerSubmission AnswerSubmission[] @relation("AnswerSubmissionQuestionSetId")
 }
+
 /// ประเภทคลังข้อสอบ
 // data: choice, fill_in_blank, upload_file
 model QuestionType {
@@ -407,6 +424,7 @@ model QuestionType {
 
     questionBank QuestionBank[] @relation("QuestionBankQuestionTypeId")
 }
+
 /// ระดับผลสอบที่ได้
 // data: low, medium, hard
 model ResultLevel {
@@ -418,6 +436,7 @@ model ResultLevel {
 
     testResult TestResult[] @relation("TestResultResultLevelId")
 }
+
 /// เกณฑ์การแปลผลคะแนน
 
 model ScoreCriteria {
@@ -433,27 +452,29 @@ model ScoreCriteria {
 
     resultLevel ResultLevel @relation("ScoreCriteriaResultLevelId", fields: [resultLevelId], references: [id])
 }
+
 /// เก็บผลสอบรวม
 model TestResult {
-    id Int @id @default(autoincrement())
-    userId Int @map("user_id")
-    questionSetId Int @map("question_set_id")
-    resultLevelId Int @map("result_level_id")
+    id              Int       @id @default(autoincrement())
+    userId          Int       @map("user_id")
+    questionSetId   Int       @map("question_set_id")
+    resultLevelId   Int       @map("result_level_id")
     /// คะแนนดิบ
-    rawScore Int @map("raw_score")
+    rawScore        Int       @map("raw_score")
     /// คะแนนปกติ
-    normalizedScore Int @map("normalized_score")
+    normalizedScore Int       @map("normalized_score")
     /// ครั้งที่สอบ
-    attemptNo Int @map("attempt_no")
+    attemptNo       Int       @map("attempt_no")
     /// เวลาที่สอบเสร็จ
-    completedAt DateTime? @map("completed_at")
+    completedAt     DateTime? @map("completed_at")
 
     user User @relation("TestResultUserId", fields: [userId], references: [id])
 
     questionSet QuestionSet @relation("TestResultQuestionSetId", fields: [questionSetId], references: [id])
 
     resultLevel ResultLevel @relation("TestResultResultLevelId", fields: [resultLevelId], references: [id])
-}/// ประเภทแบบทดสอบ
+}
+/// ประเภทแบบทดสอบ
 // data: foundation, pre, post, test
 model TestType {
     id       Int     @id @default(autoincrement())
@@ -462,79 +483,82 @@ model TestType {
 
     questionSet QuestionSet[] @relation("QuestionSetTestTypeId")
 }
+
 model Title {
-    id      Int       @id @default(autoincrement())
-    name    String
+    id   Int    @id @default(autoincrement())
+    name String
 
     users User[]
-}model UserRole {
-    id      Int       @id @default(autoincrement())
-    name    String
+}
+model UserRole {
+    id   Int    @id @default(autoincrement())
+    name String
 
     users User[]
-}model User {
-  id Int @id @default(autoincrement())
+}
+model User {
+    id Int @id @default(autoincrement())
 
-  userRoleId      Int     @map("user_role_id")
-  titleId         Int?    @map("title_id")
-  academicTitleId Int?    @map("academic_title_id")
-  firstName       String  @map("first_name")
-  lastName        String  @map("last_name")
-  email           String  @unique
-  password        String
-  divisionId      Int?    @map("division_id")
-  isActive        Boolean @default(true) @map("is_active")
+    userRoleId      Int     @map("user_role_id")
+    titleId         Int?    @map("title_id")
+    academicTitleId Int?    @map("academic_title_id")
+    firstName       String  @map("first_name")
+    lastName        String  @map("last_name")
+    email           String  @unique
+    password        String
+    divisionId      Int?    @map("division_id")
+    isActive        Boolean @default(true) @map("is_active")
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime? @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
 
-  // Relations
-  userRole      UserRole       @relation(fields: [userRoleId], references: [id])
-  title         Title?         @relation(fields: [titleId], references: [id])
-  academicTitle AcademicTitle? @relation(fields: [academicTitleId], references: [id])
-  division      Division?    @relation(fields: [divisionId], references: [id])
+    // Relations
+    userRole      UserRole       @relation(fields: [userRoleId], references: [id])
+    title         Title?         @relation(fields: [titleId], references: [id])
+    academicTitle AcademicTitle? @relation(fields: [academicTitleId], references: [id])
+    division      Division?      @relation(fields: [divisionId], references: [id])
 
-  // Reverse relations
-  organizationsCreated Organization[] @relation("OrgCreatedByUser")
-  organizationsUpdated Organization[] @relation("OrgUpdatedByUser")
-  organizationsDeleted Organization[] @relation("OrgDeletedByUser")
+    // Reverse relations
+    organizationsCreated Organization[] @relation("OrgCreatedByUser")
+    organizationsUpdated Organization[] @relation("OrgUpdatedByUser")
+    organizationsDeleted Organization[] @relation("OrgDeletedByUser")
 
-  categoryCreated Category[] @relation("CatCreatedByUser")
-  categoryUpdated Category[] @relation("CatUpdatedByUser")
-  categoryDeleted Category[] @relation("CatDeletedByUser")
+    categoryCreated Category[] @relation("CatCreatedByUser")
+    categoryUpdated Category[] @relation("CatUpdatedByUser")
+    categoryDeleted Category[] @relation("CatDeletedByUser")
 
-  courseCreated Course[] @relation("CourseCreatedByUser")
-  courseUpdated Course[] @relation("CourseUpdatedByUser")
-  courseDeleted Course[] @relation("CourseDeletedByUser")
+    courseCreated Course[] @relation("CourseCreatedByUser")
+    courseUpdated Course[] @relation("CourseUpdatedByUser")
+    courseDeleted Course[] @relation("CourseDeletedByUser")
 
-  courseInstructorUpdated CourseInstructor[] @relation("CourseInstructorUpdatedByUser")
-  courseInstructorDeleted CourseInstructor[] @relation("CourseInstructorDeletedByUser")
+    courseInstructorUpdated CourseInstructor[] @relation("CourseInstructorUpdatedByUser")
+    courseInstructorDeleted CourseInstructor[] @relation("CourseInstructorDeletedByUser")
 
-  courseInstructorUserId CourseInstructor[] @relation("UserId")
+    courseInstructorUserId CourseInstructor[] @relation("UserId")
 
-  courseCompletionUserId CourseCompletion[] @relation("UserId")
+    courseCompletionUserId CourseCompletion[] @relation("UserId")
 
-  lessonCreated Lesson[] @relation("LessonCreatedByUser")
-  lessonUpdated Lesson[] @relation("LessonUpdatedByUser")
-  lessonDeleted Lesson[] @relation("LessonDeletedByUser")
+    lessonCreated Lesson[] @relation("LessonCreatedByUser")
+    lessonUpdated Lesson[] @relation("LessonUpdatedByUser")
+    lessonDeleted Lesson[] @relation("LessonDeletedByUser")
 
-  lessonContentUpdated LessonContent[] @relation("LessonContentUpdatedByUser")
-  lessonContentDeleted LessonContent[] @relation("LessonContentDeletedByUser")
+    lessonContentUpdated LessonContent[] @relation("LessonContentUpdatedByUser")
+    lessonContentDeleted LessonContent[] @relation("LessonContentDeletedByUser")
 
-  lessonViewUserId LessonView[] @relation("LessonViewUserId")
+    lessonViewUserId LessonView[] @relation("LessonViewUserId")
 
-  lessonAttemptUserId LessonAttempt[] @relation("LessonAttemptUserId")
+    lessonAttemptUserId LessonAttempt[] @relation("LessonAttemptUserId")
 
-  questionSetCreated QuestionSet[] @relation("QuestionSetCreatedByUser")
-  questionSetUpdated QuestionSet[] @relation("QuestionSetUpdatedByUser")
-  questionSetDeleted QuestionSet[] @relation("QuestionSetDeletedByUser")
+    questionSetCreated QuestionSet[] @relation("QuestionSetCreatedByUser")
+    questionSetUpdated QuestionSet[] @relation("QuestionSetUpdatedByUser")
+    questionSetDeleted QuestionSet[] @relation("QuestionSetDeletedByUser")
 
-  questionBankCreated QuestionBank[] @relation("QuestionBankCreatedByUser")
-  questionBankUpdated QuestionBank[] @relation("QuestionBankUpdatedByUser")
-  questionBankDeleted QuestionBank[] @relation("QuestionBankDeletedByUser")
+    questionBankCreated QuestionBank[] @relation("QuestionBankCreatedByUser")
+    questionBankUpdated QuestionBank[] @relation("QuestionBankUpdatedByUser")
+    questionBankDeleted QuestionBank[] @relation("QuestionBankDeletedByUser")
 
-  testResultUser TestResult[] @relation("TestResultUserId")
+    testResultUser TestResult[] @relation("TestResultUserId")
 
-  answerSubmissionUser AnswerSubmission[] @relation("AnswerSubmissionUserId")
+    answerSubmissionUser AnswerSubmission[] @relation("AnswerSubmissionUserId")
 }
