@@ -35,6 +35,10 @@ export default function LecturerRegisterPage() {
   const [organization, setOrganization] = useState<{ id: number; name: string }[]>([])
   const [division, setDivision] = useState<{ id: number; name: string }[]>([])
 
+  // check password error
+  const [passwordError, setPasswordError] = useState('')
+  const [confirmPasswordError, setConfirmPasswordError] = useState('')
+
   const [form, setForm] = useState({
     titleId: '',
     academicTitleId: '',
@@ -71,15 +75,49 @@ export default function LecturerRegisterPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
+
     setForm((prev) => ({ ...prev, [name]: value }))
+
+    // ตรวจสอบความยาว password
+    if (name === 'password') {
+      if (value.length < 8) {
+        setPasswordError('Password must be at least 8 characters')
+      } else {
+        setPasswordError('')
+      }
+
+      // ตรวจสอบว่าตรงกับ confirmPassword หรือไม่
+      if (form.confirmPassword && value !== form.confirmPassword) {
+        setConfirmPasswordError('Passwords do not match')
+      } else {
+        setConfirmPasswordError('')
+      }
+    }
+
+    if (name === 'confirmPassword') {
+      if (value !== form.password) {
+        setConfirmPasswordError('Passwords do not match')
+      } else {
+        setConfirmPasswordError('')
+      }
+    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (form.password !== form.confirmPassword) {
-      alert('❌ Passwords do not match')
+
+    if (form.password.length < 8) {
+      setPasswordError('Password must be at least 8 characters')
       return
     }
+
+    if (form.password !== form.confirmPassword) {
+      setConfirmPasswordError('Passwords do not match')
+      return
+    }
+
+    setPasswordError('')
+    setConfirmPasswordError('')
 
     console.log('✅ Registering:', form)
     // TODO: ส่งข้อมูลไป backend
@@ -139,6 +177,7 @@ export default function LecturerRegisterPage() {
             onChange={handleChange}
             required
           />
+
           <FormInput
             name="confirmPassword"
             id="confirmPassword"
@@ -148,6 +187,8 @@ export default function LecturerRegisterPage() {
             onChange={handleChange}
             required
           />
+          {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
+          {confirmPasswordError && <p className="text-red-500 text-sm">{confirmPasswordError}</p>}
 
           {/* 🔹 Section: Lecturer Info */}
           <div className="col-span-full mb-2 mt-6">
