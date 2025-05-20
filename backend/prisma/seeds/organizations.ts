@@ -1,6 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
+function getNowInBangkok(): Date {
+  const utcNow = new Date();
+  const offsetMs = 7 * 60 * 60 * 1000;
+  return new Date(utcNow.getTime() + offsetMs);
+}
+
 export async function seedOrganizations() {
   const creatorId = 1000;
 
@@ -24,7 +30,7 @@ export async function seedOrganizations() {
       name: 'มหาวิทยาลัยทักษิณ',
       isActive: true,
       createdBy: creatorId,
-      createdAt: new Date(),
+      createdAt: getNowInBangkok(),
     },
   });
 
@@ -33,7 +39,7 @@ export async function seedOrganizations() {
       name: 'คณะวิทยาศาสตร์และนวัตกรรมดิจิทัล',
       organizationId: organization.id,
       isActive: true,
-      createdAt: new Date(),
+      createdAt: getNowInBangkok(),
     },
   });
 

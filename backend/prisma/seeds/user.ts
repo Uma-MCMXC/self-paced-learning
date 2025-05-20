@@ -3,8 +3,13 @@ import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
+function getNowInBangkok(): Date {
+  const utcNow = new Date();
+  const offsetMs = 7 * 60 * 60 * 1000;
+  return new Date(utcNow.getTime() + offsetMs);
+}
+
 export async function seedUsers() {
-  // ตรวจสอบ foreign key
   const adminRole = await prisma.userRole.findFirst({ where: { name: 'admin' } });
   const systemRole = await prisma.userRole.findFirst({ where: { name: 'system' } });
   const titleMs = await prisma.title.findFirst({ where: { name: 'นางสาว' } });
@@ -14,10 +19,8 @@ export async function seedUsers() {
     return;
   }
 
-  // ✅ รีเซตลำดับก่อน insert
   await prisma.$executeRawUnsafe(`ALTER SEQUENCE "User_id_seq" RESTART WITH 1000`);
 
-  // สร้าง system user
   await prisma.user.create({
     data: {
       userRoleId: systemRole.id,
@@ -29,11 +32,10 @@ export async function seedUsers() {
       password: await bcrypt.hash('system123', 10),
       divisionId: null,
       isActive: true,
-      createdAt: new Date(),
+      createdAt: getNowInBangkok(),
     },
   });
 
-  // สร้าง admin user
   await prisma.user.create({
     data: {
       userRoleId: adminRole.id,
@@ -45,9 +47,9 @@ export async function seedUsers() {
       password: await bcrypt.hash('admin1234', 10),
       divisionId: null,
       isActive: true,
-      createdAt: new Date(),
+      createdAt: getNowInBangkok(),
     },
   });
 
-  console.log('✅ Seed Users with bcrypt completed.');
+  console.log('✅ Seed Users with Bangkok time completed.');
 }
