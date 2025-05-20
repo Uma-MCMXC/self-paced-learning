@@ -37,12 +37,6 @@ export default function Home() {
             href="/auth/register/lecturer"
           />
         </div>
-
-        {/* Demo Links */}
-        <div className="flex flex-col md:flex-row gap-3 justify-center items-center mt-10">
-          <Button label="Student Demo" variant="neutral" size="sm" href="/student" />
-          <Button label="Lecturer Demo" variant="warning" size="sm" href="/lecturer" />
-        </div>
       </main>
 
       {/* Footer */}
