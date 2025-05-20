@@ -9,6 +9,11 @@ export class DivisionService {
     return this.prisma.division.findMany({
       where: { isActive: true },
       orderBy: { id: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        organizationId: true,
+      },
     });
   }
 }

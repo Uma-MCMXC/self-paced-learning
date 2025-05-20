@@ -10,7 +10,14 @@ import SelectInput from '@/app/components/ui/SelectInput'
 import SectionTitle from '@/app/components/ui/SectionTitle'
 import Badge from '@/app/components/ui/Badge'
 
-// use api
+// ใช้ TypeScript แบบมี organizationId สำหรับ division
+type DivisionType = {
+  id: number
+  name: string
+  organizationId: number
+}
+
+// ฟังก์ชันโหลดข้อมูลจาก API
 export async function fetchTitles() {
   const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/titles`)
   return res.data
@@ -19,22 +26,23 @@ export async function fetchOrganization() {
   const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/organization`)
   return res.data
 }
-export async function fetchDivision() {
+export async function fetchDivision(): Promise<DivisionType[]> {
   const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/division`)
   return res.data
 }
 
 export default function StudentRegisterPage() {
-  // api
+  // จัดเก็บข้อมูลจาก API
   const [titles, setTitles] = useState<{ id: number; name: string }[]>([])
   const [organization, setOrganization] = useState<{ id: number; name: string }[]>([])
-  const [division, setDivision] = useState<{ id: number; name: string }[]>([])
+  const [division, setDivision] = useState<DivisionType[]>([])
 
-  // check error
+  // จัดเก็บ error
   const [passwordError, setPasswordError] = useState('')
   const [confirmPasswordError, setConfirmPasswordError] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  // จัดเก็บค่าฟอร์ม
   const [form, setForm] = useState({
     titleId: '',
     firstName: '',
@@ -46,7 +54,7 @@ export default function StudentRegisterPage() {
     confirmPassword: '',
   })
 
-  // โหลด title จาก API เมื่อ component mount
+  // โหลดข้อมูลทั้งหมดเมื่อ component mount
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -66,6 +74,7 @@ export default function StudentRegisterPage() {
     loadData()
   }, [])
 
+  // อัปเดตฟอร์มและตรวจรหัสผ่าน
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
 
@@ -96,6 +105,7 @@ export default function StudentRegisterPage() {
     }
   }
 
+  // ตรวจสอบฟอร์มและส่งข้อมูล
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -235,8 +245,8 @@ export default function StudentRegisterPage() {
             name="organizationId"
             value={form.organizationId}
             onChange={(val) => {
-              setForm((prev) => ({ ...prev, organizationId: val }))
-              if (val) setErrors((prev) => ({ ...prev, organizationId: '' }))
+              setForm((prev) => ({ ...prev, organizationId: val, divisionId: '' }))
+              if (val) setErrors((prev) => ({ ...prev, organizationId: '', divisionId: '' }))
             }}
             options={organization.map((t) => ({ label: t.name, value: String(t.id) }))}
             error={!!errors.organizationId}
@@ -251,7 +261,10 @@ export default function StudentRegisterPage() {
               setForm((prev) => ({ ...prev, divisionId: val }))
               if (val) setErrors((prev) => ({ ...prev, divisionId: '' }))
             }}
-            options={division.map((t) => ({ label: t.name, value: String(t.id) }))}
+            options={division
+              .filter((d) => String(d.organizationId) === form.organizationId)
+              .map((d) => ({ label: d.name, value: String(d.id) }))}
+            disabled={!form.organizationId}
             error={!!errors.divisionId}
             errorMessage={errors.divisionId}
           />

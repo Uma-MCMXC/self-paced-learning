@@ -10,7 +10,14 @@ import SelectInput from '@/app/components/ui/SelectInput'
 import SectionTitle from '@/app/components/ui/SectionTitle'
 import Badge from '@/app/components/ui/Badge'
 
-// use api
+// ใช้ TypeScript แบบมี organizationId สำหรับ division
+type DivisionType = {
+  id: number
+  name: string
+  organizationId: number
+}
+
+// ฟังก์ชันโหลดข้อมูลจาก API
 export async function fetchTitles() {
   const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/titles`)
   return res.data
@@ -23,23 +30,24 @@ export async function fetchOrganization() {
   const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/organization`)
   return res.data
 }
-export async function fetchDivision() {
+export async function fetchDivision(): Promise<DivisionType[]> {
   const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/division`)
   return res.data
 }
 
 export default function LecturerRegisterPage() {
-  // api
+  // จัดเก็บข้อมูลจาก API
   const [titles, setTitles] = useState<{ id: number; name: string }[]>([])
   const [academicTitles, setAcademicTitles] = useState<{ id: number; name: string }[]>([])
   const [organization, setOrganization] = useState<{ id: number; name: string }[]>([])
-  const [division, setDivision] = useState<{ id: number; name: string }[]>([])
+  const [division, setDivision] = useState<DivisionType[]>([])
 
-  // check password error
+  // จัดเก็บ error
   const [passwordError, setPasswordError] = useState('')
   const [confirmPasswordError, setConfirmPasswordError] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  // จัดเก็บค่าฟอร์ม
   const [form, setForm] = useState({
     titleId: '',
     academicTitleId: '',
@@ -52,7 +60,7 @@ export default function LecturerRegisterPage() {
     confirmPassword: '',
   })
 
-  // โหลด title จาก API เมื่อ component mount
+  // โหลดข้อมูลทั้งหมดเมื่อ component mount
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -74,68 +82,55 @@ export default function LecturerRegisterPage() {
     loadData()
   }, [])
 
+  // อัปเดตฟอร์มและตรวจรหัสผ่าน
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-
     setForm((prev) => ({ ...prev, [name]: value }))
 
-    // ตรวจสอบความยาว password
     if (name === 'password') {
-      if (value.length < 8) {
-        setPasswordError('Password must be at least 8 characters')
-      } else {
-        setPasswordError('')
-      }
-
-      // ตรวจสอบว่าตรงกับ confirmPassword หรือไม่
-      if (form.confirmPassword && value !== form.confirmPassword) {
-        setConfirmPasswordError('Passwords do not match')
-      } else {
-        setConfirmPasswordError('')
-      }
+      setPasswordError(value.length < 8 ? 'Password must be at least 8 characters' : '')
+      setConfirmPasswordError(value !== form.confirmPassword ? 'Passwords do not match' : '')
     }
 
     if (name === 'confirmPassword') {
-      if (value !== form.password) {
-        setConfirmPasswordError('Passwords do not match')
-      } else {
-        setConfirmPasswordError('')
-      }
+      setConfirmPasswordError(value !== form.password ? 'Passwords do not match' : '')
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // ตรวจสอบฟอร์มและส่งข้อมูล
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     const newErrors: Record<string, string> = {}
-
     if (!form.titleId) newErrors.titleId = 'Please fill out this field.'
     if (!form.organizationId) newErrors.organizationId = 'Please fill out this field.'
     if (!form.divisionId) newErrors.divisionId = 'Please fill out this field.'
-    // เพิ่มช่องอื่น ๆ ตามต้องการ
-
-    // ตรวจสอบรหัสผ่าน
     if (!form.password || form.password.length < 8)
       newErrors.password = 'Password must be at least 8 characters.'
-
     if (form.password !== form.confirmPassword)
       newErrors.confirmPassword = 'Passwords do not match.'
 
-    // ถ้ามี error ให้หยุด
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
       return
     }
 
-    // ✅ ถ้าไม่มี error
     setErrors({})
-    console.log('Submitting form:', form)
+
+    // ส่งข้อมูลไปยัง backend (ตัวอย่าง)
+    try {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/lecturers/register`, form)
+      alert('✅ Register completed')
+    } catch (err) {
+      console.error('Register failed:', err)
+      alert('Register failed')
+    }
   }
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-12">
       <div className="max-w-4xl w-full bg-white shadow-lg rounded-2xl p-10">
-        <div className="text-end justify-end">
+        <div className="text-end">
           <Badge variant="primary" className="badge-lg">
             Lecturer
           </Badge>
@@ -157,8 +152,9 @@ export default function LecturerRegisterPage() {
           </Link>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* 🔐 Section: Account Credentials */}
+          {/* Section: Account */}
           <div className="col-span-full mb-2">
             <SectionTitle title="Account Credentials" />
             <p className="text-sm text-gray-500">
@@ -199,13 +195,12 @@ export default function LecturerRegisterPage() {
           {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
           {confirmPasswordError && <p className="text-red-500 text-sm">{confirmPasswordError}</p>}
 
-          {/* 🔹 Section: Lecturer Info */}
-          <div className="col-span-full mb-2 mt-6">
+          {/* Section: Profile */}
+          <div className="col-span-full mt-6 mb-2">
             <SectionTitle title="Lecturer Profile" />
             <p className="text-sm text-gray-500">Please provide your basic personal information.</p>
           </div>
 
-          {/* ✅ แสดง Title ที่ดึงมาจาก backend */}
           <SelectInput
             label="Title"
             name="titleId"
@@ -224,7 +219,6 @@ export default function LecturerRegisterPage() {
             name="academicTitleId"
             value={form.academicTitleId}
             onChange={(val) => setForm((prev) => ({ ...prev, academicTitleId: val }))}
-            required
             options={academicTitles.map((t) => ({ label: t.name, value: String(t.id) }))}
           />
 
@@ -250,8 +244,8 @@ export default function LecturerRegisterPage() {
             name="organizationId"
             value={form.organizationId}
             onChange={(val) => {
-              setForm((prev) => ({ ...prev, organizationId: val }))
-              if (val) setErrors((prev) => ({ ...prev, organizationId: '' }))
+              setForm((prev) => ({ ...prev, organizationId: val, divisionId: '' }))
+              if (val) setErrors((prev) => ({ ...prev, organizationId: '', divisionId: '' }))
             }}
             options={organization.map((t) => ({ label: t.name, value: String(t.id) }))}
             error={!!errors.organizationId}
@@ -266,12 +260,15 @@ export default function LecturerRegisterPage() {
               setForm((prev) => ({ ...prev, divisionId: val }))
               if (val) setErrors((prev) => ({ ...prev, divisionId: '' }))
             }}
-            options={division.map((t) => ({ label: t.name, value: String(t.id) }))}
+            options={division
+              .filter((d) => String(d.organizationId) === form.organizationId)
+              .map((d) => ({ label: d.name, value: String(d.id) }))}
+            disabled={!form.organizationId}
             error={!!errors.divisionId}
             errorMessage={errors.divisionId}
           />
 
-          {/* ✅ Submit */}
+          {/* Submit */}
           <div className="col-span-full mt-8 text-center">
             <Button label="Register" variant="info" size="lg" />
           </div>
