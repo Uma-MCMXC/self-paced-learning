@@ -16,7 +16,8 @@ type SelectInputProps = {
   value?: string
   onChange: (value: string) => void
   required?: boolean
-  error?: string
+  error?: boolean
+  errorMessage?: string
   options: Option[]
   disabled?: boolean
 }
@@ -31,6 +32,7 @@ export default function SelectInput({
   error,
   options,
   disabled = false,
+  errorMessage,
 }: SelectInputProps) {
   const [search, setSearch] = useState('')
   const [isOpen, setIsOpen] = useState(false)
@@ -143,7 +145,7 @@ export default function SelectInput({
 
       {error && (
         <span className="text-red-500 text-sm mt-1" role="alert">
-          {error}
+          {error && errorMessage && <p className="text-red-500 text-sm mt-1">{errorMessage}</p>}
         </span>
       )}
     </div>

@@ -30,9 +30,10 @@ export default function StudentRegisterPage() {
   const [organization, setOrganization] = useState<{ id: number; name: string }[]>([])
   const [division, setDivision] = useState<{ id: number; name: string }[]>([])
 
-  // check password error
+  // check error
   const [passwordError, setPasswordError] = useState('')
   const [confirmPasswordError, setConfirmPasswordError] = useState('')
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   const [form, setForm] = useState({
     titleId: '',
@@ -98,21 +99,29 @@ export default function StudentRegisterPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (form.password.length < 8) {
-      setPasswordError('Password must be at least 8 characters')
+    const newErrors: Record<string, string> = {}
+
+    if (!form.titleId) newErrors.titleId = 'Please fill out this field.'
+    if (!form.organizationId) newErrors.organizationId = 'Please fill out this field.'
+    if (!form.divisionId) newErrors.divisionId = 'Please fill out this field.'
+    // เพิ่มช่องอื่น ๆ ตามต้องการ
+
+    // ตรวจสอบรหัสผ่าน
+    if (!form.password || form.password.length < 8)
+      newErrors.password = 'Password must be at least 8 characters.'
+
+    if (form.password !== form.confirmPassword)
+      newErrors.confirmPassword = 'Passwords do not match.'
+
+    // ถ้ามี error ให้หยุด
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
       return
     }
 
-    if (form.password !== form.confirmPassword) {
-      setConfirmPasswordError('Passwords do not match')
-      return
-    }
-
-    setPasswordError('')
-    setConfirmPasswordError('')
-
-    console.log('✅ Registering:', form)
-    // TODO: ส่งข้อมูลไป backend
+    // ✅ ถ้าไม่มี error
+    setErrors({})
+    console.log('Submitting form:', form)
   }
 
   return (
@@ -194,9 +203,13 @@ export default function StudentRegisterPage() {
               label="Title"
               name="titleId"
               value={form.titleId}
-              onChange={(val) => setForm((prev) => ({ ...prev, titleId: val }))}
-              required
+              onChange={(val) => {
+                setForm((prev) => ({ ...prev, titleId: val }))
+                if (val) setErrors((prev) => ({ ...prev, titleId: '' }))
+              }}
               options={titles.map((t) => ({ label: t.name, value: String(t.id) }))}
+              error={!!errors.titleId}
+              errorMessage={errors.titleId}
             />
           </div>
 
@@ -220,19 +233,27 @@ export default function StudentRegisterPage() {
           <SelectInput
             label="Organization"
             name="organizationId"
-            value={form.titleId}
-            onChange={(val) => setForm((prev) => ({ ...prev, organizationId: val }))}
-            required
+            value={form.organizationId}
+            onChange={(val) => {
+              setForm((prev) => ({ ...prev, organizationId: val }))
+              if (val) setErrors((prev) => ({ ...prev, organizationId: '' }))
+            }}
             options={organization.map((t) => ({ label: t.name, value: String(t.id) }))}
+            error={!!errors.organizationId}
+            errorMessage={errors.organizationId}
           />
 
           <SelectInput
             label="Division"
             name="divisionId"
             value={form.divisionId}
-            onChange={(val) => setForm((prev) => ({ ...prev, divisionId: val }))}
-            required
+            onChange={(val) => {
+              setForm((prev) => ({ ...prev, divisionId: val }))
+              if (val) setErrors((prev) => ({ ...prev, divisionId: '' }))
+            }}
             options={division.map((t) => ({ label: t.name, value: String(t.id) }))}
+            error={!!errors.divisionId}
+            errorMessage={errors.divisionId}
           />
 
           {/* ✅ Submit */}
