@@ -23,12 +23,17 @@ export async function fetchOrganization() {
   const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/organization`)
   return res.data
 }
+export async function fetchDivision() {
+  const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/division`)
+  return res.data
+}
 
 export default function LecturerRegisterPage() {
   // api
   const [titles, setTitles] = useState<{ id: number; name: string }[]>([])
   const [academicTitles, setAcademicTitles] = useState<{ id: number; name: string }[]>([])
   const [organization, setOrganization] = useState<{ id: number; name: string }[]>([])
+  const [division, setDivision] = useState<{ id: number; name: string }[]>([])
 
   const [form, setForm] = useState({
     titleId: '',
@@ -37,7 +42,7 @@ export default function LecturerRegisterPage() {
     lastName: '',
     email: '',
     organizationId: '',
-    departmentId: '',
+    divisionId: '',
     password: '',
     confirmPassword: '',
   })
@@ -46,14 +51,16 @@ export default function LecturerRegisterPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [titlesRes, academicTitlesRes, organizationRes] = await Promise.all([
+        const [titlesRes, academicTitlesRes, organizationRes, divisionRes] = await Promise.all([
           fetchTitles(),
           fetchAcademicTitles(),
           fetchOrganization(),
+          fetchDivision(),
         ])
         setTitles(titlesRes)
         setAcademicTitles(academicTitlesRes)
         setOrganization(organizationRes)
+        setDivision(divisionRes)
       } catch (err) {
         console.error('Error loading initial data:', err)
       }
@@ -194,15 +201,12 @@ export default function LecturerRegisterPage() {
           />
 
           <SelectInput
-            label="Department"
-            name="departmentId"
-            value={form.departmentId}
-            onChange={(val) => setForm((prev) => ({ ...prev, departmentId: val }))}
+            label="Division"
+            name="divisionId"
+            value={form.divisionId}
+            onChange={(val) => setForm((prev) => ({ ...prev, divisionId: val }))}
             required
-            options={['1', '2', '3', '4', '5', '6'].map((c) => ({
-              label: `Course ${c}`,
-              value: c,
-            }))}
+            options={division.map((t) => ({ label: t.name, value: String(t.id) }))}
           />
 
           {/* ✅ Submit */}

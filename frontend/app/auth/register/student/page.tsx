@@ -19,11 +19,16 @@ export async function fetchOrganization() {
   const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/organization`)
   return res.data
 }
+export async function fetchDivision() {
+  const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/division`)
+  return res.data
+}
 
 export default function StudentRegisterPage() {
   // api
   const [titles, setTitles] = useState<{ id: number; name: string }[]>([])
   const [organization, setOrganization] = useState<{ id: number; name: string }[]>([])
+  const [division, setDivision] = useState<{ id: number; name: string }[]>([])
 
   const [form, setForm] = useState({
     titleId: '',
@@ -31,7 +36,7 @@ export default function StudentRegisterPage() {
     lastName: '',
     email: '',
     organizationId: '',
-    departmentId: '',
+    divisionId: '',
     password: '',
     confirmPassword: '',
   })
@@ -40,9 +45,14 @@ export default function StudentRegisterPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [titlesRes, organizationRes] = await Promise.all([fetchTitles(), fetchOrganization()])
+        const [titlesRes, organizationRes, divisionRes] = await Promise.all([
+          fetchTitles(),
+          fetchOrganization(),
+          fetchDivision(),
+        ])
         setTitles(titlesRes)
         setOrganization(organizationRes)
+        setDivision(divisionRes)
       } catch (err) {
         console.error('Error loading initial data:', err)
       }
@@ -176,15 +186,12 @@ export default function StudentRegisterPage() {
           />
 
           <SelectInput
-            label="Department"
-            name="departmentId"
-            value={form.departmentId}
-            onChange={(val) => setForm((prev) => ({ ...prev, departmentId: val }))}
+            label="Division"
+            name="divisionId"
+            value={form.divisionId}
+            onChange={(val) => setForm((prev) => ({ ...prev, divisionId: val }))}
             required
-            options={['1', '2', '3', '4', '5', '6'].map((c) => ({
-              label: `Course ${c}`,
-              value: c,
-            }))}
+            options={division.map((t) => ({ label: t.name, value: String(t.id) }))}
           />
 
           {/* ✅ Submit */}
