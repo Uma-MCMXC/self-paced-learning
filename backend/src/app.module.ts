@@ -11,7 +11,8 @@ import { AcademicTitleModule } from './academic-title/academic-title.module';
 import { OrganizationModule } from './organization/organization.module';
 import { DivisionModule } from './division/division.module';
 
-import { LecturersModule } from './register/lecturers/lecturers.module'
+import { LecturersModule } from './register/lecturers/lecturers.module';
+import { StudentsModule } from './register/students/students.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { LecturersModule } from './register/lecturers/lecturers.module'
     AcademicTitleModule,
     OrganizationModule,
     DivisionModule,
-    LecturersModule
+    LecturersModule,
+    StudentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

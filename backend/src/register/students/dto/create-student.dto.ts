@@ -1,6 +1,6 @@
 import { IsEmail, IsNotEmpty, MinLength, IsOptional } from 'class-validator';
 
-export class CreateLecturerDto {
+export class CreateStudentsDto {
   @IsNotEmpty()
   titleId?: number;
 

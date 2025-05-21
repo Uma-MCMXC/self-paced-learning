@@ -1,15 +1,15 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateLecturerDto } from './dto/create-lecturer.dto';
+import { CreateStudentsDto } from './dto/create-student.dto';
 import { USER_ROLES } from 'src/constants/roles';
 import { getNowInBangkok } from 'src/utils/date.util';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class LecturersService {
+export class StudentsService {
   constructor(private prisma: PrismaService) {}
 
-  async register(dto: CreateLecturerDto) {
+  async register(dto: CreateStudentsDto) {
     // ตรวจสอบว่า email ซ้ำหรือไม่
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -22,10 +22,10 @@ export class LecturersService {
     // 🔐 เข้ารหัสรหัสผ่าน
     const hashed = await bcrypt.hash(dto.password, 10);
 
-    // ✅ สร้าง Lecturer
+    // สร้าง Student
     const user = await this.prisma.user.create({
       data: {
-        userRoleId: USER_ROLES.LECTURER,
+        userRoleId: USER_ROLES.STUDENT,
         titleId: Number(dto.titleId),
         academicTitleId: dto.academicTitleId ? Number(dto.academicTitleId) : null,
         firstName: dto.firstName,
@@ -39,7 +39,7 @@ export class LecturersService {
     });
 
     return {
-      message: 'Lecturer registered successfully',
+      message: 'Student registered successfully',
       userId: user.id,
     };
   }

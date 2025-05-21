@@ -1,6 +1,6 @@
-import { Body, Controller, Post } from '@nestjs/common'
-import { LecturersService } from './lecturers.service'
-import { CreateLecturerDto } from './dto/create-lecturer.dto'
+import { Body, Controller, Post } from '@nestjs/common';
+import { LecturersService } from './lecturers.service';
+import { CreateLecturerDto } from './dto/create-lecturer.dto';
 
 @Controller('lecturers')
 export class LecturersController {
@@ -8,6 +8,6 @@ export class LecturersController {
 
   @Post('register')
   async register(@Body() dto: CreateLecturerDto) {
-    return this.lecturersService.register(dto)
+    return this.lecturersService.register(dto);
   }
 }
