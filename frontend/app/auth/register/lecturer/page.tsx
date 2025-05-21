@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -9,6 +10,7 @@ import FormInput from '@/app/components/ui/FormInput'
 import SelectInput from '@/app/components/ui/SelectInput'
 import SectionTitle from '@/app/components/ui/SectionTitle'
 import Badge from '@/app/components/ui/Badge'
+import Modal from '@/app/components/ui/Modal'
 
 // ใช้ TypeScript แบบมี organizationId สำหรับ division
 type DivisionType = {
@@ -46,6 +48,12 @@ export default function LecturerRegisterPage() {
   const [passwordError, setPasswordError] = useState('')
   const [confirmPasswordError, setConfirmPasswordError] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // เรียกใช้งาน router
+  const router = useRouter()
+
+  // เรียกใช้งาน modal เพื่อ popup
+  const [isEmailDuplicate, setIsEmailDuplicate] = useState(false)
 
   // จัดเก็บค่าฟอร์ม
   const [form, setForm] = useState({
@@ -103,8 +111,6 @@ export default function LecturerRegisterPage() {
 
     const newErrors: Record<string, string> = {}
     if (!form.titleId) newErrors.titleId = 'Please fill out this field.'
-    if (!form.organizationId) newErrors.organizationId = 'Please fill out this field.'
-    if (!form.divisionId) newErrors.divisionId = 'Please fill out this field.'
     if (!form.password || form.password.length < 8)
       newErrors.password = 'Password must be at least 8 characters.'
     if (form.password !== form.confirmPassword)
@@ -120,10 +126,16 @@ export default function LecturerRegisterPage() {
     // ส่งข้อมูลไปยัง backend (ตัวอย่าง)
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/lecturers/register`, form)
-      alert('✅ Register completed')
-    } catch (err) {
-      console.error('Register failed:', err)
-      alert('Register failed')
+      alert('Register completed')
+      router.push('/dashboard')
+    } catch (err: any) {
+      if (err.response?.data?.message === 'Email already in use') {
+        setIsEmailDuplicate(true)
+        const modal = document.getElementById('email-duplicate-modal') as HTMLDialogElement
+        if (modal) modal.showModal() // เปิด modal popup
+      } else {
+        alert('Register failed')
+      }
     }
   }
 
@@ -248,8 +260,6 @@ export default function LecturerRegisterPage() {
               if (val) setErrors((prev) => ({ ...prev, organizationId: '', divisionId: '' }))
             }}
             options={organization.map((t) => ({ label: t.name, value: String(t.id) }))}
-            error={!!errors.organizationId}
-            errorMessage={errors.organizationId}
           />
 
           <SelectInput
@@ -264,8 +274,6 @@ export default function LecturerRegisterPage() {
               .filter((d) => String(d.organizationId) === form.organizationId)
               .map((d) => ({ label: d.name, value: String(d.id) }))}
             disabled={!form.organizationId}
-            error={!!errors.divisionId}
-            errorMessage={errors.divisionId}
           />
 
           {/* Submit */}
@@ -274,6 +282,14 @@ export default function LecturerRegisterPage() {
           </div>
         </form>
       </div>
+
+      <Modal
+        id="email-duplicate-modal"
+        title="Email Already Registered"
+        onClose={() => setIsEmailDuplicate(false)}
+      >
+        <p>This email is already in use. Please try another one.</p>
+      </Modal>
     </div>
   )
 }

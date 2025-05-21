@@ -11,6 +11,8 @@ import { AcademicTitleModule } from './academic-title/academic-title.module';
 import { OrganizationModule } from './organization/organization.module';
 import { DivisionModule } from './division/division.module';
 
+import { LecturersModule } from './register/lecturers/lecturers.module'
+
 @Module({
   imports: [
     PrismaModule,
@@ -20,6 +22,7 @@ import { DivisionModule } from './division/division.module';
     AcademicTitleModule,
     OrganizationModule,
     DivisionModule,
+    LecturersModule
   ],
   controllers: [AppController],
   providers: [AppService],
