@@ -72,14 +72,19 @@ export default function Navbar() {
             {isDropdownOpen && (
               <ul className="absolute right-0 mt-2 w-64 z-20 bg-white dark:bg-[#003049] border border-gray-200 dark:border-[#0077B6] rounded-xl shadow-lg">
                 <li className="px-4 py-3 border-b border-gray-100 dark:border-[#0077B6]">
-                  <p className="text-sm font-semibold text-gray-800 dark:text-white">{user.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-300">Role: {user.role}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-300">Email: {user.email}</p>
+                  <p className="text-md font-semibold text-gray-800 dark:text-white">{user.name}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-300">Role: {user.role}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-300">Email: {user.email}</p>
                 </li>
+                {/* <li>
+                  <button className="w-full text-left px-4 py-2 text-gray-500 dark:text-red-400 hover:bg-[#efefef] dark:hover:bg-[#0077B6] transition-colors">
+                    Edit Profile
+                  </button>
+                </li> */}
                 <li>
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-red-500 dark:text-red-400 hover:bg-[#f3f4f6] dark:hover:bg-[#0077B6] rounded-b-xl transition-colors"
+                    className="w-full text-left font-bold px-4 py-2 text-red-500 dark:text-red-400 hover:bg-[#ffcece] dark:hover:bg-[#0077B6] rounded-b-xl transition-colors"
                   >
                     Logout
                   </button>
