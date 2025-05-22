@@ -4,5 +4,6 @@ export interface AuthenticatedRequest extends Request {
   user: {
     userId: number;
     role: string;
+    divisionId: number;
   };
 }

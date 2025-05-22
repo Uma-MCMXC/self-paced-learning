@@ -14,4 +14,23 @@ export class UsersService {
       },
     });
   }
+
+  // ดึง instructor ที่อยู่ใน division เดียวกัน
+  async findInstructorsByDivision(divisionId: number, excludeUserId: number) {
+    return this.prisma.user.findMany({
+      where: {
+        userRoleId: 3,
+        divisionId: divisionId,
+        id: { not: excludeUserId }, // ❗ ไม่ดึง user ตัวเอง
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+      },
+      orderBy: {
+        firstName: 'asc',
+      },
+    });
+  }
 }

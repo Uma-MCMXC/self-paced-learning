@@ -20,12 +20,7 @@ export default function CreateCourse() {
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [courseFile, setCourseFile] = useState<File | null>(null)
-
-  const staffList = [
-    { label: 'Dr. Alice', value: '1' },
-    { label: 'Dr. Bob', value: '2' },
-    { label: 'Dr. Carol', value: '3' },
-  ]
+  const [staffList, setStaffList] = useState<{ label: string; value: string }[]>([])
 
   const [form, setForm] = useState({
     isInstructor: '1',
@@ -131,9 +126,39 @@ export default function CreateCourse() {
     fetchCategories()
   }, [])
 
+  // เรียก user list
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/instructors`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (!res.ok) throw new Error('Failed to fetch instructors')
+
+        const data = await res.json()
+        const options = data.map((u: any) => ({
+          label: `${u.firstName} ${u.lastName}`,
+          value: String(u.id),
+        }))
+        setStaffList(options)
+      } catch (err) {
+        console.error('Error loading instructors:', err)
+        setToastMsg('Cannot load instructor list')
+      }
+    }
+
+    fetchStaff()
+  }, [])
+
   // Handle instructor = current user
   useEffect(() => {
-    const currentUser = { role: '1', staffId: 'me', staffName: 'You' }
+    const fullName = localStorage.getItem('fullName') || 'Me' // ดึงจาก localStorage หรือใช้ fallback
+    const currentUser = { role: '1', staffId: 'me', staffName: fullName }
+
     const exists = instructors.some((i) => i.staffId === 'me')
 
     if (form.isCurrentUserInstructor && !exists) {
@@ -187,7 +212,7 @@ export default function CreateCourse() {
             <FileInput
               label="Upload Image"
               onFileChange={(file) => setCourseFile(file)}
-              required
+              accept="image/*"
               submitted={submitted}
             />
 
@@ -240,8 +265,8 @@ export default function CreateCourse() {
                 value={form.role}
                 onChange={(val) => setForm((prev) => ({ ...prev, role: val }))}
                 options={[
-                  { label: 'Owner', value: '1' },
-                  { label: 'Co-Owner', value: '0' },
+                  { label: 'Owner', value: 'owner' },
+                  { label: 'Co-Owner', value: 'co-owner' },
                 ]}
               />
 
