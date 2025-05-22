@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import PageContainer from '@/app/components/ui/PageContainer'
 import CardContainer from '@/app/components/ui/CardContainer'
 import SectionTitle from '@/app/components/ui/SectionTitle'
@@ -10,10 +11,16 @@ import Button from '@/app/components/ui/Button'
 import RadioGroupInput from '@/app/components/ui/RadioGroupInput'
 import FileInput from '@/app/components/ui/FileInput'
 import Toast from '@/app/components/ui/Toast'
-import { useEffect, useState } from 'react'
 import { TrashIcon } from '@heroicons/react/24/solid'
 
 export default function CreateCourse() {
+  const [categoryOptions, setCategoryOptions] = useState<{ label: string; value: string }[]>([])
+  const [loadingCategory, setLoadingCategory] = useState(true)
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({})
+  const [toastMsg, setToastMsg] = useState<string | null>(null)
+  const [submitted, setSubmitted] = useState(false)
+  const [courseFile, setCourseFile] = useState<File | null>(null)
+
   const staffList = [
     { label: 'Dr. Alice', value: '1' },
     { label: 'Dr. Bob', value: '2' },
@@ -37,13 +44,11 @@ export default function CreateCourse() {
     { role: string; staffId?: string; staffName?: string }[]
   >([])
 
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({})
-  const [toastMsg, setToastMsg] = useState<string | null>(null)
-
   const validateForm = () => {
     const errors: { [key: string]: string } = {}
-    if (!form.categoryId) errors.categoryId = 'This field is required'
-    if (!form.courseName.trim()) errors.courseName = 'This field is required'
+    if (!form.categoryId) errors.categoryId = 'Please select a category'
+    if (!form.courseName.trim()) errors.courseName = 'Course name is required'
+    if (!form.courseFee || isNaN(+form.courseFee)) errors.courseFee = 'Fee must be a number'
     return errors
   }
 
@@ -57,11 +62,14 @@ export default function CreateCourse() {
     const errors = validateForm()
     setFormErrors(errors)
     if (Object.keys(errors).length > 0) return
+
     if (instructors.length === 0 && !form.isCurrentUserInstructor) {
       setToastMsg('Please add at least one instructor or mark yourself as instructor')
       return
     }
-    console.log({ ...form, instructors })
+
+    // Submit
+    console.log({ ...form, instructors, courseFile })
   }
 
   const handleRadioChange = (val: string) => {
@@ -69,10 +77,10 @@ export default function CreateCourse() {
   }
 
   const handleAddInstructor = () => {
-    if (form.role === '') return setToastMsg('Please select role')
-    if (form.isInstructor === '1' && form.staffId === '')
+    if (!form.role) return setToastMsg('Please select role')
+    if (form.isInstructor === '1' && !form.staffId)
       return setToastMsg('Please select a staff member')
-    if (form.isInstructor === '0' && form.staffName.trim() === '')
+    if (form.isInstructor === '0' && !form.staffName.trim())
       return setToastMsg('Please enter a name')
 
     const newInstructor = {
@@ -95,29 +103,53 @@ export default function CreateCourse() {
     setForm((prev) => ({ ...prev, staffId: '', staffName: '', role: '' }))
   }
 
+  // Fetch category options
   useEffect(() => {
-    const currentUserInstructor = {
-      role: '1',
-      staffId: 'me',
-      staffName: 'You',
+    const fetchCategories = async () => {
+      setLoadingCategory(true)
+      try {
+        const token = localStorage.getItem('token')
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/category`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+
+        if (!res.ok) throw new Error('Failed to fetch categories')
+        const data = await res.json()
+        const options = data
+          .filter((c: any) => c.isActive === true)
+          .map((c: any) => ({ label: c.name, value: String(c.id) }))
+
+        setCategoryOptions(options)
+      } catch (err) {
+        console.error('Error loading categories:', err)
+        setToastMsg('Cannot load category data')
+      } finally {
+        setLoadingCategory(false)
+      }
     }
-    const alreadyExists = instructors.some((inst) => inst.staffId === 'me')
-    if (form.isCurrentUserInstructor && !alreadyExists) {
-      setInstructors((prev) => [...prev, currentUserInstructor])
-    } else if (!form.isCurrentUserInstructor && alreadyExists) {
-      setInstructors((prev) => prev.filter((inst) => inst.staffId !== 'me'))
+
+    fetchCategories()
+  }, [])
+
+  // Handle instructor = current user
+  useEffect(() => {
+    const currentUser = { role: '1', staffId: 'me', staffName: 'You' }
+    const exists = instructors.some((i) => i.staffId === 'me')
+
+    if (form.isCurrentUserInstructor && !exists) {
+      setInstructors((prev) => [...prev, currentUser])
+    } else if (!form.isCurrentUserInstructor && exists) {
+      setInstructors((prev) => prev.filter((i) => i.staffId !== 'me'))
     }
   }, [form.isCurrentUserInstructor])
 
+  // Auto hide toast
   useEffect(() => {
     if (toastMsg) {
       const timeout = setTimeout(() => setToastMsg(null), 3000)
       return () => clearTimeout(timeout)
     }
   }, [toastMsg])
-
-  const [courseFile, setCourseFile] = useState<File | null>(null)
-  const [submitted, setSubmitted] = useState(false)
 
   return (
     <PageContainer title="Create Course">
@@ -126,19 +158,21 @@ export default function CreateCourse() {
         <SectionTitle title="Input Course Information" />
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-4">
-            <SelectInput
-              label="Category"
-              name="categoryId"
-              value={form.categoryId}
-              onChange={(val) => setForm((prev) => ({ ...prev, categoryId: val }))}
-              required
-              options={[
-                { label: 'Computer Science', value: '1' },
-                { label: 'Information Technology', value: '2' },
-                { label: 'Software Engineering', value: '3' },
-              ]}
-              error={formErrors.categoryId}
-            />
+            {loadingCategory ? (
+              <div className="text-sm text-gray-500">Loading categories...</div>
+            ) : (
+              <SelectInput
+                label="Category"
+                name="categoryId"
+                value={form.categoryId}
+                onChange={(val) => setForm((prev) => ({ ...prev, categoryId: val }))}
+                options={categoryOptions}
+                required
+                error={!!formErrors.categoryId}
+                errorMessage={formErrors.categoryId}
+              />
+            )}
+
             <FormInput
               name="courseName"
               id="courseName"
@@ -149,12 +183,14 @@ export default function CreateCourse() {
               required
               error={formErrors.courseName}
             />
+
             <FileInput
               label="Upload Image"
               onFileChange={(file) => setCourseFile(file)}
               required
               submitted={submitted}
             />
+
             <FormInput
               name="courseFee"
               id="courseFee"
@@ -165,12 +201,12 @@ export default function CreateCourse() {
               required
               error={formErrors.courseFee}
             />
+
             <div className="col-span-full">
               <TextareaInput
                 id="description"
                 label="Description"
                 name="description"
-                placeholder="Tell us about yourself..."
                 value={form.description}
                 onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
                 maxLength={5000}
@@ -178,10 +214,12 @@ export default function CreateCourse() {
             </div>
           </div>
 
+          {/* Instructor Section */}
           <fieldset className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 mt-6">
             <legend className="text-lg font-semibold text-gray-700 dark:text-white">
               Add Instructor
             </legend>
+
             <div className="flex items-center gap-4 mb-4">
               <RadioGroupInput
                 name="isInstructor"
@@ -194,6 +232,7 @@ export default function CreateCourse() {
                 ]}
               />
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <SelectInput
                 label="Role"
@@ -205,6 +244,7 @@ export default function CreateCourse() {
                   { label: 'Co-Owner', value: '0' },
                 ]}
               />
+
               <SelectInput
                 label="Select from staff"
                 name="staffId"
@@ -214,6 +254,7 @@ export default function CreateCourse() {
                 required={form.isInstructor === '1'}
                 options={staffList}
               />
+
               <FormInput
                 name="staffName"
                 id="staffName"
@@ -225,6 +266,7 @@ export default function CreateCourse() {
                 required={form.isInstructor === '0'}
               />
             </div>
+
             <div className="flex items-center mt-4">
               <input
                 type="checkbox"
@@ -238,6 +280,7 @@ export default function CreateCourse() {
                 I am one of the instructors
               </label>
             </div>
+
             <div className="mt-4 text-end">
               <Button
                 label="Add Instructor"
@@ -247,11 +290,12 @@ export default function CreateCourse() {
                 type="button"
               />
             </div>
+
             <div className="mt-6 space-y-2">
               {instructors.map((inst, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between border border-gray-200 dark:border-gray-600 rounded-md px-4 py-2 bg-gray-50 dark:bg-gray-800"
+                  className="flex items-center justify-between border px-4 py-2 rounded-md bg-gray-50 dark:bg-gray-800"
                 >
                   <span className="text-sm font-medium text-gray-800 dark:text-white">
                     {inst.staffName || `Staff ID #${inst.staffId}`}
@@ -270,8 +314,9 @@ export default function CreateCourse() {
               ))}
             </div>
           </fieldset>
+
           <div className="mt-8 text-end">
-            <Button label="Save Course" variant="info" size="md" />
+            <Button label="Save Course" variant="info" size="md" type="submit" />
           </div>
         </form>
       </CardContainer>
