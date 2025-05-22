@@ -6,14 +6,15 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './user/user.module';
 
-import { TitleModule } from './title/title.module';
-import { AcademicTitleModule } from './academic-title/academic-title.module';
-import { OrganizationModule } from './organization/organization.module';
-import { DivisionModule } from './division/division.module';
+import { TitleModule } from './api/title/title.module';
+import { AcademicTitleModule } from './api/academic-title/academic-title.module';
+import { OrganizationModule } from './api/organization/organization.module';
+import { DivisionModule } from './api/division/division.module';
 
 import { LecturersModule } from './register/lecturers/lecturers.module';
 import { StudentsModule } from './register/students/students.module';
 import { CategoryModule } from './lecturer/category/category.module';
+import { CourseModule } from './lecturer/course/course.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { CategoryModule } from './lecturer/category/category.module';
     LecturersModule,
     StudentsModule,
     CategoryModule,
+    CourseModule,
   ],
   controllers: [AppController],
   providers: [AppService],
