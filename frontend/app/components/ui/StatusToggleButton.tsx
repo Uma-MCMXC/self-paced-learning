@@ -4,13 +4,13 @@ import React from 'react'
 import clsx from 'clsx'
 
 type StatusToggleButtonProps = {
-  status: 'active' | 'inactive'
+  status: 1 | 0
   onClick: () => void
   title?: string
 }
 
 export default function StatusToggleButton({ status, onClick, title }: StatusToggleButtonProps) {
-  const isActive = status === 'active'
+  const isActive = status === 1
 
   return (
     <button

@@ -1,9 +1,11 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
-import PageContainer from '@/app/components/ui/PageContainer'
+import React, { useEffect, useState, useRef } from 'react'
+import { PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { formatThaiDatetime } from '@/app/utils/date.util' // การแสดงวันที่
+import { getUserIdFromToken } from '@/app/utils/auth.util' // นำเข้าฟังก์ชันดึง userId จาก token
 import SimpleTable, { TableRow } from '@/app/components/ui/SimpleTable'
-import { PencilSquareIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline'
+import PageContainer from '@/app/components/ui/PageContainer'
 import Button from '@/app/components/ui/Button'
 import Toast from '@/app/components/ui/Toast'
 import Modal from '@/app/components/ui/Modal'
@@ -11,41 +13,112 @@ import StatusToggleButton from '@/app/components/ui/StatusToggleButton'
 import FormInput from '@/app/components/ui/FormInput'
 import ConfirmModal from '@/app/components/ui/ConfirmModal'
 
+// ดึง userId ทันทีเมื่อต้นไฟล์
+const userId = getUserIdFromToken()
+
+// ประเภทข้อมูล Category
 type Category = {
-  id: string
+  id: number
   name: string
-  status: 'active' | 'inactive'
-  createdBy: string
-  updatedAt: string
+  isActive: boolean
+  createdBy: number
+  createdAt: string
+  updatedAt: string | null
 }
 
-const initialCategories: Category[] = [
-  {
-    id: '1',
-    name: 'Information Technology',
-    status: 'active',
-    createdBy: 'Staff User',
-    updatedAt: '2025-04-06 10:20',
-  },
-  {
-    id: '2',
-    name: 'Data Science',
-    status: 'inactive',
-    createdBy: 'Staff User',
-    updatedAt: '2025-04-06 10:20',
-  },
-]
+// ฟังก์ชันดึง token จาก localStorage
+const getToken = () => {
+  return localStorage.getItem('token')
+}
+
+// ดึงรายการ category ทั้งหมด
+const fetchCategories = async (): Promise<Category[]> => {
+  const token = getToken()
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/category`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!res.ok) {
+    throw new Error(`Unauthorized: ${res.status}`)
+  }
+
+  return res.json()
+}
+
+// สร้างหมวดหมู่ใหม่
+const createCategory = async (data: { name: string; createdBy: number }) => {
+  const token = getToken()
+  return fetch(`${process.env.NEXT_PUBLIC_API_URL}/category`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  })
+}
+
+// อัปเดตชื่อ category
+const updateCategory = async (id: number, data: { name: string; updatedBy: number }) => {
+  const token = getToken()
+  return fetch(`${process.env.NEXT_PUBLIC_API_URL}/category/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  })
+}
+
+// เปลี่ยนสถานะเปิด/ปิด
+const toggleCategoryStatus = async (id: number, data: { isActive: boolean; updatedBy: number }) => {
+  const token = getToken()
+  return fetch(`${process.env.NEXT_PUBLIC_API_URL}/category/${id}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  })
+}
+
+// ลบแบบ soft delete
+const deleteCategory = async (id: number, deletedBy: number) => {
+  const token = getToken()
+  return fetch(`${process.env.NEXT_PUBLIC_API_URL}/category/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ deletedBy }),
+  })
+}
 
 export default function ManageCategory() {
-  const [categoryList, setCategoryList] = useState<Category[]>(initialCategories)
+  const [categoryList, setCategoryList] = useState<Category[]>([])
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const [formName, setFormName] = useState('')
   const [formError, setFormError] = useState('')
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<number | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
+
   const modalRef = useRef<HTMLDialogElement | null>(null)
   const confirmRef = useRef<HTMLDialogElement | null>(null)
 
+  // โหลดข้อมูล และกรองเฉพาะ category ที่สร้างโดย userId ปัจจุบัน
+  useEffect(() => {
+    fetchCategories().then((categories) => {
+      const filtered = categories.filter((c) => c.createdBy === userId)
+      setCategoryList(filtered)
+    })
+  }, [])
+
+  // เปิดฟอร์ม modal สำหรับสร้าง
   const openCreateModal = () => {
     setFormName('')
     setEditingId(null)
@@ -53,6 +126,7 @@ export default function ManageCategory() {
     modalRef.current?.showModal()
   }
 
+  // เปิด modal สำหรับแก้ไข
   const openEditModal = (category: Category) => {
     setFormName(category.name)
     setEditingId(category.id)
@@ -60,54 +134,56 @@ export default function ManageCategory() {
     modalRef.current?.showModal()
   }
 
-  const toggleStatus = (id: string) => {
-    setCategoryList((prev) =>
-      prev.map((category) =>
-        category.id === id
-          ? {
-              ...category,
-              status: category.status === 'active' ? 'inactive' : 'active',
-            }
-          : category
-      )
-    )
-    setToastMsg('Category status has been updated.')
+  // เปลี่ยนสถานะ active/inactive
+  const toggleStatus = async (category: Category) => {
+    await toggleCategoryStatus(category.id, {
+      isActive: !category.isActive,
+      updatedBy: userId!,
+    })
+    fetchCategories().then(setCategoryList)
+    setToastMsg('Status updated')
     setTimeout(() => setToastMsg(null), 3000)
   }
 
-  const handleSave = () => {
+  // บันทึก (ทั้งสร้างและแก้ไข)
+  const handleSave = async () => {
     if (!formName.trim()) {
       setFormError('Category name is required')
       return
     }
 
-    if (editingId) {
-      setCategoryList((prev) =>
-        prev.map((cat) => (cat.id === editingId ? { ...cat, name: formName } : cat))
-      )
-      setToastMsg('Category updated successfully.')
-    } else {
-      const newCategory: Category = {
-        id: Date.now().toString(),
-        name: formName,
-        status: 'active',
-        createdBy: 'Staff User',
-        updatedAt: new Date().toISOString(),
+    try {
+      if (editingId !== null) {
+        await updateCategory(editingId, {
+          name: formName,
+          updatedBy: userId!,
+        })
+        setToastMsg('Category updated.')
+      } else {
+        await createCategory({
+          name: formName,
+          createdBy: userId!,
+        })
+        setToastMsg('Category created.')
       }
-      setCategoryList((prev) => [...prev, newCategory])
-      setToastMsg('Category created successfully.')
-    }
 
-    setFormName('')
-    setEditingId(null)
-    modalRef.current?.close()
-    setTimeout(() => setToastMsg(null), 3000)
+      fetchCategories().then(setCategoryList)
+      modalRef.current?.close()
+      setFormName('')
+      setEditingId(null)
+      setFormError('')
+      setTimeout(() => setToastMsg(null), 3000)
+    } catch (err) {
+      setFormError('Something went wrong.')
+    }
   }
 
-  const handleConfirmDelete = () => {
+  // ยืนยันการลบ
+  const handleConfirmDelete = async () => {
     if (!selectedCategory) return
-    setCategoryList((prev) => prev.filter((c) => c.id !== selectedCategory.id))
-    setToastMsg(`Category "${selectedCategory.name}" deleted.`)
+    await deleteCategory(selectedCategory.id, userId!)
+    fetchCategories().then(setCategoryList)
+    setToastMsg('Category deleted')
     confirmRef.current?.close()
     setTimeout(() => setToastMsg(null), 3000)
   }
@@ -117,14 +193,21 @@ export default function ManageCategory() {
     confirmRef.current?.showModal()
   }
 
+  // เตรียมข้อมูลให้ตาราง
   const data: TableRow[] = categoryList.map((category) => ({
     categoryName: (
-      <div className="text-sm">
-        <div className="font-medium text-gray-900 dark:text-gray-100">{category.name}</div>
-      </div>
+      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{category.name}</div>
     ),
     status: (
-      <StatusToggleButton status={category.status} onClick={() => toggleStatus(category.id)} />
+      <StatusToggleButton
+        status={category.isActive ? 1 : 0}
+        onClick={() => toggleStatus(category)}
+      />
+    ),
+    updatedAt: (
+      <div className="text-sm text-gray-500">
+        {formatThaiDatetime(category.updatedAt ?? category.createdAt)}
+      </div>
     ),
     action: (
       <div className="flex gap-2">
@@ -141,6 +224,7 @@ export default function ManageCategory() {
   return (
     <PageContainer title="Manage Category">
       {toastMsg && <Toast message={toastMsg} type="success" />}
+
       <div className="w-full">
         <div className="flex justify-end mb-5">
           <Button label="Create Category" variant="success" onClick={openCreateModal} />
@@ -153,13 +237,15 @@ export default function ManageCategory() {
             <tr>
               <th className="w-6">#</th>
               <th>Category</th>
-              <th>Status</th>
+              <th className="min-w-[150px]">Status</th>
+              <th>Update at</th>
               <th>Action</th>
             </tr>
           }
         />
       </div>
 
+      {/* Modal: ฟอร์มสร้าง/แก้ไข */}
       <Modal
         id="category_modal"
         title={editingId ? 'Edit Category' : 'Create Category'}
@@ -171,17 +257,15 @@ export default function ManageCategory() {
           setEditingId(null)
         }}
       >
-        <div className="mb-4">
-          <FormInput
-            label="Category Name"
-            id="categoryName"
-            name="categoryName"
-            value={formName}
-            onChange={(e) => setFormName(e.target.value)}
-            required
-            error={formError}
-          />
-        </div>
+        <FormInput
+          label="Category Name"
+          id="categoryName"
+          name="categoryName"
+          value={formName}
+          onChange={(e) => setFormName(e.target.value)}
+          required
+          error={formError}
+        />
         <div className="text-end mt-4 mb-4">
           <Button
             label={editingId ? 'Update' : 'Save'}
@@ -190,9 +274,9 @@ export default function ManageCategory() {
             onClick={handleSave}
           />
         </div>
-        <hr className="my-4 border-gray-200 dark:border-gray-700" />
       </Modal>
 
+      {/* Modal: ยืนยันลบ */}
       <ConfirmModal
         id="confirm_delete_category"
         ref={confirmRef}

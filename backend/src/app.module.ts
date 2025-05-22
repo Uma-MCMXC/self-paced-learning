@@ -13,6 +13,7 @@ import { DivisionModule } from './division/division.module';
 
 import { LecturersModule } from './register/lecturers/lecturers.module';
 import { StudentsModule } from './register/students/students.module';
+import { CategoryModule } from './lecturer/category/category.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { StudentsModule } from './register/students/students.module';
     DivisionModule,
     LecturersModule,
     StudentsModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
