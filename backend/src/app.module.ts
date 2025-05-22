@@ -13,7 +13,7 @@ import { DivisionModule } from './api/division/division.module';
 
 import { LecturersModule } from './register/lecturers/lecturers.module';
 import { StudentsModule } from './register/students/students.module';
-import { CategoryModule } from './lecturer/category/category.module';
+import { LecturerCategoryModule as CategoryModule } from './lecturer/category/category.module';
 import { CourseModule } from './lecturer/course/course.module';
 
 @Module({
