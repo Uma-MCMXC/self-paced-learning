@@ -1,5 +1,6 @@
 'use client'
 
+// ฟอร์มสร้างคอร์สเรียน พร้อมอัปโหลดภาพและเพิ่มผู้สอน
 import { useEffect, useState } from 'react'
 import PageContainer from '@/app/components/ui/PageContainer'
 import CardContainer from '@/app/components/ui/CardContainer'
@@ -14,18 +15,25 @@ import Toast from '@/app/components/ui/Toast'
 import { TrashIcon } from '@heroicons/react/24/solid'
 
 export default function CreateCourse() {
+  // ดึงตัวเลือกหมวดหมู่จาก backend
   const [categoryOptions, setCategoryOptions] = useState<{ label: string; value: string }[]>([])
   const [loadingCategory, setLoadingCategory] = useState(true)
+
+  // ดึงรายชื่ออาจารย์จากระบบ
+  const [staffList, setStaffList] = useState<{ label: string; value: string }[]>([])
+
+  // เก็บ error และข้อความแจ้งเตือน
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({})
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
-  const [courseFile, setCourseFile] = useState<File | null>(null)
-  const [staffList, setStaffList] = useState<{ label: string; value: string }[]>([])
 
+  // ไฟล์ภาพที่ผู้ใช้เลือกอัปโหลด
+  const [courseFile, setCourseFile] = useState<File | null>(null)
+
+  // ข้อมูลของฟอร์มหลัก
   const [form, setForm] = useState({
-    isInstructor: '1',
+    isInstructor: '1', // เลือกว่าจะดึงจาก staff (1) หรือกรอกเอง (0)
     courseName: '',
-    courseFile: '',
     categoryId: '',
     description: '',
     staffId: '',
@@ -35,10 +43,12 @@ export default function CreateCourse() {
     courseFee: '0',
   })
 
+  // รายชื่อ instructor ที่ถูกเพิ่มเข้ามา
   const [instructors, setInstructors] = useState<
-    { role: string; staffId?: string; staffName?: string }[]
+    { role: 'owner' | 'co-owner'; staffId?: string; staffName?: string }[]
   >([])
 
+  // ตรวจสอบฟอร์มก่อน submit
   const validateForm = () => {
     const errors: { [key: string]: string } = {}
     if (!form.categoryId) errors.categoryId = 'Please select a category'
@@ -47,13 +57,16 @@ export default function CreateCourse() {
     return errors
   }
 
+  // handle input form text
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // handle submit ทั้งหมด
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSubmitted(true)
     const errors = validateForm()
     setFormErrors(errors)
     if (Object.keys(errors).length > 0) return
@@ -63,14 +76,70 @@ export default function CreateCourse() {
       return
     }
 
-    // Submit
-    console.log({ ...form, instructors, courseFile })
+    try {
+      const token = localStorage.getItem('token')
+      const fullName = localStorage.getItem('fullName') || ''
+
+      // อัปโหลดภาพถ้ามี
+      let imageUrl = ''
+      if (courseFile) {
+        const formData = new FormData()
+        formData.append('file', courseFile)
+        const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload?type=course`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        })
+        if (!uploadRes.ok) throw new Error('Upload failed')
+        const uploadData = await uploadRes.json()
+        imageUrl = uploadData.url
+      }
+
+      // จัด payload และส่งไป backend
+      const payload = {
+        ...form,
+        courseFee: +form.courseFee,
+        imageUrl,
+        instructors,
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) throw new Error('Failed to save course')
+      setToastMsg('Course created successfully')
+      setForm({
+        isInstructor: '1',
+        courseName: '',
+        categoryId: '',
+        description: '',
+        staffId: '',
+        staffName: '',
+        role: '',
+        isCurrentUserInstructor: false,
+        courseFee: '0',
+      })
+      setInstructors([])
+      setCourseFile(null)
+      setSubmitted(false)
+    } catch (err) {
+      console.error(err)
+      setToastMsg('Error saving course')
+    }
   }
 
+  // handle radio input toggle
   const handleRadioChange = (val: string) => {
     setForm((prev) => ({ ...prev, isInstructor: val }))
   }
 
+  // เพิ่ม instructor เข้า list
   const handleAddInstructor = () => {
     if (!form.role) return setToastMsg('Please select role')
     if (form.isInstructor === '1' && !form.staffId)
@@ -79,7 +148,7 @@ export default function CreateCourse() {
       return setToastMsg('Please enter a name')
 
     const newInstructor = {
-      role: form.role,
+      role: form.role as 'owner' | 'co-owner',
       staffId: form.isInstructor === '1' ? form.staffId : undefined,
       staffName:
         form.isInstructor === '1'
@@ -98,7 +167,7 @@ export default function CreateCourse() {
     setForm((prev) => ({ ...prev, staffId: '', staffName: '', role: '' }))
   }
 
-  // Fetch category options
+  // โหลดหมวดหมู่จาก backend
   useEffect(() => {
     const fetchCategories = async () => {
       setLoadingCategory(true)
@@ -107,58 +176,45 @@ export default function CreateCourse() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/category`, {
           headers: { Authorization: `Bearer ${token}` },
         })
-
-        if (!res.ok) throw new Error('Failed to fetch categories')
         const data = await res.json()
         const options = data
-          .filter((c: any) => c.isActive === true)
+          .filter((c: any) => c.isActive)
           .map((c: any) => ({ label: c.name, value: String(c.id) }))
-
         setCategoryOptions(options)
-      } catch (err) {
-        console.error('Error loading categories:', err)
+      } catch {
         setToastMsg('Cannot load category data')
       } finally {
         setLoadingCategory(false)
       }
     }
-
     fetchCategories()
   }, [])
 
-  // เรียก user list
+  // โหลดรายชื่อ staff
   useEffect(() => {
     const fetchStaff = async () => {
       try {
         const token = localStorage.getItem('token')
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/instructors`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         })
-
-        if (!res.ok) throw new Error('Failed to fetch instructors')
-
         const data = await res.json()
         const options = data.map((u: any) => ({
           label: `${u.firstName} ${u.lastName}`,
           value: String(u.id),
         }))
         setStaffList(options)
-      } catch (err) {
-        console.error('Error loading instructors:', err)
+      } catch {
         setToastMsg('Cannot load instructor list')
       }
     }
-
     fetchStaff()
   }, [])
 
-  // Handle instructor = current user
+  // ถ้าติ๊กว่า "ฉันเป็นผู้สอน" ให้เพิ่มตัวเองเข้า instructors
   useEffect(() => {
-    const fullName = localStorage.getItem('fullName') || 'Me' // ดึงจาก localStorage หรือใช้ fallback
-    const currentUser = { role: '1', staffId: 'me', staffName: fullName }
-
+    const fullName = localStorage.getItem('fullName') || 'Me'
+    const currentUser = { role: 'owner' as const, staffId: 'me', staffName: fullName }
     const exists = instructors.some((i) => i.staffId === 'me')
 
     if (form.isCurrentUserInstructor && !exists) {
@@ -168,7 +224,7 @@ export default function CreateCourse() {
     }
   }, [form.isCurrentUserInstructor])
 
-  // Auto hide toast
+  // toast หายไปอัตโนมัติใน 3 วินาที
   useEffect(() => {
     if (toastMsg) {
       const timeout = setTimeout(() => setToastMsg(null), 3000)
@@ -288,7 +344,6 @@ export default function CreateCourse() {
                 value={form.staffName}
                 onChange={handleChange}
                 disabled={form.isInstructor !== '0'}
-                required={form.isInstructor === '0'}
               />
             </div>
 
@@ -325,7 +380,7 @@ export default function CreateCourse() {
                   <span className="text-sm font-medium text-gray-800 dark:text-white">
                     {inst.staffName || `Staff ID #${inst.staffId}`}
                     <span className="ml-2 px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                      {inst.role === '1' ? 'Owner' : 'Co-Owner'}
+                      {inst.role === 'owner' ? 'Owner' : 'Co-Owner'}
                     </span>
                   </span>
                   <button
@@ -340,7 +395,7 @@ export default function CreateCourse() {
             </div>
           </fieldset>
 
-          <div className="mt-8 text-end">
+          <div className="mt-8 text-center">
             <Button label="Save Course" variant="info" size="md" type="submit" />
           </div>
         </form>
