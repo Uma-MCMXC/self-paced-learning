@@ -18,6 +18,7 @@ import { TrashIcon } from '@heroicons/react/24/solid'
 export default function CreateCourse() {
   // loading
   const [isLoading, setIsLoading] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
   // ดึงตัวเลือกหมวดหมู่จาก backend
   const [categoryOptions, setCategoryOptions] = useState<{ label: string; value: string }[]>([])
@@ -80,6 +81,8 @@ export default function CreateCourse() {
       return
     }
 
+    setIsLoading(true) // เริ่มแสดงหน้า Loading
+
     try {
       const token = localStorage.getItem('token')
       const fullName = localStorage.getItem('fullName') || ''
@@ -117,7 +120,10 @@ export default function CreateCourse() {
       })
 
       if (!res.ok) throw new Error('Failed to save course')
+
       setToastMsg('Course created successfully')
+
+      // Reset form ทันทีหลังส่งข้อมูลสำเร็จ
       setForm({
         isInstructor: '1',
         courseName: '',
@@ -132,9 +138,19 @@ export default function CreateCourse() {
       setInstructors([])
       setCourseFile(null)
       setSubmitted(false)
+
+      // แสดง loading เบลอก่อนเปลี่ยนหน้า
+      setTimeout(() => {
+        setIsRedirecting(true)
+        setIsLoading(false) // ปิด loading หลักก่อน redirect
+        setTimeout(() => {
+          window.location.href = `${process.env.NEXT_PUBLIC_BASE_URL}/../manage`
+        }, 1000)
+      }, 1000)
     } catch (err) {
       console.error(err)
       setToastMsg('Error saving course')
+      setIsLoading(false)
     }
   }
 
@@ -244,7 +260,9 @@ export default function CreateCourse() {
           type={toastMsg === 'Course created successfully' ? 'success' : 'error'}
         />
       )}
-      {isLoading && <LoadingOverlay message="Saving..." />}
+      {(isLoading || isRedirecting) && (
+        <LoadingOverlay message={isRedirecting ? 'Redirecting...' : 'Saving...'} />
+      )}
       <CardContainer>
         <SectionTitle title="Input Course Information" />
         <form onSubmit={handleSubmit}>
