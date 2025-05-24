@@ -5,5 +5,5 @@ model QuestionType {
     name     String
     isActive Boolean @default(true) @map("is_active")
 
-    questionBank QuestionBank[] @relation("QuestionBankQuestionTypeId")
+    questionBanks QuestionBank[] @relation("QuestionBankQuestionTypeId")
 }

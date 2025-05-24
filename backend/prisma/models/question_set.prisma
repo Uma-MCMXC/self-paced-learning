@@ -31,11 +31,11 @@ model QuestionSet {
     updatedByUser User? @relation("QuestionSetUpdatedByUser", fields: [updatedBy], references: [id])
     deletedByUser User? @relation("QuestionSetDeletedByUser", fields: [deletedBy], references: [id])
 
-    questionBank QuestionBank[] @relation("QuestionBankQuestionSetId")
+    questionBanks QuestionBank[] @relation("QuestionBankQuestionSetId")
 
-    scoreCriteria ScoreCriteria[] @relation("ScoreCriteriaQuestionSetId")
+    scoreCriterias ScoreCriteria[] @relation("ScoreCriteriaQuestionSetId")
 
-    testResult TestResult[] @relation("TestResultQuestionSetId")
+    testResults TestResult[] @relation("TestResultQuestionSetId")
 
-    answerSubmission AnswerSubmission[] @relation("AnswerSubmissionQuestionSetId")
+    answerSubmissions AnswerSubmission[] @relation("AnswerSubmissionQuestionSetId")
 }

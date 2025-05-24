@@ -7,5 +7,5 @@ model ResultLevel {
 
     scoreCriteria ScoreCriteria[] @relation("ScoreCriteriaResultLevelId")
 
-    testResult TestResult[] @relation("TestResultResultLevelId")
+    testResults TestResult[] @relation("TestResultResultLevelId")
 }

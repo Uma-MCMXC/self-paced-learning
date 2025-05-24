@@ -35,14 +35,14 @@ model Lesson {
     deletedByUser User? @relation("LessonDeletedByUser", fields: [deletedBy], references: [id])
 
     // Reverse relations
-    lessonContent LessonContent[] @relation("LessonTypeId")
+    lessonContents LessonContent[] @relation("LessonTypeId")
 
-    lessonViewLessonId LessonView[] @relation("LessonViewLessonId")
+    lessonViews LessonView[] @relation("LessonViewLessonId")
 
-    lessonAttemptLessonId LessonAttempt[] @relation("LessonAttemptLessonId")
+    lessonAttempt LessonAttempt[] @relation("LessonAttemptLessonId")
 
-    lessonPrerequisiteLessonId         LessonPrerequisite[] @relation("LessonPrerequisiteLessonId")
-    lessonPrerequisiteRequiredLessonId LessonPrerequisite[] @relation("LessonPrerequisiteRequiredLessonId")
+    lessonPrerequisite  LessonPrerequisite[] @relation("LessonPrerequisiteLessonId")
+    lessonPrerequisites LessonPrerequisite[] @relation("LessonPrerequisiteRequiredLessonId")
 
-    questionSetLessonId QuestionSet[] @relation("QuestionSetLessonId")
+    questionSets QuestionSet[] @relation("QuestionSetLessonId")
 }

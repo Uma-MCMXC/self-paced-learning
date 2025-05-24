@@ -5,5 +5,5 @@ model TestType {
     name     String
     isActive Boolean @default(true) @map("is_active")
 
-    questionSet QuestionSet[] @relation("QuestionSetTestTypeId")
+    questionSets QuestionSet[] @relation("QuestionSetTestTypeId")
 }

@@ -1,9 +1,9 @@
 /// ประเภทเนื้อหา
 // data: video, pdf, quiz, embed, interactive, scorm
 model LessonContentType {
-    id Int @id @default(autoincrement())
+    id   Int    @id @default(autoincrement())
     name String
 
     // Reverse relations
-    lessonContent LessonContent[] @relation("ContentTypeId")
+    lessonContents LessonContent[] @relation("ContentTypeId")
 }

@@ -5,5 +5,5 @@ model QuestionLevel {
     name     String
     isActive Boolean @default(true) @map("is_active")
 
-    questionBank QuestionBank[] @relation("QuestionBankQuestionLevelId")
+    questionBanks QuestionBank[] @relation("QuestionBankQuestionLevelId")
 }

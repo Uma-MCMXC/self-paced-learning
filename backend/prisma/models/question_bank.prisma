@@ -43,5 +43,5 @@ model QuestionBank {
     updatedByUser User? @relation("QuestionBankUpdatedByUser", fields: [updatedBy], references: [id])
     deletedByUser User? @relation("QuestionBankDeletedByUser", fields: [deletedBy], references: [id])
 
-    answerSubmission AnswerSubmission[] @relation("AnswerSubmissionQuestionBankId")
+    answerSubmissions AnswerSubmission[] @relation("AnswerSubmissionQuestionBankId")
 }
