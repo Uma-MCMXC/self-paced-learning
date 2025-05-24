@@ -11,10 +11,14 @@ import TextareaInput from '@/app/components/ui/TextareaInput'
 import Button from '@/app/components/ui/Button'
 import RadioGroupInput from '@/app/components/ui/RadioGroupInput'
 import FileInput from '@/app/components/ui/FileInput'
+import LoadingOverlay from '@/app/components/ui/LoadingOverlay'
 import Toast from '@/app/components/ui/Toast'
 import { TrashIcon } from '@heroicons/react/24/solid'
 
 export default function CreateCourse() {
+  // loading
+  const [isLoading, setIsLoading] = useState(false)
+
   // ดึงตัวเลือกหมวดหมู่จาก backend
   const [categoryOptions, setCategoryOptions] = useState<{ label: string; value: string }[]>([])
   const [loadingCategory, setLoadingCategory] = useState(true)
@@ -234,7 +238,13 @@ export default function CreateCourse() {
 
   return (
     <PageContainer title="Create Course">
-      {toastMsg && <Toast message={toastMsg} type="error" />}
+      {toastMsg && (
+        <Toast
+          message={toastMsg}
+          type={toastMsg === 'Course created successfully' ? 'success' : 'error'}
+        />
+      )}
+      {isLoading && <LoadingOverlay message="Saving..." />}
       <CardContainer>
         <SectionTitle title="Input Course Information" />
         <form onSubmit={handleSubmit}>
