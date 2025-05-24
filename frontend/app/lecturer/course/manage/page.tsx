@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import PageContainer from '@/app/components/ui/PageContainer'
 import SimpleTable, { TableRow } from '@/app/components/ui/SimpleTable'
@@ -28,45 +28,63 @@ type Course = {
   lecturers: Lecturer[]
 }
 
-// Mock data
-const Courses: Course[] = [
-  {
-    id: '1',
-    name: 'Information Technology',
-    lessons: 10,
-    status: 'active',
-    course: 'Digital Business',
-    description: 'Covers networking, databases, and IT project management.',
-    createdBy: 'Staff User',
-    updatedAt: '2025-04-06 10:20',
-    lecturers: [
-      { name: 'Dr. Bob', role: 'Owner' },
-      { name: 'Dr. Carol', role: 'Co-Owner' },
-      { name: 'Dr. Alice', role: 'Co-Owner' },
-    ],
-  },
-  {
-    id: '2',
-    name: 'Information Technology',
-    lessons: 10,
-    status: 'inactive',
-    course: 'Digital Business',
-    description: 'Covers networking, databases, and IT project management.',
-    createdBy: 'Staff User',
-    updatedAt: '2025-04-06 10:20',
-    lecturers: [
-      { name: 'Dr. Bob', role: 'Owner' },
-      { name: 'Dr. Carol', role: 'Co-Owner' },
-      { name: 'Dr. Alice', role: 'Co-Owner' },
-    ],
-  },
-]
-
 export default function ManageCourse() {
   // useState เก็บสถานะของ Modal และ Toast
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
-  const [courseList, setCourseList] = useState<Course[]>(Courses)
   const [toastMsg, setToastMsg] = useState<string | null>(null)
+
+  const [courseList, setCourseList] = useState<Course[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const data = await res.json()
+
+        const formatted: Course[] = data.map((item: any) => ({
+          id: String(item.id),
+          name: item.name,
+          lessons: item._count?.lessons ?? 0,
+          status: item.isActive ? 'active' : 'inactive',
+          course: item.category?.name ?? '-', // ✅ ตรงกับ Prisma field
+          description: item.description ?? '-',
+          createdBy: item.createdByUser
+            ? `${item.createdByUser.firstName} ${item.createdByUser.lastName}`
+            : 'Unknown',
+          updatedAt: item.updatedAt ?? '-',
+          lecturers:
+            item.courseInstructor?.map((i: any) => {
+              let name = 'Unknown'
+
+              if (!i.user) {
+                name = i.fullName ?? 'Unknown'
+              } else {
+                const prefix = i.user.academicTitle?.name || i.user.title?.name || ''
+                name = `${prefix} ${i.user.firstName} ${i.user.lastName}`
+              }
+
+              return {
+                name,
+                role: i.role === 'OWNER' ? 'Owner' : 'Co-Owner',
+              }
+            }) ?? [],
+        }))
+
+        setCourseList(formatted)
+      } catch (error) {
+        console.error('❌ FETCH COURSES ERROR:', error)
+        setToastMsg('Failed to load course list')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCourses()
+  }, [])
 
   // toggleStatus() ฟังก์ชันสำหรับเปลี่ยนสถานะวิชา
   const toggleStatus = (id: string) => {
@@ -148,7 +166,12 @@ export default function ManageCourse() {
         )}
       </div>
     ),
-    status: <StatusToggleButton status={course.status} onClick={() => toggleStatus(course.id)} />,
+    status: (
+      <StatusToggleButton
+        status={course.status === 'active' ? 1 : 0}
+        onClick={() => toggleStatus(course.id)}
+      />
+    ),
     action: (
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
         <button title="View" onClick={() => handleView(course)}>

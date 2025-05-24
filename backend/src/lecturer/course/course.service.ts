@@ -54,4 +54,56 @@ export class CourseService {
       throw error;
     }
   }
+
+  /**
+   * ดึงรายการคอร์ส พร้อมจำนวน lessons และ instructors
+   */
+  async getCourses(userId: number) {
+    try {
+      return await this.prisma.course.findMany({
+        where: { createdBy: userId },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          // สำหรับ lecturers
+          courseInstructor: {
+            where: { isActive: true },
+            select: {
+              fullName: true,
+              role: true,
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  academicTitle: { select: { name: true } },
+                  title: { select: { name: true } },
+                },
+              },
+            },
+          },
+          // ✅ สำหรับ category
+          category: {
+            select: {
+              name: true,
+            },
+          },
+          // ✅ สำหรับผู้สร้าง
+          createdByUser: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+          // ✅ นับจำนวน lessons
+          _count: {
+            select: {
+              lessons: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.error('❌ FETCH COURSES ERROR:', error);
+      throw error;
+    }
+  }
 }

@@ -23,9 +23,9 @@ model Course {
     updatedByUser User? @relation("CourseUpdatedByUser", fields: [updatedBy], references: [id])
     deletedByUser User? @relation("CourseDeletedByUser", fields: [deletedBy], references: [id])
 
-    courseInstructorCourseId CourseInstructor[] @relation("CourseId")
+    courseInstructor CourseInstructor[] @relation("CourseId")
 
-    courseCompletionCourseId CourseCompletion[] @relation("CourseId")
+    courseCompletion CourseCompletion[] @relation("CourseId")
 
     lessons Lesson[] @relation("CourseId")
 

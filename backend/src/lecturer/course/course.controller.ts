@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Req, UseGuards, Get } from '@nestjs/common';
 import { AuthenticatedRequest } from 'src/common/types/authenticated-request.interface';
 import { CourseService } from './course.service';
 import { CreateCourseDto } from './dto/index';
@@ -17,5 +17,15 @@ export class CourseController {
   async createCourse(@Req() req: AuthenticatedRequest, @Body() dto: CreateCourseDto) {
     const userId = req.user.userId;
     return this.courseService.createCourse(dto, userId);
+  }
+
+  /**
+   * ดึงรายการคอร์สทั้งหมด พร้อม instructors
+   */
+  @Get()
+  @UseGuards(AuthGuard('jwt'))
+  async getCourses(@Req() req: AuthenticatedRequest) {
+    const userId = req.user.userId;
+    return this.courseService.getCourses(userId); // สามารถกรองตามผู้ใช้ได้
   }
 }
