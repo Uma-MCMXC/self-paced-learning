@@ -17,13 +17,16 @@ export default function EditCourse() {
   const rawParams = useParams()
   const courseId = Array.isArray(rawParams.courseId) ? rawParams.courseId[0] : rawParams.courseId
 
-  // รายการอาจารย์ทั้งหมดที่สามารถเลือกได้
+  // รายการ instructor ที่ระบบสามารถเลือกได้
   const [staffList, setStaffList] = useState<{ label: string; value: string }[]>([])
 
-  // รายการหมวดหมู่ที่โหลดมาจาก backend
+  // หมวดหมู่ course ทั้งหมด
   const [categoryOptions, setCategoryOptions] = useState<{ label: string; value: string }[]>([])
 
-  // แบบฟอร์มข้อมูลหลักสูตร
+  // สำหรับ preview ภาพเดิม
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null)
+
+  // ค่าฟอร์มหลัก
   const [form, setForm] = useState({
     isInstructor: '1',
     courseName: '',
@@ -36,7 +39,7 @@ export default function EditCourse() {
     isCurrentUserInstructor: false,
   })
 
-  // รายการผู้สอนในคอร์ส
+  // รายชื่อผู้สอน
   const [instructors, setInstructors] = useState<
     { role: string; staffId?: string; staffName?: string }[]
   >([])
@@ -45,7 +48,7 @@ export default function EditCourse() {
   const [courseFile, setCourseFile] = useState<File | null>(null)
   const [submitted, setSubmitted] = useState(false)
 
-  // โหลดข้อมูล course จาก backend
+  // ✅ โหลดข้อมูล course ตาม id
   useEffect(() => {
     const fetchCourse = async () => {
       try {
@@ -67,6 +70,8 @@ export default function EditCourse() {
           isCurrentUserInstructor: false,
         })
 
+        setExistingImageUrl(data.imageUrl ?? null)
+
         setInstructors(
           data.courseInstructor.map((i: any) => ({
             role: i.role === 'OWNER' ? '1' : '0',
@@ -82,7 +87,7 @@ export default function EditCourse() {
     if (courseId) fetchCourse()
   }, [courseId])
 
-  // โหลดหมวดหมู่และ staff list
+  // ✅ โหลดหมวดหมู่ + staff
   useEffect(() => {
     const fetchCategories = async () => {
       const token = localStorage.getItem('token')
@@ -108,32 +113,27 @@ export default function EditCourse() {
     fetchStaff()
   }, [])
 
-  // ตรวจสอบฟอร์มก่อนส่ง
   const validateForm = () => {
     const errors: { [key: string]: string } = {}
     if (!form.categoryId) errors.categoryId = 'This field is required'
     if (!form.courseName.trim()) errors.courseName = 'This field is required'
+    if (!form.courseFee || isNaN(+form.courseFee)) errors.courseFee = 'Invalid fee'
     return errors
   }
 
-  // เปลี่ยนค่าในฟอร์มแบบทั่วไป
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  // เปลี่ยนค่า Radio Instructor แบบ search/กรอกเอง
   const handleRadioChange = (val: string) => {
     setForm((prev) => ({ ...prev, isInstructor: val }))
   }
 
-  // เพิ่ม instructor เข้าไปใน list
   const handleAddInstructor = () => {
-    if (form.role === '') return alert('Please select role')
-    if (form.isInstructor === '1' && form.staffId === '')
-      return alert('Please select a staff member')
-    if (form.isInstructor === '0' && form.staffName.trim() === '')
-      return alert('Please enter a name')
+    if (!form.role) return alert('Please select role')
+    if (form.isInstructor === '1' && !form.staffId) return alert('Please select staff')
+    if (form.isInstructor === '0' && !form.staffName.trim()) return alert('Please enter name')
 
     const newInstructor = {
       role: form.role,
@@ -155,7 +155,18 @@ export default function EditCourse() {
     setForm((prev) => ({ ...prev, staffId: '', staffName: '', role: '' }))
   }
 
-  // ส่งข้อมูลไป backend
+  // ✅ อัปเดต instructor ที่ติ๊ก "ฉันเป็นผู้สอน"
+  useEffect(() => {
+    const currentUserInstructor = { role: '1', staffId: 'me', staffName: 'You' }
+    const exists = instructors.some((i) => i.staffId === 'me')
+
+    if (form.isCurrentUserInstructor && !exists) {
+      setInstructors((prev) => [...prev, currentUserInstructor])
+    } else if (!form.isCurrentUserInstructor && exists) {
+      setInstructors((prev) => prev.filter((i) => i.staffId !== 'me'))
+    }
+  }, [form.isCurrentUserInstructor])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitted(true)
@@ -165,7 +176,7 @@ export default function EditCourse() {
 
     try {
       const token = localStorage.getItem('token')
-      let imageUrl = ''
+      let imageUrl = existingImageUrl || ''
 
       if (courseFile) {
         const formData = new FormData()
@@ -210,35 +221,22 @@ export default function EditCourse() {
     }
   }
 
-  // เพิ่ม/ลบ instructor ที่เป็น current user
-  useEffect(() => {
-    const currentUserInstructor = { role: '1', staffId: 'me', staffName: 'You' }
-    const alreadyExists = instructors.some((inst) => inst.staffId === 'me')
-    if (form.isCurrentUserInstructor && !alreadyExists) {
-      setInstructors((prev) => [...prev, currentUserInstructor])
-    } else if (!form.isCurrentUserInstructor && alreadyExists) {
-      setInstructors((prev) => prev.filter((inst) => inst.staffId !== 'me'))
-    }
-  }, [form.isCurrentUserInstructor])
-
   return (
     <PageContainer title="Edit Course">
       <CardContainer>
         <SectionTitle title="Input Course Information" />
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-4">
-            {/* ✅ ดึง category จาก backend */}
             <SelectInput
               label="Category"
               name="categoryId"
               value={form.categoryId}
               onChange={(val) => setForm((prev) => ({ ...prev, categoryId: val }))}
               required
-              options={categoryOptions} // <- จาก useEffect โหลด categories
-              error={!!formErrors.categoryId} // ✅ แปลง string ให้เป็น boolean
+              options={categoryOptions}
+              error={!!formErrors.categoryId}
               errorMessage={formErrors.categoryId}
             />
-
             <FormInput
               name="courseName"
               id="courseName"
@@ -251,9 +249,10 @@ export default function EditCourse() {
             />
 
             <FileInput
-              label="Upload Image"
+              label="Upload New Image (optional)"
               onFileChange={(file) => setCourseFile(file)}
-              required={false} // ✅ ไม่ต้องอัปโหลดใหม่ก็ได้
+              required={false}
+              accept="image/*"
               submitted={submitted}
             />
 
@@ -268,12 +267,25 @@ export default function EditCourse() {
               error={formErrors.courseFee}
             />
 
+            {/* ✅ แสดงภาพเดิม */}
+            {existingImageUrl && (
+              <div className="col-span-full">
+                <a
+                  href={`${process.env.NEXT_PUBLIC_API_URL}${existingImageUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline hover:text-blue-800"
+                >
+                  View Current Image
+                </a>
+              </div>
+            )}
+
             <div className="col-span-full">
               <TextareaInput
                 id="description"
-                label="Description"
+                label="Description (optional)"
                 name="description"
-                placeholder="Tell us about the Course..."
                 value={form.description}
                 onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
                 maxLength={5000}
@@ -281,26 +293,24 @@ export default function EditCourse() {
             </div>
           </div>
 
-          {/* ✅ ส่วน Instructor */}
+          {/* 🔽 Instructor Section */}
           <fieldset className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 mt-6">
             <legend className="text-lg font-semibold text-gray-700 dark:text-white">
               Edit Instructor
             </legend>
 
-            <div className="flex items-center gap-4 mb-4">
-              <RadioGroupInput
-                name="isInstructor"
-                label=""
-                value={form.isInstructor}
-                onChange={handleRadioChange}
-                options={[
-                  { value: '1', label: 'Search from staff' },
-                  { value: '0', label: 'Enter name' },
-                ]}
-              />
-            </div>
+            <RadioGroupInput
+              name="isInstructor"
+              label=""
+              value={form.isInstructor}
+              onChange={handleRadioChange}
+              options={[
+                { value: '1', label: 'Search from staff' },
+                { value: '0', label: 'Enter name manually' },
+              ]}
+            />
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
               <SelectInput
                 label="Role"
                 name="role"
@@ -311,7 +321,6 @@ export default function EditCourse() {
                   { label: 'Co-Owner', value: '0' },
                 ]}
               />
-
               <SelectInput
                 label="Select from staff"
                 name="staffId"
@@ -319,9 +328,8 @@ export default function EditCourse() {
                 onChange={(val) => setForm((prev) => ({ ...prev, staffId: val }))}
                 disabled={form.isInstructor !== '1'}
                 required={form.isInstructor === '1'}
-                options={staffList} // ✅ โหลดรายชื่อ staff จาก backend
+                options={staffList}
               />
-
               <FormInput
                 name="staffName"
                 id="staffName"
@@ -348,25 +356,24 @@ export default function EditCourse() {
               </label>
             </div>
 
-            <div className="mt-4 text-end">
+            <div className="text-end mt-4">
               <Button
                 label="Add Instructor"
                 variant="success"
                 size="sm"
                 onClick={handleAddInstructor}
-                type="button"
               />
             </div>
 
-            <div className="mt-6 space-y-2">
+            <div className="mt-4 space-y-2">
               {instructors.map((inst, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between border border-gray-200 dark:border-gray-600 rounded-md px-4 py-2 bg-gray-50 dark:bg-gray-800"
+                  className="flex items-center justify-between border px-4 py-2 rounded bg-gray-50 dark:bg-gray-800"
                 >
-                  <span className="text-sm font-medium text-gray-800 dark:text-white">
-                    {inst.staffName || `Staff ID #${inst.staffId}`}
-                    <span className="ml-2 px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  <span className="text-sm text-gray-800 dark:text-white">
+                    {inst.staffName}
+                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                       {inst.role === '1' ? 'Owner' : 'Co-Owner'}
                     </span>
                   </span>

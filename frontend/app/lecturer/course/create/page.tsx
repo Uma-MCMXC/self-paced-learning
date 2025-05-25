@@ -294,7 +294,7 @@ export default function CreateCourse() {
             />
 
             <FileInput
-              label="Upload Image"
+              label="Upload Image (optional)"
               onFileChange={(file) => setCourseFile(file)}
               accept="image/*"
               submitted={submitted}
@@ -314,7 +314,7 @@ export default function CreateCourse() {
             <div className="col-span-full">
               <TextareaInput
                 id="description"
-                label="Description"
+                label="Description (optional)"
                 name="description"
                 value={form.description}
                 onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
