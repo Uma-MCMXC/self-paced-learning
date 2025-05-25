@@ -110,6 +110,9 @@ export class CourseService {
     }
   }
 
+  /**
+   * ลบรายการ
+   */
   async deleteCourse(id: number, userId: number) {
     const now = getNowInBangkok();
 
@@ -137,6 +140,33 @@ export class CourseService {
       });
     } catch (error) {
       console.error('❌ DELETE COURSE ERROR:', error);
+      throw error;
+    }
+  }
+
+  // ดึงข้อมูลเพื่อแก้ไข
+  async getCourseById(id: number, userId: number) {
+    try {
+      return await this.prisma.course.findFirst({
+        where: {
+          id,
+          createdBy: userId,
+          deletedAt: null,
+        },
+        include: {
+          courseInstructor: {
+            where: { isActive: true },
+            select: {
+              fullName: true,
+              role: true,
+              userId: true,
+            },
+          },
+          category: { select: { name: true } },
+        },
+      });
+    } catch (error) {
+      console.error('❌ FETCH COURSE BY ID ERROR:', error);
       throw error;
     }
   }

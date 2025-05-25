@@ -53,10 +53,23 @@ export class CourseController {
     return this.courseService.updateStatus(id, { ...dto, updatedBy: userId });
   }
 
+  /**
+   * ลบ
+   */
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))
   async deleteCourse(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
     const userId = req.user.userId;
     return this.courseService.deleteCourse(id, userId);
+  }
+
+  /**
+   * ดึงข้อมูลรายคอร์สตาม ID
+   */
+  @Get(':id')
+  @UseGuards(AuthGuard('jwt'))
+  async getCourseById(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
+    const userId = req.user.userId;
+    return this.courseService.getCourseById(id, userId);
   }
 }
