@@ -112,13 +112,28 @@ export class CourseService {
 
   async deleteCourse(id: number, userId: number) {
     const now = getNowInBangkok();
+
     try {
-      return await this.prisma.course.update({
-        where: { id },
-        data: {
-          deletedBy: userId,
-          deletedAt: now,
-        },
+      return await this.prisma.$transaction(async (tx) => {
+        // 🔸 1. Soft delete ใน course
+        const course = await tx.course.update({
+          where: { id },
+          data: {
+            deletedBy: userId,
+            deletedAt: now,
+          },
+        });
+
+        // 🔸 2. Soft delete ใน courseInstructor
+        await tx.courseInstructor.updateMany({
+          where: { courseId: id },
+          data: {
+            deletedBy: userId,
+            deletedAt: now,
+          },
+        });
+
+        return course;
       });
     } catch (error) {
       console.error('❌ DELETE COURSE ERROR:', error);
