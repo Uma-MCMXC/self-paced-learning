@@ -94,17 +94,47 @@ export default function ManageCourse() {
   }, [])
 
   // toggleStatus() ฟังก์ชันสำหรับเปลี่ยนสถานะวิชา
-  const toggleStatus = (id: string) => {
-    setCourseList((prev) =>
-      prev.map((course) =>
-        course.id === id
-          ? { ...course, status: course.status === 'active' ? 'inactive' : 'active' }
-          : course
-      )
-    )
+  const toggleStatus = async (id: string) => {
+    try {
+      const token = localStorage.getItem('token')
+      const course = courseList.find((c) => c.id === id)
+      if (!course) return
 
-    setToastMsg('Course status has been updated.')
-    setTimeout(() => setToastMsg(null), 3000)
+      const newStatus = course.status === 'active' ? false : true
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          isActive: newStatus,
+        }),
+      })
+
+      const updated = await res.json() // ✅ ต้องรับ response ที่มี updatedAt กลับมา
+
+      // อัปเดต state หลังอัปเดต backend สำเร็จ
+      setCourseList((prev) =>
+        prev.map((course) =>
+          course.id === id
+            ? {
+                ...course,
+                status: updated.isActive ? 'active' : 'inactive',
+                updatedAt: updated.updatedAt, // ✅ ใช้เวลาจาก backend
+              }
+            : course
+        )
+      )
+
+      setToastMsg('Course status has been updated.')
+      setTimeout(() => setToastMsg(null), 3000)
+    } catch (error) {
+      console.error('❌ UPDATE STATUS ERROR:', error)
+      setToastMsg('Failed to update course status.')
+      setTimeout(() => setToastMsg(null), 3000)
+    }
   }
 
   const handleView = (course: Course) => {

@@ -1,16 +1,25 @@
-import { Controller, Post, Body, Req, UseGuards, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Req,
+  UseGuards,
+  Get,
+  Param,
+  Patch,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { AuthenticatedRequest } from 'src/common/types/authenticated-request.interface';
 import { CourseService } from './course.service';
-import { CreateCourseDto } from './dto/index';
+import { CreateCourseDto, UpdateStatusDto } from './dto/index';
 import { AuthGuard } from '@nestjs/passport';
 
-@Controller('courses') // ✅ ชัดเจนว่าเกี่ยวกับ courses
+@Controller('courses')
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
 
   /**
-   * สร้างคอร์สใหม่ พร้อมบันทึก instructors
-   * ใช้ JWT ในการระบุตัวผู้ใช้ที่สร้าง
+   * สร้างคอร์สใหม่ พร้อม instructors
    */
   @Post()
   @UseGuards(AuthGuard('jwt'))
@@ -20,12 +29,26 @@ export class CourseController {
   }
 
   /**
-   * ดึงรายการคอร์สทั้งหมด พร้อม instructors
+   * ดึงรายการคอร์สทั้งหมดของผู้ใช้
    */
   @Get()
   @UseGuards(AuthGuard('jwt'))
   async getCourses(@Req() req: AuthenticatedRequest) {
     const userId = req.user.userId;
-    return this.courseService.getCourses(userId); // สามารถกรองตามผู้ใช้ได้
+    return this.courseService.getCourses(userId);
+  }
+
+  /**
+   * อัปเดตสถานะเปิด/ปิดของคอร์ส
+   */
+  @Patch(':id/status')
+  @UseGuards(AuthGuard('jwt'))
+  async updateStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateStatusDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    const userId = req.user.userId;
+    return this.courseService.updateStatus(id, { ...dto, updatedBy: userId });
   }
 }

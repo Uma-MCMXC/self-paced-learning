@@ -2,7 +2,7 @@ import { Role } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { getNowInBangkok } from 'src/utils/date.util';
-import { CreateCourseDto } from './dto/index';
+import { CreateCourseDto, UpdateStatusDto } from './dto/index';
 
 @Injectable()
 export class CourseService {
@@ -32,25 +32,42 @@ export class CourseService {
           courseId: course.id,
           userId: inst.staffId === 'me' ? userId : inst.staffId ? +inst.staffId : null,
           fullName: inst.staffName,
-          role: inst.role === 'owner' ? Role.OWNER : Role.CO_OWNER, // ✅ ใช้ enum แทน string
+          role: inst.role === 'owner' ? Role.OWNER : Role.CO_OWNER,
           isActive: true,
           updatedBy: userId,
           updatedAt: now,
         }));
 
-        // ตรวจสอบกรณีไม่มี instructors (ป้องกันการส่ง empty array)
         if (instructors.length > 0) {
           await tx.courseInstructor.createMany({
             data: instructors,
           });
         }
 
-        // ส่ง course กลับไปให้ controller
         return course;
       });
     } catch (error) {
-      // บันทึก log error เผื่อ debug เพิ่มเติม
       console.error('❌ CREATE COURSE ERROR:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * อัปเดตสถานะการเปิด/ปิดของคอร์ส
+   */
+  async updateStatus(id: number, dto: UpdateStatusDto) {
+    const now = getNowInBangkok();
+    try {
+      return await this.prisma.course.update({
+        where: { id },
+        data: {
+          isActive: dto.isActive,
+          updatedBy: dto.updatedBy,
+          updatedAt: now,
+        },
+      });
+    } catch (error) {
+      console.error('❌ UPDATE STATUS ERROR:', error);
       throw error;
     }
   }
@@ -61,13 +78,12 @@ export class CourseService {
   async getCourses(userId: number) {
     try {
       return await this.prisma.course.findMany({
-        where: { 
+        where: {
           createdBy: userId,
           deletedAt: null,
         },
         orderBy: { createdAt: 'desc' },
         include: {
-          // สำหรับ lecturers
           courseInstructor: {
             where: { isActive: true },
             select: {
@@ -83,25 +99,9 @@ export class CourseService {
               },
             },
           },
-          // ✅ สำหรับ category
-          category: {
-            select: {
-              name: true,
-            },
-          },
-          // ✅ สำหรับผู้สร้าง
-          createdByUser: {
-            select: {
-              firstName: true,
-              lastName: true,
-            },
-          },
-          // ✅ นับจำนวน lessons
-          _count: {
-            select: {
-              lessons: true,
-            },
-          },
+          category: { select: { name: true } },
+          createdByUser: { select: { firstName: true, lastName: true } },
+          _count: { select: { lessons: true } },
         },
       });
     } catch (error) {
