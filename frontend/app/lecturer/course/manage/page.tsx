@@ -7,6 +7,7 @@ import { EyeIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outlin
 import { UserIcon, UsersIcon, BookOpenIcon } from '@heroicons/react/24/solid'
 import { formatThaiDatetime } from '@/app/utils/date.util'
 import { getUserIdFromToken } from '@/app/utils/auth.util'
+import { getFullDisplayName } from '@/app/utils/user.util'
 import PageContainer from '@/app/components/ui/PageContainer'
 import Badge from '@/app/components/ui/Badge'
 import Modal from '@/app/components/ui/Modal'
@@ -16,7 +17,16 @@ import StatusToggleButton from '@/app/components/ui/StatusToggleButton'
 import ConfirmModal from '@/app/components/ui/ConfirmModal'
 
 // type Lecturer และ type Course
-type Lecturer = { name: string; role: 'Owner' | 'Co-Owner' }
+type Lecturer = {
+  fullName?: string | null
+  role: 'Owner' | 'Co-Owner'
+  user?: {
+    firstName: string
+    lastName: string
+    academicTitle?: { name: string } | null
+    title?: { name: string } | null
+  } | null
+}
 
 // ดึง userId ทันทีเมื่อต้นไฟล์
 const userId = getUserIdFromToken()
@@ -56,7 +66,7 @@ export default function ManageCourse() {
           name: item.name,
           lessons: item._count?.lessons ?? 0,
           status: item.isActive ? 'active' : 'inactive',
-          course: item.category?.name ?? '-', // ✅ ตรงกับ Prisma field
+          course: item.category?.name ?? '-', // ตรงกับ Prisma field
           description: item.description ?? '-',
           createdBy: item.createdByUser
             ? `${item.createdByUser.firstName} ${item.createdByUser.lastName}`
@@ -64,21 +74,11 @@ export default function ManageCourse() {
           updatedAt: item.updatedAt ?? null,
           createdAt: item.createdAt ?? null,
           lecturers:
-            item.courseInstructor?.map((i: any) => {
-              let name = 'Unknown'
-
-              if (!i.user) {
-                name = i.fullName ?? 'Unknown'
-              } else {
-                const prefix = i.user.academicTitle?.name || i.user.title?.name || ''
-                name = `${prefix} ${i.user.firstName} ${i.user.lastName}`
-              }
-
-              return {
-                name,
-                role: i.role === 'OWNER' ? 'Owner' : 'Co-Owner',
-              }
-            }) ?? [],
+            item.courseInstructor?.map((i: any) => ({
+              fullName: i.fullName ?? null,
+              user: i.user ?? null,
+              role: i.role === 'OWNER' ? 'Owner' : 'Co-Owner',
+            })) ?? [],
         }))
 
         setCourseList(formatted)
@@ -156,7 +156,7 @@ export default function ManageCourse() {
               {course.lecturers
                 .filter((l) => l.role === 'Owner')
                 .map((l, i) => (
-                  <li key={`owner-${i}`}>{l.name}</li>
+                  <li key={`owner-${i}`}>{getFullDisplayName(l)}</li>
                 ))}
             </ul>
           </div>
@@ -171,7 +171,7 @@ export default function ManageCourse() {
               {course.lecturers
                 .filter((l) => l.role === 'Co-Owner')
                 .map((l, i) => (
-                  <li key={`coowner-${i}`}>{l.name}</li>
+                  <li key={`owner-${i}`}>{getFullDisplayName(l)}</li>
                 ))}
             </ul>
           </div>
@@ -273,7 +273,7 @@ export default function ManageCourse() {
                     {selectedCourse.lecturers
                       .filter((l) => l.role === 'Owner')
                       .map((l, i) => (
-                        <li key={`owner-${i}`}>{l.name}</li>
+                        <li key={`owner-${i}`}>{getFullDisplayName(l)}</li>
                       ))}
                   </ul>
                 </div>
@@ -288,7 +288,7 @@ export default function ManageCourse() {
                     {selectedCourse.lecturers
                       .filter((l) => l.role === 'Co-Owner')
                       .map((l, i) => (
-                        <li key={`coowner-${i}`}>{l.name}</li>
+                        <li key={`owner-${i}`}>{getFullDisplayName(l)}</li>
                       ))}
                   </ul>
                 </div>
@@ -300,14 +300,12 @@ export default function ManageCourse() {
         <hr className="my-4 border-gray-200 dark:border-gray-700" />
 
         <div className="text-xs text-gray-500 dark:text-gray-400">
-          <p>
-            <span className="font-semibold text-gray-600 dark:text-gray-300">Created By:</span>{' '}
-            {selectedCourse?.createdBy}
-          </p>
-          <p>
-            <span className="font-semibold text-gray-600 dark:text-gray-300">Updated At:</span>{' '}
-            {selectedCourse?.updatedAt}
-          </p>
+          {selectedCourse && (
+            <p>
+              <span className="font-semibold text-gray-600 dark:text-gray-300">Updated At:</span>{' '}
+              {formatThaiDatetime(selectedCourse.updatedAt ?? selectedCourse.createdAt)}
+            </p>
+          )}
         </div>
       </Modal>
 
