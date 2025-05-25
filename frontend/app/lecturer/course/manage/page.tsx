@@ -2,10 +2,12 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import PageContainer from '@/app/components/ui/PageContainer'
 import SimpleTable, { TableRow } from '@/app/components/ui/SimpleTable'
 import { EyeIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { UserIcon, UsersIcon, BookOpenIcon } from '@heroicons/react/24/solid'
+import { formatThaiDatetime } from '@/app/utils/date.util'
+import { getUserIdFromToken } from '@/app/utils/auth.util'
+import PageContainer from '@/app/components/ui/PageContainer'
 import Badge from '@/app/components/ui/Badge'
 import Modal from '@/app/components/ui/Modal'
 import Button from '@/app/components/ui/Button'
@@ -16,6 +18,9 @@ import ConfirmModal from '@/app/components/ui/ConfirmModal'
 // type Lecturer และ type Course
 type Lecturer = { name: string; role: 'Owner' | 'Co-Owner' }
 
+// ดึง userId ทันทีเมื่อต้นไฟล์
+const userId = getUserIdFromToken()
+
 type Course = {
   id: string
   name: string
@@ -24,7 +29,8 @@ type Course = {
   course: string
   description: string
   createdBy: string
-  updatedAt: string
+  createdAt: string
+  updatedAt: string | null
   lecturers: Lecturer[]
 }
 
@@ -55,7 +61,8 @@ export default function ManageCourse() {
           createdBy: item.createdByUser
             ? `${item.createdByUser.firstName} ${item.createdByUser.lastName}`
             : 'Unknown',
-          updatedAt: item.updatedAt ?? '-',
+          updatedAt: item.updatedAt ?? null,
+          createdAt: item.createdAt ?? null,
           lecturers:
             item.courseInstructor?.map((i: any) => {
               let name = 'Unknown'
@@ -127,9 +134,14 @@ export default function ManageCourse() {
   // สร้างข้อมูลให้ตาราง SimpleTable
   const data: TableRow[] = courseList.map((course) => ({
     courseName: (
-      <div className="text-sm">
+      <div className="flex flex-col">
         <div className="font-medium text-gray-900 dark:text-gray-100">{course.name}</div>
-        <div className="text-xs text-gray-500 dark:text-gray-400">{course.lessons} Lessons</div>
+        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          {course.lessons} Lessons
+        </div>
+        <div className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+          Updated at: {formatThaiDatetime(course.updatedAt ?? course.createdAt)}
+        </div>
       </div>
     ),
     lecturer: (

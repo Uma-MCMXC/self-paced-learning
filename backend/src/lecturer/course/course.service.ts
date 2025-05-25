@@ -61,7 +61,10 @@ export class CourseService {
   async getCourses(userId: number) {
     try {
       return await this.prisma.course.findMany({
-        where: { createdBy: userId },
+        where: { 
+          createdBy: userId,
+          deletedAt: null,
+        },
         orderBy: { createdAt: 'desc' },
         include: {
           // สำหรับ lecturers
