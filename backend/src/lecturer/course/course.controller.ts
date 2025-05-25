@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   ParseIntPipe,
+  Delete,
 } from '@nestjs/common';
 import { AuthenticatedRequest } from 'src/common/types/authenticated-request.interface';
 import { CourseService } from './course.service';
@@ -50,5 +51,12 @@ export class CourseController {
   ) {
     const userId = req.user.userId;
     return this.courseService.updateStatus(id, { ...dto, updatedBy: userId });
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
+  async deleteCourse(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
+    const userId = req.user.userId;
+    return this.courseService.deleteCourse(id, userId);
   }
 }

@@ -109,4 +109,20 @@ export class CourseService {
       throw error;
     }
   }
+
+  async deleteCourse(id: number, userId: number) {
+    const now = getNowInBangkok();
+    try {
+      return await this.prisma.course.update({
+        where: { id },
+        data: {
+          deletedBy: userId,
+          deletedAt: now,
+        },
+      });
+    } catch (error) {
+      console.error('❌ DELETE COURSE ERROR:', error);
+      throw error;
+    }
+  }
 }

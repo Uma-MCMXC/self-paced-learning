@@ -83,7 +83,7 @@ export default function ManageCourse() {
 
         setCourseList(formatted)
       } catch (error) {
-        console.error('❌ FETCH COURSES ERROR:', error)
+        // console.error('❌ FETCH COURSES ERROR:', error)
         setToastMsg('Failed to load course list')
       } finally {
         setLoading(false)
@@ -131,7 +131,7 @@ export default function ManageCourse() {
       setToastMsg('Course status has been updated.')
       setTimeout(() => setToastMsg(null), 3000)
     } catch (error) {
-      console.error('❌ UPDATE STATUS ERROR:', error)
+      // console.error('❌ UPDATE STATUS ERROR:', error)
       setToastMsg('Failed to update course status.')
       setTimeout(() => setToastMsg(null), 3000)
     }
@@ -148,15 +148,38 @@ export default function ManageCourse() {
   const confirmRef = useRef<HTMLDialogElement>(null)
 
   const handleDeleteClick = (course: Course) => {
+    // console.log('📌 Course to delete:', course)
     setDeletingCourse(course)
     confirmRef.current?.showModal()
   }
 
-  const handleDeleteConfirmed = () => {
-    if (deletingCourse) {
+  const handleDeleteConfirmed = async () => {
+    if (!deletingCourse) return
+
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${deletingCourse.id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!res.ok) {
+        throw new Error('Failed to delete course')
+      }
+
+      // ✅ ปิด popup
+      confirmRef.current?.close()
+
+      // ✅ อัปเดต state
       setCourseList((prev) => prev.filter((c) => c.id !== deletingCourse.id))
       setToastMsg(`Course "${deletingCourse.name}" has been deleted.`)
       setDeletingCourse(null)
+      setTimeout(() => setToastMsg(null), 3000)
+    } catch (error) {
+      // console.error('❌ DELETE COURSE ERROR:', error)
+      setToastMsg('Failed to delete course.')
       setTimeout(() => setToastMsg(null), 3000)
     }
   }
@@ -343,7 +366,7 @@ export default function ManageCourse() {
         id="confirm_delete_course"
         ref={confirmRef}
         title="Delete Course"
-        message={`Are you sure you want to delete "${deletingCourse?.name}"?`}
+        message={`Are you sure you want to delete "${deletingCourse?.name || ''}"?`}
         onConfirm={handleDeleteConfirmed}
         onCancel={() => confirmRef.current?.close()}
         size="sm"
