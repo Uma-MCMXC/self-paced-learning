@@ -22,7 +22,7 @@ export default function EditCourse() {
   const [staffList, setStaffList] = useState<{ label: string; value: string }[]>([])
   const [categoryOptions, setCategoryOptions] = useState<{ label: string; value: string }[]>([])
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [isRedirecting, setIsRedirecting] = useState(false)
   const [toastMsg, setToastMsg] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
@@ -235,7 +235,7 @@ export default function EditCourse() {
     setFormErrors(errors)
     if (Object.keys(errors).length > 0) return
 
-    setIsLoading(true)
+    setIsSubmitting(true)
 
     try {
       const token = localStorage.getItem('token')
@@ -280,7 +280,7 @@ export default function EditCourse() {
       setToastMsg('Course updated successfully')
       setTimeout(() => {
         setIsRedirecting(true)
-        setIsLoading(false)
+        setIsSubmitting(false)
         setTimeout(() => {
           window.location.href = `${process.env.NEXT_PUBLIC_BASE_URL}/../manage`
         }, 1000)
@@ -288,7 +288,7 @@ export default function EditCourse() {
     } catch (err) {
       console.error('❌ UPDATE COURSE ERROR:', err)
       setToastMsg('Error updating course')
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
 
@@ -300,7 +300,7 @@ export default function EditCourse() {
           type={toastMsg === 'Course updated successfully' ? 'success' : 'error'}
         />
       )}
-      {(isLoading || isRedirecting) && (
+      {(isSubmitting || isRedirecting) && (
         <LoadingOverlay message={isRedirecting ? 'Redirecting...' : 'Saving...'} />
       )}
       <CardContainer>
@@ -443,6 +443,7 @@ export default function EditCourse() {
                 variant="success"
                 size="sm"
                 onClick={handleAddInstructor}
+                type="button"
               />
             </div>
 
