@@ -2,7 +2,7 @@ import { Role } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { getNowInBangkok } from 'src/utils/date.util';
-import { CreateCourseDto, UpdateStatusDto } from './dto/index';
+import { CreateCourseDto, UpdateCourseStatusDto, UpdateCourseDto } from './dto/index';
 
 @Injectable()
 export class CourseService {
@@ -55,7 +55,7 @@ export class CourseService {
   /**
    * อัปเดตสถานะการเปิด/ปิดของคอร์ส
    */
-  async updateStatus(id: number, dto: UpdateStatusDto) {
+  async updateStatus(id: number, dto: UpdateCourseStatusDto) {
     const now = getNowInBangkok();
     try {
       return await this.prisma.course.update({
@@ -85,7 +85,7 @@ export class CourseService {
         orderBy: { createdAt: 'desc' },
         include: {
           courseInstructor: {
-            where: { isActive: true },
+            where: { isActive: true, deletedAt: null },
             select: {
               fullName: true,
               role: true,
@@ -155,7 +155,7 @@ export class CourseService {
         },
         include: {
           courseInstructor: {
-            where: { isActive: true },
+            where: { isActive: true, deletedAt: null },
             select: {
               fullName: true,
               role: true,
@@ -169,5 +169,88 @@ export class CourseService {
       console.error('❌ FETCH COURSE BY ID ERROR:', error);
       throw error;
     }
+  }
+
+  async updateCourse(courseId: number, dto: UpdateCourseDto, userId: number) {
+    const now = getNowInBangkok();
+
+    return this.prisma.$transaction(async (tx) => {
+      // 🔍 Instructor เดิมจาก DB
+      const oldInstructors = await tx.courseInstructor.findMany({
+        where: { courseId, deletedAt: null },
+      });
+
+      // 🔄 key list สำหรับตรวจสอบ (staffId ถ้ามี, fallback เป็น fullName)
+      const newInstructorKeys = dto.instructors.map((i) => i.staffId ?? i.staffName);
+
+      // 🔴 หารายชื่อที่หายไป แล้ว soft-delete
+      const toDelete = oldInstructors.filter((old) => {
+        const key = old.userId !== null ? String(old.userId) : old.fullName;
+        return !newInstructorKeys.includes(String(key));
+      });
+
+      for (const instructor of toDelete) {
+        await tx.courseInstructor.update({
+          where: { id: instructor.id },
+          data: {
+            deletedBy: userId,
+            deletedAt: now,
+          },
+        });
+      }
+
+      // 🟢 เพิ่มใหม่ทุกคน (ลบซ้ำไว้ก่อนแล้ว)
+      await tx.courseInstructor.createMany({
+        data: dto.instructors.map((i) => ({
+          courseId,
+          role: i.role === 'owner' ? Role.OWNER : Role.CO_OWNER,
+          userId: i.staffId ? parseInt(i.staffId) : null,
+          fullName: i.staffName,
+          isActive: true,
+        })),
+      });
+
+      // ✏️ อัปเดตข้อมูลคอร์ส
+      return await tx.course.update({
+        where: { id: courseId },
+        data: {
+          name: dto.courseName,
+          categoryId: dto.categoryId,
+          description: dto.description,
+          fee: dto.courseFee,
+          imageUrl: dto.imageUrl ?? '',
+          updatedBy: userId,
+          updatedAt: now,
+        },
+      });
+    });
+  }
+
+  async removeInstructor(
+    courseId: number,
+    body: { staffId?: string; staffName?: string },
+    userId: number,
+  ) {
+    const now = getNowInBangkok();
+
+    const target = await this.prisma.courseInstructor.findFirst({
+      where: {
+        courseId,
+        deletedAt: null,
+        ...(body.staffId ? { userId: parseInt(body.staffId) } : { fullName: body.staffName }),
+      },
+    });
+
+    if (!target) throw new Error('Instructor not found');
+
+    await this.prisma.courseInstructor.update({
+      where: { id: target.id },
+      data: {
+        deletedAt: now,
+        deletedBy: userId,
+      },
+    });
+
+    return { message: 'Instructor removed' };
   }
 }

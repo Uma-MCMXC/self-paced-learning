@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { AuthenticatedRequest } from 'src/common/types/authenticated-request.interface';
 import { CourseService } from './course.service';
-import { CreateCourseDto, UpdateStatusDto } from './dto/index';
+import { CreateCourseDto, UpdateCourseStatusDto, UpdateCourseDto } from './dto/index';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('courses')
@@ -46,7 +46,7 @@ export class CourseController {
   @UseGuards(AuthGuard('jwt'))
   async updateStatus(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateStatusDto,
+    @Body() dto: UpdateCourseStatusDto,
     @Req() req: AuthenticatedRequest,
   ) {
     const userId = req.user.userId;
@@ -71,5 +71,31 @@ export class CourseController {
   async getCourseById(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
     const userId = req.user.userId;
     return this.courseService.getCourseById(id, userId);
+  }
+
+  /**
+   * แก้ไขข้อมูล
+   */
+  @Patch(':id')
+  @UseGuards(AuthGuard('jwt'))
+  async updateCourse(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: UpdateCourseDto,
+  ) {
+    const userId = req.user.userId;
+    return this.courseService.updateCourse(id, dto, userId);
+  }
+
+  // ลบ instructor
+  @Patch(':id/remove-instructor')
+  @UseGuards(AuthGuard('jwt'))
+  async removeInstructor(
+    @Param('id', ParseIntPipe) courseId: number,
+    @Req() req: AuthenticatedRequest,
+    @Body() body: { staffId?: string; staffName?: string },
+  ) {
+    const userId = req.user.userId;
+    return this.courseService.removeInstructor(courseId, body, userId);
   }
 }

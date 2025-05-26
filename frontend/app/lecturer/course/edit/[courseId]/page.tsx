@@ -9,6 +9,8 @@ import TextareaInput from '@/app/components/ui/TextareaInput'
 import Button from '@/app/components/ui/Button'
 import RadioGroupInput from '@/app/components/ui/RadioGroupInput'
 import FileInput from '@/app/components/ui/FileInput'
+import LoadingOverlay from '@/app/components/ui/LoadingOverlay'
+import Toast from '@/app/components/ui/Toast'
 import { useEffect, useState } from 'react'
 import { TrashIcon } from '@heroicons/react/24/solid'
 import { useParams } from 'next/navigation'
@@ -17,16 +19,16 @@ export default function EditCourse() {
   const rawParams = useParams()
   const courseId = Array.isArray(rawParams.courseId) ? rawParams.courseId[0] : rawParams.courseId
 
-  // รายการ instructor ที่ระบบสามารถเลือกได้
   const [staffList, setStaffList] = useState<{ label: string; value: string }[]>([])
-
-  // หมวดหมู่ course ทั้งหมด
   const [categoryOptions, setCategoryOptions] = useState<{ label: string; value: string }[]>([])
-
-  // สำหรับ preview ภาพเดิม
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
+  const [toastMsg, setToastMsg] = useState<string | null>(null)
+  const [submitted, setSubmitted] = useState(false)
 
-  // ค่าฟอร์มหลัก
+  const [hasFetchedCourse, setHasFetchedCourse] = useState(false)
+
   const [form, setForm] = useState({
     isInstructor: '1',
     courseName: '',
@@ -39,16 +41,12 @@ export default function EditCourse() {
     isCurrentUserInstructor: false,
   })
 
-  // รายชื่อผู้สอน
   const [instructors, setInstructors] = useState<
     { role: string; staffId?: string; staffName?: string }[]
   >([])
-
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({})
   const [courseFile, setCourseFile] = useState<File | null>(null)
-  const [submitted, setSubmitted] = useState(false)
 
-  // ✅ โหลดข้อมูล course ตาม id
   useEffect(() => {
     const fetchCourse = async () => {
       try {
@@ -57,11 +55,10 @@ export default function EditCourse() {
           headers: { Authorization: `Bearer ${token}` },
         })
         const data = await res.json()
-
         setForm({
           isInstructor: '1',
           courseName: data.name,
-          courseFee: String(data.fee),
+          courseFee: typeof data.fee === 'number' ? String(data.fee) : '0',
           categoryId: String(data.categoryId),
           description: data.description ?? '',
           staffId: '',
@@ -69,25 +66,23 @@ export default function EditCourse() {
           role: '',
           isCurrentUserInstructor: false,
         })
-
         setExistingImageUrl(data.imageUrl ?? null)
-
         setInstructors(
-          data.courseInstructor.map((i: any) => ({
-            role: i.role === 'OWNER' ? '1' : '0',
-            staffId: i.userId ? String(i.userId) : undefined,
-            staffName: i.fullName,
-          }))
+          Array.isArray(data.courseInstructor)
+            ? data.courseInstructor.map((i: any) => ({
+                role: i.role === 'OWNER' ? '1' : '0',
+                staffId: i.userId ? String(i.userId) : undefined,
+                staffName: i.fullName,
+              }))
+            : []
         )
       } catch (err) {
         console.error('❌ Fetch course failed:', err)
       }
     }
-
     if (courseId) fetchCourse()
   }, [courseId])
 
-  // ✅ โหลดหมวดหมู่ + staff
   useEffect(() => {
     const fetchCategories = async () => {
       const token = localStorage.getItem('token')
@@ -97,7 +92,6 @@ export default function EditCourse() {
       const data = await res.json()
       setCategoryOptions(data.map((c: any) => ({ label: c.name, value: String(c.id) })))
     }
-
     const fetchStaff = async () => {
       const token = localStorage.getItem('token')
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/instructors`, {
@@ -108,10 +102,67 @@ export default function EditCourse() {
         data.map((u: any) => ({ label: `${u.firstName} ${u.lastName}`, value: String(u.id) }))
       )
     }
-
     fetchCategories()
     fetchStaff()
   }, [])
+
+  useEffect(() => {
+    const fullName = localStorage.getItem('fullName') || 'Me'
+    const currentUser = { role: 'owner', staffId: 'me', staffName: fullName }
+    const exists = instructors.some((i) => i.staffId === 'me')
+    if (form.isCurrentUserInstructor && !exists) {
+      setInstructors((prev) => [...prev, currentUser])
+    } else if (!form.isCurrentUserInstructor && exists) {
+      setInstructors((prev) => prev.filter((i) => i.staffId !== 'me'))
+    }
+  }, [form.isCurrentUserInstructor])
+
+  useEffect(() => {
+    if (toastMsg) {
+      const timeout = setTimeout(() => setToastMsg(null), 3000)
+      return () => clearTimeout(timeout)
+    }
+  }, [toastMsg])
+
+  useEffect(() => {
+    if (courseId && !hasFetchedCourse) {
+      const fetchCourse = async () => {
+        try {
+          const token = localStorage.getItem('token')
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${courseId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          const data = await res.json()
+          setForm({
+            isInstructor: '1',
+            courseName: data.name ?? '',
+            courseFee: typeof data.fee === 'number' ? String(data.fee) : '0',
+            categoryId: String(data.categoryId ?? ''),
+            description: data.description ?? '',
+            staffId: '',
+            staffName: '',
+            role: '',
+            isCurrentUserInstructor: false,
+          })
+          setExistingImageUrl(data.imageUrl ?? null)
+          setInstructors(
+            Array.isArray(data.courseInstructor)
+              ? data.courseInstructor.map((i: any) => ({
+                  role: i.role === 'OWNER' ? '1' : '0',
+                  staffId: i.userId ? String(i.userId) : undefined,
+                  staffName: i.fullName,
+                }))
+              : []
+          )
+          setHasFetchedCourse(true)
+        } catch (err) {
+          console.error('❌ Fetch course failed:', err)
+        }
+      }
+
+      fetchCourse()
+    }
+  }, [courseId, hasFetchedCourse])
 
   const validateForm = () => {
     const errors: { [key: string]: string } = {}
@@ -131,12 +182,12 @@ export default function EditCourse() {
   }
 
   const handleAddInstructor = () => {
-    if (!form.role) return alert('Please select role')
-    if (form.isInstructor === '1' && !form.staffId) return alert('Please select staff')
-    if (form.isInstructor === '0' && !form.staffName.trim()) return alert('Please enter name')
+    if (!form.role) return setToastMsg('Please select role')
+    if (form.isInstructor === '1' && !form.staffId) return setToastMsg('Please select staff')
+    if (form.isInstructor === '0' && !form.staffName.trim()) return setToastMsg('Please enter name')
 
     const newInstructor = {
-      role: form.role,
+      role: form.role === '1' ? 'owner' : 'co-owner',
       staffId: form.isInstructor === '1' ? form.staffId : undefined,
       staffName:
         form.isInstructor === '1'
@@ -149,23 +200,33 @@ export default function EditCourse() {
         (inst.staffId && inst.staffId === newInstructor.staffId) ||
         (inst.staffName && inst.staffName === newInstructor.staffName)
     )
-    if (isDuplicate) return alert('This instructor already exists.')
+    if (isDuplicate) return setToastMsg('This instructor already exists.')
 
     setInstructors((prev) => [...prev, newInstructor])
     setForm((prev) => ({ ...prev, staffId: '', staffName: '', role: '' }))
   }
 
-  // ✅ อัปเดต instructor ที่ติ๊ก "ฉันเป็นผู้สอน"
-  useEffect(() => {
-    const currentUserInstructor = { role: '1', staffId: 'me', staffName: 'You' }
-    const exists = instructors.some((i) => i.staffId === 'me')
+  const handleRemoveInstructor = (staffId?: string, staffName?: string) => {
+    const confirmDelete = confirm('Are you sure you want to remove this instructor?')
+    if (!confirmDelete) return
 
-    if (form.isCurrentUserInstructor && !exists) {
-      setInstructors((prev) => [...prev, currentUserInstructor])
-    } else if (!form.isCurrentUserInstructor && exists) {
-      setInstructors((prev) => prev.filter((i) => i.staffId !== 'me'))
-    }
-  }, [form.isCurrentUserInstructor])
+    // ✅ ลบจาก UI ทันที
+    setInstructors((prev) => prev.filter((i) => i.staffId !== staffId || i.staffName !== staffName))
+    setToastMsg('Instructor removed')
+
+    // ✅ แจ้ง backend แบบไม่รบกวนผู้ใช้
+    const token = localStorage.getItem('token')
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${courseId}/remove-instructor`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ staffId, staffName }),
+    }).then((res) => {
+      if (!res.ok) console.error('❌ Backend remove failed silently')
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -173,6 +234,8 @@ export default function EditCourse() {
     const errors = validateForm()
     setFormErrors(errors)
     if (Object.keys(errors).length > 0) return
+
+    setIsLoading(true)
 
     try {
       const token = localStorage.getItem('token')
@@ -196,11 +259,7 @@ export default function EditCourse() {
         description: form.description,
         courseFee: +form.courseFee,
         imageUrl,
-        instructors: instructors.map((inst) => ({
-          role: inst.role === '1' ? 'owner' : 'co-owner',
-          staffId: inst.staffId,
-          staffName: inst.staffName,
-        })),
+        instructors,
       }
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${courseId}`, {
@@ -212,17 +271,38 @@ export default function EditCourse() {
         body: JSON.stringify(payload),
       })
 
-      if (!res.ok) throw new Error('Update failed')
-      alert('Course updated successfully')
-      window.location.href = `${process.env.NEXT_PUBLIC_BASE_URL}/lecturer/course/manage`
+      if (!res.ok) {
+        const errText = await res.text()
+        console.error('❌ UPDATE FAIL RESPONSE:', errText)
+        throw new Error('Update failed')
+      }
+
+      setToastMsg('Course updated successfully')
+      setTimeout(() => {
+        setIsRedirecting(true)
+        setIsLoading(false)
+        setTimeout(() => {
+          window.location.href = `${process.env.NEXT_PUBLIC_BASE_URL}/../manage`
+        }, 1000)
+      }, 1000)
     } catch (err) {
       console.error('❌ UPDATE COURSE ERROR:', err)
-      alert('Error updating course')
+      setToastMsg('Error updating course')
+      setIsLoading(false)
     }
   }
 
   return (
     <PageContainer title="Edit Course">
+      {toastMsg && (
+        <Toast
+          message={toastMsg}
+          type={toastMsg === 'Course updated successfully' ? 'success' : 'error'}
+        />
+      )}
+      {(isLoading || isRedirecting) && (
+        <LoadingOverlay message={isRedirecting ? 'Redirecting...' : 'Saving...'} />
+      )}
       <CardContainer>
         <SectionTitle title="Input Course Information" />
         <form onSubmit={handleSubmit}>
@@ -261,7 +341,7 @@ export default function EditCourse() {
               id="courseFee"
               type="number"
               label="Course Fee"
-              value={form.courseFee ?? ''}
+              value={form.courseFee || ''}
               onChange={handleChange}
               required
               error={formErrors.courseFee}
@@ -330,6 +410,7 @@ export default function EditCourse() {
                 required={form.isInstructor === '1'}
                 options={staffList}
               />
+
               <FormInput
                 name="staffName"
                 id="staffName"
@@ -338,7 +419,7 @@ export default function EditCourse() {
                 value={form.staffName}
                 onChange={handleChange}
                 disabled={form.isInstructor !== '0'}
-                required={form.isInstructor === '0'}
+                required={false}
               />
             </div>
 
@@ -378,7 +459,8 @@ export default function EditCourse() {
                     </span>
                   </span>
                   <button
-                    onClick={() => setInstructors((prev) => prev.filter((_, i) => i !== index))}
+                    type="button"
+                    onClick={() => handleRemoveInstructor(inst.staffId, inst.staffName)}
                     className="text-red-500 hover:text-red-700"
                     title="Remove"
                   >
@@ -389,8 +471,8 @@ export default function EditCourse() {
             </div>
           </fieldset>
 
-          <div className="mt-8 text-end">
-            <Button label="Update Course" variant="info" size="md" type="submit" />
+          <div className="mt-8 text-center">
+            <Button label="Update Course" variant="warning" size="md" type="submit" />
           </div>
         </form>
       </CardContainer>
