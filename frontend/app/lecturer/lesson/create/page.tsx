@@ -15,20 +15,24 @@ type LessonType = {
   name: string
 }
 
-// 🔸 Dummy Course list
-const sampleCourses = [
-  { label: 'Computer Science', value: 'cs101' },
-  { label: 'Artificial Intelligence', value: 'ai202' },
-  { label: 'Cybersecurity Basics', value: 'cyb150' },
-]
-
 export default function CreateLessonPage() {
-  const [selectedCourse, setSelectedCourse] = useState('')
   const [mainTitle, setMainTitle] = useState('')
   const [mainDesc, setMainDesc] = useState('')
   const [mainFile, setMainFile] = useState<File | null>(null)
   const [videoUrl, setVideoUrl] = useState('')
   const [pdfUrl, setPdfUrl] = useState('')
+
+  // ดึงตัวเลือก lesson type
+  const [lessonTypes, setLessonTypes] = useState<LessonType[]>([])
+  const [selectedLessonType, setSelectedLessonType] = useState('')
+
+  // ดึงตัวเลือก course
+  const [courseOptions, setCourseOptions] = useState<{ label: string; value: string }[]>([])
+  const [loadingCourse, setLoadingCourse] = useState(true)
+
+  const [toastMsg, setToastMsg] = useState<string | null>(null)
+  const [selectedCourse, setSelectedCourse] = useState('')
+
   const [subLessons, setSubLessons] = useState<
     {
       title: string
@@ -39,9 +43,7 @@ export default function CreateLessonPage() {
     }[]
   >([])
 
-  const [lessonTypes, setLessonTypes] = useState<LessonType[]>([])
-  const [selectedLessonType, setSelectedLessonType] = useState('')
-
+  // lesson type
   useEffect(() => {
     const fetchLessonTypes = async () => {
       try {
@@ -55,6 +57,29 @@ export default function CreateLessonPage() {
     }
 
     fetchLessonTypes()
+  }, [])
+
+  // course
+  useEffect(() => {
+    const fetchCourses = async () => {
+      setLoadingCourse(true)
+      try {
+        const token = localStorage.getItem('token')
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const data = await res.json()
+        const options = data
+          .filter((c: any) => c.isActive)
+          .map((c: any) => ({ label: c.name, value: String(c.id) }))
+        setCourseOptions(options)
+      } catch {
+        setToastMsg('Cannot load category data')
+      } finally {
+        setLoadingCourse(false)
+      }
+    }
+    fetchCourses()
   }, [])
 
   const handleSubLessonChange = (
@@ -81,7 +106,7 @@ export default function CreateLessonPage() {
 
   const handleSubmit = () => {
     const payload = {
-      course: selectedCourse,
+      // course: selectedCourse,
       main: {
         title: mainTitle,
         description: mainDesc,
@@ -112,11 +137,12 @@ export default function CreateLessonPage() {
           />
 
           <SelectInput
-            id="course"
             label="Course"
+            name="courseId"
             value={selectedCourse}
             onChange={setSelectedCourse}
-            options={sampleCourses}
+            options={courseOptions}
+            required
           />
 
           <div className="col-span-full">

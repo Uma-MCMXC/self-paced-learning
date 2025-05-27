@@ -14,7 +14,7 @@ import { DivisionModule } from './api/division/division.module';
 import { LecturersModule } from './register/lecturers/lecturers.module';
 import { StudentsModule } from './register/students/students.module';
 import { LecturerCategoryModule as CategoryModule } from './lecturer/category/category.module';
-import { CourseModule } from './lecturer/course/course.module';
+import { LecturerCourseModule as CourseModule } from './lecturer/course/course.module';
 import { UploadModule } from './shared/upload/upload.module';
 import { LessonTypeModule } from './api/lesson-type/lesson-type.module';
 
