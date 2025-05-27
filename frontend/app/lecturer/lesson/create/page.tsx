@@ -15,78 +15,58 @@ type LessonType = {
   name: string
 }
 
-export default function CreateLessonPage() {
-  const [mainTitle, setMainTitle] = useState('')
-  const [mainDesc, setMainDesc] = useState('')
-  const [mainFile, setMainFile] = useState<File | null>(null)
-  const [videoUrl, setVideoUrl] = useState('')
-  const [pdfUrl, setPdfUrl] = useState('')
+type SubLesson = {
+  title: string
+  description: string
+  documentUrl: string
+  videoUrl: string
+  duration: string
+  pages: string
+  file: File | null
+}
 
-  // ดึงตัวเลือก lesson type
+export default function CreateLessonPage() {
+  const [mainLessonTitle, setMainLessonTitle] = useState('')
+  const [mainLessonDescription, setMainLessonDescription] = useState('')
+  const [mainLessonDocumentUrl, setMainLessonDocumentUrl] = useState('')
+  const [mainLessonVideoUrl, setMainLessonVideoUrl] = useState('')
+  const [mainLessonDuration, setMainLessonDuration] = useState('')
+  const [mainLessonPages, setMainLessonPages] = useState('')
+  const [mainLessonFile, setMainLessonFile] = useState<File | null>(null)
+
+  const [courseOptions, setCourseOptions] = useState<{ label: string; value: string }[]>([])
+  const [selectedCourse, setSelectedCourse] = useState('')
   const [lessonTypes, setLessonTypes] = useState<LessonType[]>([])
   const [selectedLessonType, setSelectedLessonType] = useState('')
+  const [subLessons, setSubLessons] = useState<SubLesson[]>([])
 
-  // ดึงตัวเลือก course
-  const [courseOptions, setCourseOptions] = useState<{ label: string; value: string }[]>([])
-  const [loadingCourse, setLoadingCourse] = useState(true)
-
-  const [toastMsg, setToastMsg] = useState<string | null>(null)
-  const [selectedCourse, setSelectedCourse] = useState('')
-
-  const [subLessons, setSubLessons] = useState<
-    {
-      title: string
-      description: string
-      file: File | null
-      videoUrl: string
-      documentUrl: string
-    }[]
-  >([])
-
-  // lesson type
   useEffect(() => {
     const fetchLessonTypes = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lesson-types`)
-        if (!res.ok) throw new Error('Failed to fetch lesson types')
-        const data = await res.json()
-        setLessonTypes(data)
-      } catch (error) {
-        console.error('❌ Error fetching lesson types:', error)
-      }
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lesson-types`)
+      const data = await res.json()
+      setLessonTypes(data)
     }
 
     fetchLessonTypes()
   }, [])
 
-  // course
   useEffect(() => {
     const fetchCourses = async () => {
-      setLoadingCourse(true)
-      try {
-        const token = localStorage.getItem('token')
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        const data = await res.json()
-        const options = data
-          .filter((c: any) => c.isActive)
-          .map((c: any) => ({ label: c.name, value: String(c.id) }))
-        setCourseOptions(options)
-      } catch {
-        setToastMsg('Cannot load category data')
-      } finally {
-        setLoadingCourse(false)
-      }
+      const token = localStorage.getItem('token')
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      const options = data
+        .filter((c: any) => c.isActive)
+        .map((c: any) => ({ label: c.name, value: String(c.id) }))
+      setCourseOptions(options)
     }
+
     fetchCourses()
   }, [])
 
-  const handleSubLessonChange = (
-    index: number,
-    field: keyof (typeof subLessons)[0],
-    value: any
-  ) => {
+  const handleSubLessonChange = (index: number, field: keyof SubLesson, value: any) => {
     const updated = [...subLessons]
     updated[index][field] = value
     setSubLessons(updated)
@@ -95,37 +75,49 @@ export default function CreateLessonPage() {
   const addSubLesson = () => {
     setSubLessons([
       ...subLessons,
-      { title: '', description: '', videoUrl: '', documentUrl: '', file: null },
+      {
+        title: '',
+        description: '',
+        documentUrl: '',
+        videoUrl: '',
+        duration: '',
+        pages: '',
+        file: null,
+      },
     ])
   }
 
   const removeSubLesson = (index: number) => {
-    const updated = subLessons.filter((_, i) => i !== index)
-    setSubLessons(updated)
+    setSubLessons(subLessons.filter((_, i) => i !== index))
   }
 
   const handleSubmit = () => {
     const payload = {
-      // course: selectedCourse,
-      main: {
-        title: mainTitle,
-        description: mainDesc,
-        videoUrl,
-        pdfUrl,
-        file: mainFile,
+      courseId: selectedCourse,
+      lessonTypeId: selectedLessonType,
+      mainLesson: {
+        title: mainLessonTitle,
+        description: mainLessonDescription,
+        documentUrl: mainLessonDocumentUrl,
+        videoUrl: mainLessonVideoUrl,
+        duration: mainLessonDuration,
+        pages: mainLessonPages,
+        file: mainLessonFile,
       },
       subLessons,
     }
-    console.log('Payload:', payload)
+
+    console.log('📦 Payload:', payload)
     alert('Lesson submitted successfully!')
   }
 
   return (
     <PageContainer title="Create Lesson">
-      <CardContainer className="space-y-4">
+      <CardContainer>
         <div className="grid grid-cols-2 gap-4">
           <SelectInput
             id="lessonType"
+            name="lessonType"
             label="Lesson Type"
             value={selectedLessonType}
             onChange={setSelectedLessonType}
@@ -137,8 +129,9 @@ export default function CreateLessonPage() {
           />
 
           <SelectInput
-            label="Course"
+            id="courseId"
             name="courseId"
+            label="Course"
             value={selectedCourse}
             onChange={setSelectedCourse}
             options={courseOptions}
@@ -147,146 +140,144 @@ export default function CreateLessonPage() {
 
           <div className="col-span-full">
             <FormInput
-              id="mainTitle"
-              name="mainTitle"
+              id="mainLessonTitle"
+              name="mainLessonTitle"
               label="Main Lesson Title"
-              value={mainTitle}
-              onChange={(e) => setMainTitle(e.target.value)}
+              value={mainLessonTitle}
+              onChange={(e) => setMainLessonTitle(e.target.value)}
             />
           </div>
 
           <div className="col-span-full">
             <TextareaInput
-              id="mainDesc"
-              name="mainDesc"
+              id="mainLessonDescription"
+              name="mainLessonDescription"
               label="Lesson Description"
-              value={mainDesc}
-              onChange={(e) => setMainDesc(e.target.value)}
+              value={mainLessonDescription}
+              onChange={(e) => setMainLessonDescription(e.target.value)}
               maxLength={5000}
             />
           </div>
 
           <div className="col-span-full">
             <FormInput
-              id="pdfUrl"
-              name="pdfUrl"
+              id="mainLessonDocumentUrl"
+              name="mainLessonDocumentUrl"
               label="Document URL"
-              value={pdfUrl}
-              onChange={(e) => setPdfUrl(e.target.value)}
+              value={mainLessonDocumentUrl}
+              onChange={(e) => setMainLessonDocumentUrl(e.target.value)}
             />
           </div>
 
           <FormInput
-            id="videoUrl"
-            name="videoUrl"
+            id="mainLessonVideoUrl"
+            name="mainLessonVideoUrl"
             label="Video URL"
-            value={videoUrl}
-            onChange={(e) => setVideoUrl(e.target.value)}
+            value={mainLessonVideoUrl}
+            onChange={(e) => setMainLessonVideoUrl(e.target.value)}
           />
 
           <FormInput
-            id="videoUrl"
-            name="videoUrl"
+            id="mainLessonDuration"
+            name="mainLessonDuration"
             label="Duration (Time)"
             type="number"
-            value={videoUrl}
-            onChange={(e) => setVideoUrl(e.target.value)}
+            value={mainLessonDuration}
+            onChange={(e) => setMainLessonDuration(e.target.value)}
           />
 
-          <FileInput label="Upload Main File" onFileChange={setMainFile} />
+          <FileInput label="Upload Main File" onFileChange={setMainLessonFile} />
 
           <FormInput
-            id="videoUrl"
-            name="videoUrl"
+            id="mainLessonPages"
+            name="mainLessonPages"
             label="Number of Pages"
             type="number"
-            value={videoUrl}
-            onChange={(e) => setVideoUrl(e.target.value)}
+            value={mainLessonPages}
+            onChange={(e) => setMainLessonPages(e.target.value)}
           />
         </div>
       </CardContainer>
 
-      <div className="mt-10 space-y-6">
+      <div>
         {subLessons.map((sub, i) => (
-          <CardContainer key={i} className="border border-gray-200">
+          <CardContainer key={i}>
             <div className="flex justify-between items-center mb-3">
               <div className="text-lg font-semibold text-indigo-700">Topic-lesson {i + 1}</div>
               <button
+                type="button"
                 className="text-sm text-red-500 hover:underline"
-                onClick={() => {
-                  if (confirm('Are you sure you want to remove this sub-lesson?')) {
-                    removeSubLesson(i)
-                  }
-                }}
+                onClick={() => removeSubLesson(i)}
               >
-                {/* Remove Topic */}
                 <TrashIcon className="h-5 w-5" />
               </button>
             </div>
+
+            <FormInput
+              id={`subTitle-${i}`}
+              name={`subTitle-${i}`}
+              label="Topic-lesson Title"
+              value={sub.title}
+              onChange={(e) => handleSubLessonChange(i, 'title', e.target.value)}
+            />
+
+            <TextareaInput
+              id={`subDescription-${i}`}
+              name={`subDescription-${i}`}
+              label="Topic-lesson Description"
+              value={sub.description}
+              onChange={(e) => handleSubLessonChange(i, 'description', e.target.value)}
+            />
+
+            <FormInput
+              id={`subDocumentUrl-${i}`}
+              name={`subDocumentUrl-${i}`}
+              label="Document URL"
+              value={sub.documentUrl}
+              onChange={(e) => handleSubLessonChange(i, 'documentUrl', e.target.value)}
+            />
+
             <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-full">
-                <FormInput
-                  id={`sub-title-${i}`}
-                  name={`sub-title-${i}`}
-                  label="Topic-lesson Title"
-                  value={sub.title}
-                  onChange={(e) => handleSubLessonChange(i, 'title', e.target.value)}
-                />
-              </div>
-              <div className="col-span-full">
-                <TextareaInput
-                  id={`sub-desc-${i}`}
-                  name={`sub-desc-${i}`}
-                  label="Topic-lesson Description"
-                  value={sub.description}
-                  onChange={(e) => handleSubLessonChange(i, 'description', e.target.value)}
-                  maxLength={5000}
-                />
-              </div>
-              <div className="col-span-full">
-                <FormInput
-                  id={`sub-pdf-${i}`}
-                  name={`sub-pdf-${i}`}
-                  label="Document URL"
-                  value={sub.documentUrl}
-                  onChange={(e) => handleSubLessonChange(i, 'documentUrl', e.target.value)}
-                />
-              </div>
               <FormInput
-                id={`sub-video-${i}`}
-                name={`sub-video-${i}`}
+                id={`subVideoUrl-${i}`}
+                name={`subVideoUrl-${i}`}
                 label="Video URL"
                 value={sub.videoUrl}
                 onChange={(e) => handleSubLessonChange(i, 'videoUrl', e.target.value)}
               />
+
               <FormInput
-                id="videoUrl"
-                name="videoUrl"
+                id={`subDuration-${i}`}
+                name={`subDuration-${i}`}
                 label="Duration (Time)"
                 type="number"
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
+                value={sub.duration}
+                onChange={(e) => handleSubLessonChange(i, 'duration', e.target.value)}
               />
 
               <FileInput
                 label="Upload File"
                 onFileChange={(file) => handleSubLessonChange(i, 'file', file)}
               />
+
               <FormInput
-                id="videoUrl"
-                name="videoUrl"
+                id={`subPages-${i}`}
+                name={`subPages-${i}`}
                 label="Number of Pages"
                 type="number"
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
+                value={sub.pages}
+                onChange={(e) => handleSubLessonChange(i, 'pages', e.target.value)}
               />
             </div>
           </CardContainer>
         ))}
-        <Button label="Add Topic-lesson" variant="success" size="sm" onClick={addSubLesson} />
+
+        <div className="mt-3">
+          <Button label="Add Topic-lesson" variant="success" size="sm" onClick={addSubLesson} />
+        </div>
       </div>
 
-      <div className="mt-10 flex justify-end">
+      <div className="mt-10 flex justify-center ">
         <Button label="Save Lesson" variant="info" onClick={handleSubmit} />
       </div>
     </PageContainer>
