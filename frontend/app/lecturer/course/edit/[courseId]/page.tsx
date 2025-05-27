@@ -300,7 +300,7 @@ export default function EditCourse() {
         setIsRedirecting(true)
         setIsSubmitting(false)
         setTimeout(() => {
-          window.location.href = `${process.env.NEXT_PUBLIC_BASE_URL}/../manage`
+          window.location.href = `${process.env.NEXT_PUBLIC_BASE_URL}/../../manage`
         }, 1000)
       }, 1000)
     } catch (err) {
