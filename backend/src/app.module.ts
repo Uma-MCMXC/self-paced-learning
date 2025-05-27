@@ -16,6 +16,7 @@ import { StudentsModule } from './register/students/students.module';
 import { LecturerCategoryModule as CategoryModule } from './lecturer/category/category.module';
 import { CourseModule } from './lecturer/course/course.module';
 import { UploadModule } from './shared/upload/upload.module';
+import { LessonTypeModule } from './api/lesson-type/lesson-type.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { UploadModule } from './shared/upload/upload.module';
     CategoryModule,
     CourseModule,
     UploadModule,
+    LessonTypeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

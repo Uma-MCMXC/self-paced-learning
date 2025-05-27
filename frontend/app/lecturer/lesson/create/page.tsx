@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import PageContainer from '@/app/components/ui/PageContainer'
 import CardContainer from '@/app/components/ui/CardContainer'
 import FormInput from '@/app/components/ui/FormInput'
@@ -10,16 +10,16 @@ import Button from '@/app/components/ui/Button'
 import SelectInput from '@/app/components/ui/SelectInput'
 import { TrashIcon } from '@heroicons/react/24/outline'
 
+type LessonType = {
+  id: number
+  name: string
+}
+
 // 🔸 Dummy Course list
 const sampleCourses = [
   { label: 'Computer Science', value: 'cs101' },
   { label: 'Artificial Intelligence', value: 'ai202' },
   { label: 'Cybersecurity Basics', value: 'cyb150' },
-]
-
-const sampleLessonType = [
-  { label: 'Main Lesson', value: '1' },
-  { label: 'Supplementary Lesson', value: '2' },
 ]
 
 export default function CreateLessonPage() {
@@ -38,6 +38,24 @@ export default function CreateLessonPage() {
       documentUrl: string
     }[]
   >([])
+
+  const [lessonTypes, setLessonTypes] = useState<LessonType[]>([])
+  const [selectedLessonType, setSelectedLessonType] = useState('')
+
+  useEffect(() => {
+    const fetchLessonTypes = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lesson-types`)
+        if (!res.ok) throw new Error('Failed to fetch lesson types')
+        const data = await res.json()
+        setLessonTypes(data)
+      } catch (error) {
+        console.error('❌ Error fetching lesson types:', error)
+      }
+    }
+
+    fetchLessonTypes()
+  }, [])
 
   const handleSubLessonChange = (
     index: number,
@@ -82,11 +100,15 @@ export default function CreateLessonPage() {
       <CardContainer className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <SelectInput
-            id="course"
-            label="Lesson of Type"
-            value={selectedCourse}
-            onChange={setSelectedCourse}
-            options={sampleLessonType}
+            id="lessonType"
+            label="Lesson Type"
+            value={selectedLessonType}
+            onChange={setSelectedLessonType}
+            options={lessonTypes.map((lt) => ({
+              label: lt.name,
+              value: String(lt.id),
+            }))}
+            required
           />
 
           <SelectInput
