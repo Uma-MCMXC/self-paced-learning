@@ -42,6 +42,7 @@ export default function LoginPage() {
 
       localStorage.setItem('token', access_token)
       localStorage.setItem('user', JSON.stringify(user))
+      localStorage.setItem('userId', String(user.id))
 
       switch (user.role) {
         case 'admin':

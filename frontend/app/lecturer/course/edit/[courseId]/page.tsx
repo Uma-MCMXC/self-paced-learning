@@ -51,31 +51,44 @@ export default function EditCourse() {
     const fetchCourse = async () => {
       try {
         const token = localStorage.getItem('token')
+        const userId = localStorage.getItem('userId')
+
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${courseId}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         const data = await res.json()
-        setForm({
-          isInstructor: '1',
-          courseName: data.name,
-          courseFee: typeof data.fee === 'number' ? String(data.fee) : '0',
-          categoryId: String(data.categoryId),
-          description: data.description ?? '',
-          staffId: '',
-          staffName: '',
-          role: '',
-          isCurrentUserInstructor: false,
-        })
-        setExistingImageUrl(data.imageUrl ?? null)
-        setInstructors(
-          Array.isArray(data.courseInstructor)
-            ? data.courseInstructor.map((i: any) => ({
-                role: i.role === 'OWNER' ? '1' : '0',
-                staffId: i.userId ? String(i.userId) : undefined,
-                staffName: i.fullName,
-              }))
-            : []
+
+        // เตรียม instructor list ก่อน
+        const instructorsList = Array.isArray(data.courseInstructor)
+          ? data.courseInstructor.map((i: any) => ({
+              role: i.role === 'OWNER' ? '1' : '0',
+              staffId: i.userId ? String(i.userId) : undefined,
+              staffName: i.fullName,
+            }))
+          : []
+
+        setInstructors(instructorsList)
+
+        // ตรวจสอบว่าผู้ใช้ปัจจุบันอยู่ใน instructors หรือไม่
+        const isCurrentUserInstructor = instructorsList.some(
+          (i: { staffId?: string }) => i.staffId === userId
         )
+
+        // ตั้งค่า form
+        setForm((prev) => ({
+          ...prev,
+          courseName: data.name ?? '',
+          courseFee: typeof data.fee === 'number' ? String(data.fee) : '0',
+          categoryId: String(data.categoryId ?? ''),
+          description: data.description ?? '',
+          isCurrentUserInstructor,
+        }))
+
+        setExistingImageUrl(data.imageUrl ?? null)
+        setHasFetchedCourse(true)
+
+        console.log('👤 userId:', userId)
+        console.log('📋 instructorsList:', instructorsList)
       } catch (err) {
         console.error('❌ Fetch course failed:', err)
       }
@@ -107,15 +120,25 @@ export default function EditCourse() {
   }, [])
 
   useEffect(() => {
+    const userId = localStorage.getItem('userId')
     const fullName = localStorage.getItem('fullName') || 'Me'
-    const currentUser = { role: 'owner', staffId: 'me', staffName: fullName }
-    const exists = instructors.some((i) => i.staffId === 'me')
+
+    if (!userId) return
+
+    const currentUser = {
+      role: 'owner',
+      staffId: userId, // ✅ ใช้ userId จริง
+      staffName: fullName,
+    }
+
+    const exists = instructors.some((i) => i.staffId === userId)
+
     if (form.isCurrentUserInstructor && !exists) {
       setInstructors((prev) => [...prev, currentUser])
     } else if (!form.isCurrentUserInstructor && exists) {
-      setInstructors((prev) => prev.filter((i) => i.staffId !== 'me'))
+      setInstructors((prev) => prev.filter((i) => i.staffId !== userId))
     }
-  }, [form.isCurrentUserInstructor])
+  }, [form.isCurrentUserInstructor, instructors])
 
   useEffect(() => {
     if (toastMsg) {
@@ -133,17 +156,7 @@ export default function EditCourse() {
             headers: { Authorization: `Bearer ${token}` },
           })
           const data = await res.json()
-          setForm({
-            isInstructor: '1',
-            courseName: data.name ?? '',
-            courseFee: typeof data.fee === 'number' ? String(data.fee) : '0',
-            categoryId: String(data.categoryId ?? ''),
-            description: data.description ?? '',
-            staffId: '',
-            staffName: '',
-            role: '',
-            isCurrentUserInstructor: false,
-          })
+
           setExistingImageUrl(data.imageUrl ?? null)
           setInstructors(
             Array.isArray(data.courseInstructor)
