@@ -175,18 +175,26 @@ export class CourseService {
     const now = getNowInBangkok();
 
     return this.prisma.$transaction(async (tx) => {
-      // 🔍 Instructor เดิมจาก DB
+      // 🔍 ดึง instructors เดิม
       const oldInstructors = await tx.courseInstructor.findMany({
         where: { courseId, deletedAt: null },
       });
 
-      // 🔄 key list สำหรับตรวจสอบ (staffId ถ้ามี, fallback เป็น fullName)
-      const newInstructorKeys = dto.instructors.map((i) => i.staffId ?? i.staffName);
+      // 🔑 key เดิมในฐานข้อมูล (string เท่านั้น)
+      const oldKeys = oldInstructors
+        .map((i) => (i.userId !== null ? String(i.userId) : i.fullName))
+        .filter((k): k is string => k !== null && k !== undefined);
 
-      // 🔴 หารายชื่อที่หายไป แล้ว soft-delete
-      const toDelete = oldInstructors.filter((old) => {
-        const key = old.userId !== null ? String(old.userId) : old.fullName;
-        return !newInstructorKeys.includes(String(key));
+      // 🔑 key ใหม่จาก dto (string เท่านั้น)
+      const newKeys: string[] = dto.instructors
+        .map((i) => i.staffId ?? i.staffName)
+        .filter((k): k is string => k !== null && k !== undefined);
+
+      // 🔴 หา instructor ที่ถูกลบออก (soft delete)
+      const toDelete = oldInstructors.filter((i) => {
+        const key = i.userId !== null ? String(i.userId) : i.fullName;
+        if (key === null) return false;
+        return !newKeys.includes(key);
       });
 
       for (const instructor of toDelete) {
@@ -199,16 +207,27 @@ export class CourseService {
         });
       }
 
-      // 🟢 เพิ่มใหม่ทุกคน (ลบซ้ำไว้ก่อนแล้ว)
-      await tx.courseInstructor.createMany({
-        data: dto.instructors.map((i) => ({
-          courseId,
-          role: i.role === 'owner' ? Role.OWNER : Role.CO_OWNER,
-          userId: i.staffId ? parseInt(i.staffId) : null,
-          fullName: i.staffName,
-          isActive: true,
-        })),
+      // 🟢 เพิ่ม instructor ใหม่ (หลีกเลี่ยงซ้ำ)
+      const toAdd = dto.instructors.filter((i) => {
+        const key = i.staffId ?? i.staffName;
+        return key !== null && key !== undefined && !oldKeys.includes(key);
       });
+
+      if (toAdd.length > 0) {
+        await tx.courseInstructor.createMany({
+          data: toAdd.map((i) => ({
+            courseId,
+            role: i.role === 'owner' ? Role.OWNER : Role.CO_OWNER,
+            userId: i.staffId ? parseInt(i.staffId) : null,
+            fullName: i.staffName,
+            isActive: true,
+            createdBy: userId,
+            createdAt: now,
+            updatedBy: userId,
+            updatedAt: now,
+          })),
+        });
+      }
 
       // ✏️ อัปเดตข้อมูลคอร์ส
       return await tx.course.update({

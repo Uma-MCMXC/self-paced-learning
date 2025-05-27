@@ -15,6 +15,12 @@ import { useEffect, useState } from 'react'
 import { TrashIcon } from '@heroicons/react/24/solid'
 import { useParams } from 'next/navigation'
 
+type InstructorType = {
+  role: string
+  staffId?: string
+  staffName?: string
+}
+
 export default function EditCourse() {
   const rawParams = useParams()
   const courseId = Array.isArray(rawParams.courseId) ? rawParams.courseId[0] : rawParams.courseId
@@ -47,6 +53,8 @@ export default function EditCourse() {
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({})
   const [courseFile, setCourseFile] = useState<File | null>(null)
 
+  const [originalInstructors, setOriginalInstructors] = useState<InstructorType[]>([])
+
   useEffect(() => {
     const fetchCourse = async () => {
       try {
@@ -67,6 +75,7 @@ export default function EditCourse() {
             }))
           : []
 
+        setOriginalInstructors(instructorsList)
         setInstructors(instructorsList)
 
         // ตรวจสอบว่าผู้ใช้ปัจจุบันอยู่ใน instructors หรือไม่
@@ -87,8 +96,8 @@ export default function EditCourse() {
         setExistingImageUrl(data.imageUrl ?? null)
         setHasFetchedCourse(true)
 
-        console.log('👤 userId:', userId)
-        console.log('📋 instructorsList:', instructorsList)
+        // console.log('👤 userId:', userId)
+        // console.log('📋 instructorsList:', instructorsList)
       } catch (err) {
         console.error('❌ Fetch course failed:', err)
       }
@@ -208,12 +217,21 @@ export default function EditCourse() {
           : form.staffName,
     }
 
-    const isDuplicate = instructors.some(
-      (inst) =>
-        (inst.staffId && inst.staffId === newInstructor.staffId) ||
-        (inst.staffName && inst.staffName === newInstructor.staffName)
+    // ✅ เช็คซ้ำกับ DB เดิม: ห้ามมี userId ซ้ำใน course เดิม
+    const isDuplicateInOriginal = originalInstructors.some(
+      (inst) => !!inst.staffId && inst.staffId === newInstructor.staffId
     )
-    if (isDuplicate) return setToastMsg('This instructor already exists.')
+
+    // ✅ เช็คซ้ำกับรายการในหน้าฟอร์มตอนนี้
+    const isDuplicateInCurrent = instructors.some(
+      (inst) =>
+        inst.staffId === newInstructor.staffId ||
+        (!inst.staffId && inst.staffName === newInstructor.staffName)
+    )
+
+    if (isDuplicateInOriginal || isDuplicateInCurrent) {
+      return setToastMsg('This instructor already exists in this course.')
+    }
 
     setInstructors((prev) => [...prev, newInstructor])
     setForm((prev) => ({ ...prev, staffId: '', staffName: '', role: '' }))
@@ -271,14 +289,27 @@ export default function EditCourse() {
         imageUrl = uploadData.url
       }
 
+      const instructorsToAdd = instructors.filter(
+        (inst) =>
+          !originalInstructors.some(
+            (orig) => orig.staffId === inst.staffId && orig.role === inst.role
+          )
+      )
+
       const payload = {
         courseName: form.courseName,
         categoryId: +form.categoryId,
         description: form.description,
         courseFee: +form.courseFee,
         imageUrl,
-        instructors,
+        instructors: instructors.map((inst) => ({
+          role: inst.role === '1' ? 'owner' : 'co-owner',
+          staffId: inst.staffId,
+          staffName: inst.staffName || '',
+        })),
       }
+
+      console.log('🧾 Sending instructors:', payload.instructors)
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${courseId}`, {
         method: 'PATCH',
