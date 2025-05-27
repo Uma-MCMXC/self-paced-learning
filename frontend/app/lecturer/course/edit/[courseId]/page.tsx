@@ -11,7 +11,8 @@ import RadioGroupInput from '@/app/components/ui/RadioGroupInput'
 import FileInput from '@/app/components/ui/FileInput'
 import LoadingOverlay from '@/app/components/ui/LoadingOverlay'
 import Toast from '@/app/components/ui/Toast'
-import { useEffect, useState } from 'react'
+import ConfirmModal from '@/app/components/ui/ConfirmModal'
+import { useEffect, useState, useRef } from 'react'
 import { TrashIcon } from '@heroicons/react/24/solid'
 import { useParams } from 'next/navigation'
 
@@ -53,8 +54,17 @@ export default function EditCourse() {
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({})
   const [courseFile, setCourseFile] = useState<File | null>(null)
 
+  // รายชื่อ instructor ที่โหลดมาจาก backend (ใช้เปรียบเทียบตอนส่งข้อมูล)
   const [originalInstructors, setOriginalInstructors] = useState<InstructorType[]>([])
 
+  // confirm modal remove instructor
+  const confirmRef = useRef<HTMLDialogElement>(null)
+  const [pendingDelete, setPendingDelete] = useState<{
+    staffId?: string
+    staffName?: string
+  } | null>(null)
+
+  // ดึงข้อมูลมาแสดง
   useEffect(() => {
     const fetchCourse = async () => {
       try {
@@ -105,7 +115,9 @@ export default function EditCourse() {
     if (courseId) fetchCourse()
   }, [courseId])
 
+  // โหลด category และ staff
   useEffect(() => {
+    // โหลด category
     const fetchCategories = async () => {
       const token = localStorage.getItem('token')
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/category`, {
@@ -114,6 +126,7 @@ export default function EditCourse() {
       const data = await res.json()
       setCategoryOptions(data.map((c: any) => ({ label: c.name, value: String(c.id) })))
     }
+    // โหลด staff
     const fetchStaff = async () => {
       const token = localStorage.getItem('token')
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/instructors`, {
@@ -128,6 +141,7 @@ export default function EditCourse() {
     fetchStaff()
   }, [])
 
+  // จัดการ instructor ตัวเอง (checkbox)
   useEffect(() => {
     const userId = localStorage.getItem('userId')
     const fullName = localStorage.getItem('fullName') || 'Me'
@@ -149,6 +163,7 @@ export default function EditCourse() {
     }
   }, [form.isCurrentUserInstructor, instructors])
 
+  // ซ่อนข้อความแจ้งเตือนหลัง 3 วินาที
   useEffect(() => {
     if (toastMsg) {
       const timeout = setTimeout(() => setToastMsg(null), 3000)
@@ -237,31 +252,33 @@ export default function EditCourse() {
     setForm((prev) => ({ ...prev, staffId: '', staffName: '', role: '' }))
   }
 
-  const handleRemoveInstructor = (staffId?: string, staffName?: string) => {
-    const confirmDelete = confirm('Are you sure you want to remove this instructor?')
-    if (!confirmDelete) return
+  const onConfirmRemoveInstructor = async () => {
+    if (!pendingDelete) return
+    const { staffId, staffName } = pendingDelete
 
-    // ✅ ลบจาก UI ทันที
+    // ลบจาก UI ทันที
     setInstructors((prev) => prev.filter((i) => i.staffId !== staffId || i.staffName !== staffName))
     setToastMsg('Instructor removed')
 
-    // ✅ ถ้าไม่มี staffId แสดงว่าเป็น instructor ที่เพิ่งเพิ่ม → ไม่ต้องยิง backend
-    if (!staffId) return
+    // ถ้ามี staffId แสดงว่าเป็น instructor จาก DB → ลบ backend
+    if (staffId) {
+      const token = localStorage.getItem('token')
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/courses/${courseId}/remove-instructor`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ staffId, staffName }),
+        }
+      )
+      if (!res.ok) console.error('❌ Backend remove failed silently')
+    }
 
-    // ✅ ลบจาก backend เฉพาะ instructor ที่มีใน DB
-    const token = localStorage.getItem('token')
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${courseId}/remove-instructor`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ staffId, staffName }),
-    }).then((res) => {
-      if (!res.ok) {
-        console.error('❌ Backend remove failed silently')
-      }
-    })
+    confirmRef.current?.close()
+    setPendingDelete(null)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -510,7 +527,10 @@ export default function EditCourse() {
                   </span>
                   <button
                     type="button"
-                    onClick={() => handleRemoveInstructor(inst.staffId, inst.staffName)}
+                    onClick={() => {
+                      setPendingDelete({ staffId: inst.staffId, staffName: inst.staffName })
+                      confirmRef.current?.showModal()
+                    }}
                     className="text-red-500 hover:text-red-700"
                     title="Remove"
                   >
@@ -526,6 +546,20 @@ export default function EditCourse() {
           </div>
         </form>
       </CardContainer>
+
+      <ConfirmModal
+        id="confirm-delete-modal"
+        ref={confirmRef}
+        title="Confirm Deletion"
+        message={`Are you sure you want to remove "${pendingDelete?.staffName}"?`}
+        confirmText="Yes, Remove"
+        cancelText="Cancel"
+        onConfirm={onConfirmRemoveInstructor}
+        onCancel={() => {
+          confirmRef.current?.close()
+          setPendingDelete(null)
+        }}
+      />
     </PageContainer>
   )
 }
