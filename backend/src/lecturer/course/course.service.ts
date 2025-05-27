@@ -221,8 +221,6 @@ export class CourseService {
             userId: i.staffId ? parseInt(i.staffId) : null,
             fullName: i.staffName,
             isActive: true,
-            createdBy: userId,
-            createdAt: now,
             updatedBy: userId,
             updatedAt: now,
           })),
