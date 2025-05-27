@@ -227,7 +227,10 @@ export default function EditCourse() {
     setInstructors((prev) => prev.filter((i) => i.staffId !== staffId || i.staffName !== staffName))
     setToastMsg('Instructor removed')
 
-    // ✅ แจ้ง backend แบบไม่รบกวนผู้ใช้
+    // ✅ ถ้าไม่มี staffId แสดงว่าเป็น instructor ที่เพิ่งเพิ่ม → ไม่ต้องยิง backend
+    if (!staffId) return
+
+    // ✅ ลบจาก backend เฉพาะ instructor ที่มีใน DB
     const token = localStorage.getItem('token')
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses/${courseId}/remove-instructor`, {
       method: 'PATCH',
@@ -237,7 +240,9 @@ export default function EditCourse() {
       },
       body: JSON.stringify({ staffId, staffName }),
     }).then((res) => {
-      if (!res.ok) console.error('❌ Backend remove failed silently')
+      if (!res.ok) {
+        console.error('❌ Backend remove failed silently')
+      }
     })
   }
 
