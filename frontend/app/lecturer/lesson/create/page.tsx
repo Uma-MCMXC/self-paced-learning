@@ -15,13 +15,14 @@ type LessonType = {
   name: string
 }
 
-type SubLesson = {
+type TopicLesson = {
   title: string
   description: string
   documentUrl: string
   videoUrl: string
   duration: string
   pages: string
+  contentTypeId?: string
   file: File | null
 }
 
@@ -34,47 +35,67 @@ export default function CreateLessonPage() {
   const [mainLessonPages, setMainLessonPages] = useState('')
   const [mainLessonFile, setMainLessonFile] = useState<File | null>(null)
 
+  const [contentTypes, setContentTypes] = useState<{ id: number; name: string }[]>([])
   const [courseOptions, setCourseOptions] = useState<{ label: string; value: string }[]>([])
   const [selectedCourse, setSelectedCourse] = useState('')
   const [lessonTypes, setLessonTypes] = useState<LessonType[]>([])
   const [selectedLessonType, setSelectedLessonType] = useState('')
-  const [subLessons, setSubLessons] = useState<SubLesson[]>([])
+  const [topicLessons, setTopicLessons] = useState<TopicLesson[]>([])
 
   useEffect(() => {
-    const fetchLessonTypes = async () => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lesson-types`)
-      const data = await res.json()
-      setLessonTypes(data)
-    }
-
-    fetchLessonTypes()
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/lesson-types`)
+      .then((res) => res.json())
+      .then(setLessonTypes)
   }, [])
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      const token = localStorage.getItem('token')
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses`, {
-        headers: { Authorization: `Bearer ${token}` },
+    const token = localStorage.getItem('token')
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/courses`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const options = data
+          .filter((c: any) => c.isActive)
+          .map((c: any) => ({
+            label: c.name,
+            value: String(c.id),
+          }))
+        setCourseOptions(options)
       })
-      const data = await res.json()
-      const options = data
-        .filter((c: any) => c.isActive)
-        .map((c: any) => ({ label: c.name, value: String(c.id) }))
-      setCourseOptions(options)
-    }
-
-    fetchCourses()
   }, [])
 
-  const handleSubLessonChange = (index: number, field: keyof SubLesson, value: any) => {
-    const updated = [...subLessons]
+  useEffect(() => {
+    const fetchContentTypes = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lesson-content-types`)
+        const data = await res.json()
+
+        // ตรวจสอบว่า data เป็น array ก่อน set
+        if (Array.isArray(data)) {
+          setContentTypes(data)
+        } else {
+          console.error('❌ contentTypes response is not an array:', data)
+          setContentTypes([]) // fallback ป้องกันไม่ให้ map พัง
+        }
+      } catch (error) {
+        console.error('❌ Failed to fetch contentTypes:', error)
+        setContentTypes([])
+      }
+    }
+
+    fetchContentTypes()
+  }, [])
+
+  const handleTopicLessonChange = (index: number, field: keyof TopicLesson, value: any) => {
+    const updated = [...topicLessons]
     updated[index][field] = value
-    setSubLessons(updated)
+    setTopicLessons(updated)
   }
 
-  const addSubLesson = () => {
-    setSubLessons([
-      ...subLessons,
+  const addTopicLesson = () => {
+    setTopicLessons([
+      ...topicLessons,
       {
         title: '',
         description: '',
@@ -87,28 +108,89 @@ export default function CreateLessonPage() {
     ])
   }
 
-  const removeSubLesson = (index: number) => {
-    setSubLessons(subLessons.filter((_, i) => i !== index))
+  const removeTopicLesson = (index: number) => {
+    setTopicLessons(topicLessons.filter((_, i) => i !== index))
   }
 
-  const handleSubmit = () => {
-    const payload = {
-      courseId: selectedCourse,
-      lessonTypeId: selectedLessonType,
-      mainLesson: {
-        title: mainLessonTitle,
-        description: mainLessonDescription,
-        documentUrl: mainLessonDocumentUrl,
-        videoUrl: mainLessonVideoUrl,
-        duration: mainLessonDuration,
-        pages: mainLessonPages,
-        file: mainLessonFile,
-      },
-      subLessons,
+  const handleSubmit = async () => {
+    const token = localStorage.getItem('token')
+
+    const mainLessonPayload = {
+      lesson_type_id: Number(selectedLessonType),
+      course_id: Number(selectedCourse),
+      name: mainLessonTitle,
+      description: mainLessonDescription,
+      image_url: '',
+      duration: mainLessonDuration,
+      pages: mainLessonPages,
+      is_active: true,
     }
 
-    console.log('📦 Payload:', payload)
-    alert('Lesson submitted successfully!')
+    if (mainLessonFile) {
+      const formData = new FormData()
+      formData.append('file', mainLessonFile)
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload?type=lesson`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      })
+      const data = await res.json()
+      mainLessonPayload.image_url = data.url
+    }
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lessons`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(mainLessonPayload),
+    })
+
+    const createdLesson = await res.json()
+    const parentLessonId = createdLesson.id
+
+    for (const [index, topic] of topicLessons.entries()) {
+      let topicImageUrl = ''
+
+      if (topic.file) {
+        const topicFormData = new FormData()
+        topicFormData.append('file', topic.file)
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload?type=lesson`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: topicFormData,
+        })
+        const data = await res.json()
+        topicImageUrl = data.url
+      }
+
+      const topicPayload = {
+        lesson_type_id: Number(selectedLessonType),
+        course_id: Number(selectedCourse),
+        name: topic.title,
+        description: topic.description,
+        image_url: topicImageUrl,
+        sort_order: index + 1,
+        parent_id: parentLessonId,
+        is_active: true,
+        duration: topic.duration,
+        pages: topic.pages,
+        content_type_id: topic.contentTypeId ? Number(topic.contentTypeId) : null,
+      }
+
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lessons`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(topicPayload),
+      })
+    }
+
+    alert('✅ Lesson created successfully!')
   }
 
   return (
@@ -169,7 +251,7 @@ export default function CreateLessonPage() {
             />
           </div>
 
-          <FormInput
+          {/* <FormInput
             id="mainLessonVideoUrl"
             name="mainLessonVideoUrl"
             label="Video URL"
@@ -195,85 +277,97 @@ export default function CreateLessonPage() {
             type="number"
             value={mainLessonPages}
             onChange={(e) => setMainLessonPages(e.target.value)}
-          />
+          /> */}
         </div>
       </CardContainer>
 
       <div>
-        {subLessons.map((sub, i) => (
+        {topicLessons.map((sub, i) => (
           <CardContainer key={i}>
             <div className="flex justify-between items-center mb-3">
               <div className="text-lg font-semibold text-indigo-700">Topic-lesson {i + 1}</div>
               <button
                 type="button"
                 className="text-sm text-red-500 hover:underline"
-                onClick={() => removeSubLesson(i)}
+                onClick={() => removeTopicLesson(i)}
               >
                 <TrashIcon className="h-5 w-5" />
               </button>
             </div>
 
             <FormInput
-              id={`subTitle-${i}`}
-              name={`subTitle-${i}`}
+              id={`topicLessonTitle-${i}`}
+              name={`topicLessonTitle-${i}`}
               label="Topic-lesson Title"
               value={sub.title}
-              onChange={(e) => handleSubLessonChange(i, 'title', e.target.value)}
+              onChange={(e) => handleTopicLessonChange(i, 'title', e.target.value)}
             />
 
             <TextareaInput
-              id={`subDescription-${i}`}
-              name={`subDescription-${i}`}
+              id={`topicLessonDescription-${i}`}
+              name={`topicLessonDescription-${i}`}
               label="Topic-lesson Description"
               value={sub.description}
-              onChange={(e) => handleSubLessonChange(i, 'description', e.target.value)}
+              onChange={(e) => handleTopicLessonChange(i, 'description', e.target.value)}
             />
 
-            <FormInput
+            {/* <FormInput
               id={`subDocumentUrl-${i}`}
               name={`subDocumentUrl-${i}`}
               label="Document URL"
               value={sub.documentUrl}
-              onChange={(e) => handleSubLessonChange(i, 'documentUrl', e.target.value)}
+              onChange={(e) => handleTopicLessonChange(i, 'documentUrl', e.target.value)}
+            /> */}
+
+            <SelectInput
+              id={`topicLessonContentType-${i}`}
+              name={`topicLessonContentType-${i}`}
+              label="Lesson Content Type"
+              value={sub.contentTypeId || ''}
+              onChange={(val) => handleTopicLessonChange(i, 'contentTypeId', val)}
+              options={contentTypes.map((ct) => ({
+                label: ct.name,
+                value: String(ct.id),
+              }))}
             />
 
             <div className="grid grid-cols-2 gap-4">
               <FormInput
-                id={`subVideoUrl-${i}`}
-                name={`subVideoUrl-${i}`}
+                id={`topicLessonVideoUrl-${i}`}
+                name={`topicLessonVideoUrl-${i}`}
                 label="Video URL"
                 value={sub.videoUrl}
-                onChange={(e) => handleSubLessonChange(i, 'videoUrl', e.target.value)}
+                onChange={(e) => handleTopicLessonChange(i, 'videoUrl', e.target.value)}
               />
 
               <FormInput
-                id={`subDuration-${i}`}
-                name={`subDuration-${i}`}
+                id={`topicLessonDuration-${i}`}
+                name={`topicLessonDuration-${i}`}
                 label="Duration (Time)"
                 type="number"
                 value={sub.duration}
-                onChange={(e) => handleSubLessonChange(i, 'duration', e.target.value)}
+                onChange={(e) => handleTopicLessonChange(i, 'duration', e.target.value)}
               />
 
               <FileInput
                 label="Upload File"
-                onFileChange={(file) => handleSubLessonChange(i, 'file', file)}
+                onFileChange={(file) => handleTopicLessonChange(i, 'file', file)}
               />
 
               <FormInput
-                id={`subPages-${i}`}
-                name={`subPages-${i}`}
+                id={`topicLessonPages-${i}`}
+                name={`topicLessonPages-${i}`}
                 label="Number of Pages"
                 type="number"
                 value={sub.pages}
-                onChange={(e) => handleSubLessonChange(i, 'pages', e.target.value)}
+                onChange={(e) => handleTopicLessonChange(i, 'pages', e.target.value)}
               />
             </div>
           </CardContainer>
         ))}
 
         <div className="mt-3">
-          <Button label="Add Topic-lesson" variant="success" size="sm" onClick={addSubLesson} />
+          <Button label="Add Topic-lesson" variant="success" size="sm" onClick={addTopicLesson} />
         </div>
       </div>
 

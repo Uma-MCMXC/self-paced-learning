@@ -17,6 +17,7 @@ import { LecturerCategoryModule as CategoryModule } from './lecturer/category/ca
 import { LecturerCourseModule as CourseModule } from './lecturer/course/course.module';
 import { UploadModule } from './shared/upload/upload.module';
 import { LessonTypeModule } from './api/lesson-type/lesson-type.module';
+import { LessonContentTypeModule } from './api/lesson-content-type/lesson-content-type.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { LessonTypeModule } from './api/lesson-type/lesson-type.module';
     CourseModule,
     UploadModule,
     LessonTypeModule,
+    LessonContentTypeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -266,7 +266,7 @@ export default function ManageCategory() {
           required
           error={formError}
         />
-        <div className="text-end mt-4 mb-4">
+        <div className="text-center mt-10 mb-4">
           <Button
             label={editingId ? 'Update' : 'Save'}
             variant="info"
