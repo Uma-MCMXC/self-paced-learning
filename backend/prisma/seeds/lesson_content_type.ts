@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export async function seedLessonContentTypes() {
-  const types = ['video', 'pdf', 'quiz', 'embed', 'interactive', 'scorm'];
+  const types = ['VIDEO', 'PDF'];
 
   await prisma.lessonContentType.createMany({
     data: types.map((name) => ({ name })),

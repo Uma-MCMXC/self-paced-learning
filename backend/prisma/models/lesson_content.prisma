@@ -2,7 +2,7 @@
 model LessonContent {
     id            Int     @id @default(autoincrement())
     lessonId      Int     @map("lesson_id")
-    contentTypeId Int     @map("content_type_id")
+    lessonContentTypeId Int     @map("lesson_content_type_id")
     contentUrl    String? @map("content_url")
     /// เวลาวิดีโอ (วินาที)
     duration      Int?
@@ -18,8 +18,8 @@ model LessonContent {
     deletedAt DateTime? @map("deleted_at")
 
     // Relations
-    lesson            Lesson            @relation("LessonTypeId", fields: [lessonId], references: [id])
-    lessonContentType LessonContentType @relation("ContentTypeId", fields: [contentTypeId], references: [id])
+    lesson            Lesson            @relation("lessonContentId", fields: [lessonId], references: [id])
+    lessonContentType LessonContentType @relation("lessonContentTypeId", fields: [lessonContentTypeId], references: [id])
 
     updatedByUser User? @relation("LessonContentUpdatedByUser", fields: [updatedBy], references: [id])
     deletedByUser User? @relation("LessonContentDeletedByUser", fields: [deletedBy], references: [id])

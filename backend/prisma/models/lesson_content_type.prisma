@@ -5,5 +5,5 @@ model LessonContentType {
     name String
 
     // Reverse relations
-    lessonContents LessonContent[] @relation("ContentTypeId")
+    lessonContents LessonContent[] @relation("lessonContentTypeId")
 }
