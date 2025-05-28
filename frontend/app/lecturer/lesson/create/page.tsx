@@ -22,7 +22,7 @@ type TopicLesson = {
   videoUrl: string
   duration: string
   pages: string
-  contentTypeId?: string
+  topicLessonContentTypeId?: string
   file: File | null
 }
 
@@ -177,7 +177,9 @@ export default function CreateLessonPage() {
         is_active: true,
         duration: topic.duration,
         pages: topic.pages,
-        content_type_id: topic.contentTypeId ? Number(topic.contentTypeId) : null,
+        content_type_id: topic.topicLessonContentTypeId
+          ? Number(topic.topicLessonContentTypeId)
+          : null,
       }
 
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lessons`, {
@@ -241,7 +243,7 @@ export default function CreateLessonPage() {
             />
           </div>
 
-          <div className="col-span-full">
+          {/* <div className="col-span-full">
             <FormInput
               id="mainLessonDocumentUrl"
               name="mainLessonDocumentUrl"
@@ -251,7 +253,7 @@ export default function CreateLessonPage() {
             />
           </div>
 
-          {/* <FormInput
+          <FormInput
             id="mainLessonVideoUrl"
             name="mainLessonVideoUrl"
             label="Video URL"
@@ -311,58 +313,56 @@ export default function CreateLessonPage() {
               onChange={(e) => handleTopicLessonChange(i, 'description', e.target.value)}
             />
 
-            {/* <FormInput
-              id={`subDocumentUrl-${i}`}
-              name={`subDocumentUrl-${i}`}
-              label="Document URL"
-              value={sub.documentUrl}
-              onChange={(e) => handleTopicLessonChange(i, 'documentUrl', e.target.value)}
-            /> */}
-
             <SelectInput
               id={`topicLessonContentType-${i}`}
               name={`topicLessonContentType-${i}`}
               label="Lesson Content Type"
-              value={sub.contentTypeId || ''}
-              onChange={(val) => handleTopicLessonChange(i, 'contentTypeId', val)}
+              value={sub.topicLessonContentTypeId || ''}
+              onChange={(val) => handleTopicLessonChange(i, 'topicLessonContentTypeId', val)}
               options={contentTypes.map((ct) => ({
                 label: ct.name,
                 value: String(ct.id),
               }))}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormInput
-                id={`topicLessonVideoUrl-${i}`}
-                name={`topicLessonVideoUrl-${i}`}
-                label="Video URL"
-                value={sub.videoUrl}
-                onChange={(e) => handleTopicLessonChange(i, 'videoUrl', e.target.value)}
-              />
+            {Number(sub.topicLessonContentTypeId) === 1 && (
+              <>
+                <FormInput
+                  id={`topicLessonVideoUrl-${i}`}
+                  name={`topicLessonVideoUrl-${i}`}
+                  label="Video URL"
+                  value={sub.videoUrl}
+                  onChange={(e) => handleTopicLessonChange(i, 'videoUrl', e.target.value)}
+                />
 
-              <FormInput
-                id={`topicLessonDuration-${i}`}
-                name={`topicLessonDuration-${i}`}
-                label="Duration (Time)"
-                type="number"
-                value={sub.duration}
-                onChange={(e) => handleTopicLessonChange(i, 'duration', e.target.value)}
-              />
+                <FormInput
+                  id={`topicLessonDuration-${i}`}
+                  name={`topicLessonDuration-${i}`}
+                  label="Duration (Time)"
+                  type="number"
+                  value={sub.duration}
+                  onChange={(e) => handleTopicLessonChange(i, 'duration', e.target.value)}
+                />
+              </>
+            )}
 
-              <FileInput
-                label="Upload File"
-                onFileChange={(file) => handleTopicLessonChange(i, 'file', file)}
-              />
+            {Number(sub.topicLessonContentTypeId) === 2 && (
+              <>
+                <FileInput
+                  label="Upload File"
+                  onFileChange={(file) => handleTopicLessonChange(i, 'file', file)}
+                />
 
-              <FormInput
-                id={`topicLessonPages-${i}`}
-                name={`topicLessonPages-${i}`}
-                label="Number of Pages"
-                type="number"
-                value={sub.pages}
-                onChange={(e) => handleTopicLessonChange(i, 'pages', e.target.value)}
-              />
-            </div>
+                <FormInput
+                  id={`topicLessonPages-${i}`}
+                  name={`topicLessonPages-${i}`}
+                  label="Number of Pages"
+                  type="number"
+                  value={sub.pages}
+                  onChange={(e) => handleTopicLessonChange(i, 'pages', e.target.value)}
+                />
+              </>
+            )}
           </CardContainer>
         ))}
 
